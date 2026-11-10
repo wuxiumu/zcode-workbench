@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZCode Labs · FDE 工作台矩阵</title>
+<style>
+  :root{
+    --bg:#0a0e1a; --panel:#121829; --panel2:#0e1424; --line:#1f2a44;
+    --txt:#e6ecff; --sub:#8b98b8; --acc:#4f8cff; --acc2:#22d3ee; --ok:#34d399; --warn:#fbbf24;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:radial-gradient(1200px 600px at 80% -10%,#16204a 0%,var(--bg) 55%);color:var(--txt);font-family:"PingFang SC","Microsoft YaHei",-apple-system,sans-serif;min-height:100vh}
+  .wrap{max-width:1160px;margin:0 auto;padding:56px 28px 80px}
+  .badge{display:inline-flex;align-items:center;gap:8px;font-size:12px;color:var(--acc2);border:1px solid rgba(34,211,238,.35);border-radius:99px;padding:4px 14px;letter-spacing:.12em;background:rgba(34,211,238,.06)}
+  .badge i{width:6px;height:6px;border-radius:50%;background:var(--acc2);box-shadow:0 0 8px var(--acc2);animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+  h1{font-size:clamp(30px,5vw,52px);line-height:1.15;margin:22px 0 14px;font-weight:800;letter-spacing:.01em}
+  h1 .grad{background:linear-gradient(92deg,var(--acc),var(--acc2) 60%,var(--ok));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lead{color:var(--sub);font-size:16px;max-width:720px;line-height:1.8}
+  .lead b{color:var(--txt)}
+  .strip{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:36px 0 10px}
+  .stat{background:linear-gradient(160deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+  .stat .n{font-size:26px;font-weight:800;font-variant-numeric:tabular-nums}
+  .stat .l{font-size:12px;color:var(--sub);margin-top:6px;letter-spacing:.08em}
+  .stat .n em{font-style:normal;font-size:13px;color:var(--sub);font-weight:400}
+  h2{font-size:20px;margin:44px 0 18px;display:flex;align-items:center;gap:12px}
+  h2::before{content:"";width:4px;height:18px;border-radius:2px;background:linear-gradient(var(--acc),var(--acc2))}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:18px}
+  .card{position:relative;display:block;text-decoration:none;color:inherit;background:linear-gradient(165deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:16px;padding:24px;transition:transform .25s,border-color .25s,box-shadow .25s;overflow:hidden}
+  .card::after{content:"";position:absolute;inset:0;background:radial-gradient(400px 160px at var(--mx,50%) -20%,rgba(79,140,255,.14),transparent 70%);opacity:0;transition:opacity .25s;pointer-events:none}
+  .card:hover{transform:translateY(-4px);border-color:rgba(79,140,255,.5);box-shadow:0 18px 40px -18px rgba(0,0,0,.7)}
+  .card:hover::after{opacity:1}
+  .card .no{position:absolute;right:18px;top:14px;font-size:40px;font-weight:800;color:rgba(139,152,184,.14);font-variant-numeric:tabular-nums}
+  .card .tag{display:inline-block;font-size:11px;color:var(--acc2);border:1px solid rgba(34,211,238,.3);border-radius:6px;padding:2px 8px;letter-spacing:.08em;margin-bottom:12px}
+  .card h3{font-size:18px;margin-bottom:6px}
+  .card .en{font-size:12px;color:var(--sub);letter-spacing:.1em;margin-bottom:12px}
+  .card p{font-size:13px;color:var(--sub);line-height:1.7;min-height:44px}
+  .card .go{margin-top:16px;font-size:13px;color:var(--acc);display:flex;align-items:center;gap:6px}
+  .card .go svg{transition:transform .25s}
+  .card:hover .go svg{transform:translateX(4px)}
+  .foot{margin-top:64px;padding-top:24px;border-top:1px solid var(--line);color:var(--sub);font-size:13px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+  .foot a{color:var(--acc);text-decoration:none}
+  .mock{position:fixed;right:18px;bottom:16px;font-size:11px;color:var(--warn);background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.3);border-radius:99px;padding:4px 12px;letter-spacing:.1em}
+  @media(max-width:720px){.strip{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <span class="badge"><i></i>ZCODE LABS · FDE PORTFOLIO</span>
+  <h1>五张作战地图，<br><span class="grad">一个工程师的业务翻译能力。</span></h1>
+  <p class="lead">你好，我是<b>五朽木</b>，一名 FDE（Forward Deployed Engineer）。这个站点是我把「客户的业务问题 → 可运行系统」的翻译过程公开演示的地方：每个工作台都是<b>真实可访问的单文件应用</b>，Mock 数据驱动，点开即用。</p>
+
+  <div class="strip" id="stats"></div>
+
+  <h2>工作台矩阵 · Workbench Matrix</h2>
+  <div class="grid" id="grid"></div>
+
+  <div class="foot">
+    <span>© 2026 五朽木 · 数据均为 Mock，仅用于能力演示</span>
+    <span><a href="https://github.com/wuxiumu/zcode-workbench" target="_blank">GitHub 仓库</a> · <a href="https://github.com/wuxiumu/zcode-tast-cms" target="_blank">zcode-tast-cms</a></span>
+  </div>
+</div>
+<div class="mock">MOCK DATA · 演示数据</div>
+
+<script>
+const workbenches=[
+  {no:"01",tag:"OPERATIONS",name:"运维监控台",en:"OPS CENTER",desc:"服务器 CPU / 内存 / 网络实时曲线，服务健康状态矩阵与告警事件流 —— SRE 值班一屏尽览。",href:"workbenches/ops-center/",live:"live"},
+  {no:"02",tag:"GROWTH",name:"增长分析台",en:"GROWTH ANALYTICS",desc:"GMV 转化漏斗、DAU 趋势、渠道归因与爆品排行榜 —— 增长团队的每日作战地图。",href:"workbenches/growth-analytics/",live:"live"},
+  {no:"03",tag:"CUSTOMER",name:"客户成功台",en:"CRM WORKBENCH",desc:"销售管道漏斗、MRR 走势、客户健康度分布与流失预警名单 —— CSM 的风险雷达。",href:"workbenches/crm-workbench/",live:"live"},
+  {no:"04",tag:"CONTENT",name:"内容运营台",en:"CONTENT OPS",desc:"素材任务看板、渠道标签分布、审核队列与奖励流水 —— 与 zcode-tast-cms 同源设计。",href:"workbenches/content-ops/",live:"live"},
+  {no:"05",tag:"AI",name:"AI Agent 观测台",en:"AGENT OBSERVATORY",desc:"Token 吞吐、模型延迟分布、Trace 瀑布与成本燃烧曲线 —— AI 应用的生产级可观测面板。",href:"workbenches/agent-observatory/",live:"live"},
+];
+const grid=document.getElementById("grid");
+workbenches.forEach(w=>{
+  const a=document.createElement("a");
+  a.className="card";a.href=w.href;
+  a.innerHTML=`<span class="no">${w.no}</span><span class="tag">${w.tag}</span><h3>${w.name}</h3><div class="en">${w.en}</div><p>${w.desc}</p><span class="go">进入工作台 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>`;
+  a.addEventListener("mousemove",e=>{const r=a.getBoundingClientRect();a.style.setProperty("--mx",((e.clientX-r.left)/r.width*100)+"%")});
+  grid.appendChild(a);
+});
+// Mock 统计条（轻微浮动模拟实时）
+function rnd(base,amp){return base+Math.round((Math.random()-.5)*amp)}
+const stats=[
+  {n:()=>rnd(12480,60),em:"+",l:"本周工作台 PV"},
+  {n:()=>"99.9",em:"%",l:"Pages 可用性(模拟)"},
+  {n:()=>rnd(5,0),em:"",l:"在线工作台"},
+  {n:()=>rnd(38,4),em:"ms",l:"全球访问延迟(模拟)"},
+];
+const box=document.getElementById("stats");
+function renderStats(){box.innerHTML=stats.map(s=>`<div class="stat"><div class="n">${s.n()}<em>${s.em}</em></div><div class="l">${s.l}</div></div>`).join("")}
+renderStats();setInterval(renderStats,2600);
+</script>
+</body>
+</html>
