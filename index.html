@@ -48,7 +48,7 @@
 <body>
 <div class="wrap">
   <span class="badge"><i></i>ZCODE LABS · FDE PORTFOLIO</span>
-  <h1>七张作战地图，<br><span class="grad">一个工程师的业务翻译能力。</span></h1>
+  <h1>八张作战地图，<br><span class="grad">一个工程师的业务翻译能力。</span></h1>
   <p class="lead">你好，我是<b>五朽木</b>，一名 FDE（Forward Deployed Engineer）。这个站点是我把「客户的业务问题 → 可运行系统」的翻译过程公开演示的地方：每个工作台都是<b>真实可访问的单文件应用</b>，Mock 数据驱动，点开即用。</p>
 
   <div class="strip" id="stats"></div>
@@ -72,6 +72,7 @@ const workbenches=[
   {no:"05",tag:"AI",name:"AI Agent 观测台",en:"AGENT OBSERVATORY",desc:"Token 吞吐、模型延迟分布、Trace 瀑布与成本燃烧曲线 —— AI 应用的生产级可观测面板。",href:"workbenches/agent-observatory/",live:"live"},
   {no:"06",tag:"SUPPLY CHAIN",name:"供应链协同台",en:"SUPPLY CHAIN HUB",desc:"库存水位与周转、采购履约漏斗、供应商绩效与缺料预警清单 —— 供应链团队的协同作战屏。",href:"workbenches/supply-chain-hub/",live:"live"},
   {no:"07",tag:"FINANCE",name:"财务经营驾驶舱",en:"FINANCE COCKPIT",desc:"收入-成本-利润趋势、13 周现金流预测水位、预算执行与应收账龄 —— 财务团队的经营驾驶舱。",href:"workbenches/finance-cockpit/",live:"live"},
+  {no:"08",tag:"DATA",name:"数据资产目录",en:"DATA CATALOG",desc:"表血缘图谱、质量分四维趋势、Owner 责任制与访问热度 —— 数据资产的治理驾驶舱。",href:"workbenches/data-catalog/",live:"live"},
 ];
 const grid=document.getElementById("grid");
 workbenches.forEach(w=>{
@@ -86,7 +87,7 @@ function rnd(base,amp){return base+Math.round((Math.random()-.5)*amp)}
 const stats=[
   {n:()=>rnd(12480,60),em:"+",l:"本周工作台 PV"},
   {n:()=>"99.9",em:"%",l:"Pages 可用性(模拟)"},
-  {n:()=>rnd(7,0),em:"",l:"在线工作台"},
+  {n:()=>rnd(8,0),em:"",l:"在线工作台"},
   {n:()=>rnd(38,4),em:"ms",l:"全球访问延迟(模拟)"},
 ];
 const box=document.getElementById("stats");

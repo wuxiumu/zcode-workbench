@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数据资产目录 · Data Catalog | ZCode Labs</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<style>
+:root{--bg:#070b14;--p1:#0d1322;--p2:#0a0f1c;--line:#1c2740;--txt:#dfe7ff;--sub:#8494b8;--acc:#4f8cff;--ok:#34d399;--warn:#fbbf24;--bad:#f87171}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:radial-gradient(900px 500px at 85% -10%,#0d332e 0%,var(--bg) 60%);color:var(--txt);font-family:"PingFang SC","Microsoft YaHei",sans-serif;padding:22px;min-height:100vh}
+.top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px}
+.top h1{font-size:20px;display:flex;align-items:center;gap:10px}
+.top h1 .dot{width:9px;height:9px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px var(--ok);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.top h1 span{color:var(--sub);font-size:13px;font-weight:400}
+.clock{font-variant-numeric:tabular-nums;color:var(--sub);font-size:13px}
+.pill{font-size:12px;color:var(--sub);background:var(--p1);border:1px solid var(--line);border-radius:99px;padding:6px 14px}
+.pill b{color:var(--ok)}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px}
+.kpi{background:linear-gradient(160deg,var(--p1),var(--p2));border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.kpi .l{font-size:12px;color:var(--sub)}.kpi .v{font-size:24px;font-weight:800;margin-top:6px;font-variant-numeric:tabular-nums}
+.kpi .v small{font-size:12px;color:var(--sub);font-weight:400}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.panel{background:linear-gradient(160deg,var(--p1),var(--p2));border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.panel h3{font-size:13px;color:var(--sub);font-weight:600;margin-bottom:8px;letter-spacing:.06em}
+.panel h3 .chip{float:right;font-size:11px;letter-spacing:0;color:var(--sub)}
+.chart{height:220px}.chart-lg{height:300px}.wide{grid-column:1/-1}
+.tscroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{color:var(--sub);font-weight:500;text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);letter-spacing:.05em;white-space:nowrap}
+td{padding:7px 8px;border-bottom:1px solid rgba(28,39,64,.5);font-variant-numeric:tabular-nums;white-space:nowrap}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:99px;font-size:11px}
+.badge i{width:5px;height:5px;border-radius:50%}
+.st-ok{color:var(--ok);background:rgba(52,211,153,.1)}.st-ok i{background:var(--ok)}
+.st-warn{color:var(--warn);background:rgba(251,191,36,.1)}.st-warn i{background:var(--warn)}
+.st-bad{color:var(--bad);background:rgba(248,113,113,.1)}.st-bad i{background:var(--bad)}
+.trend{font-size:11px}.trend.up{color:var(--ok)}.trend.dn{color:var(--bad)}
+.mock{position:fixed;right:16px;bottom:14px;font-size:11px;color:var(--warn);background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.3);border-radius:99px;padding:3px 12px;letter-spacing:.1em}
+.back{position:fixed;left:16px;bottom:14px;font-size:12px}.back a{color:var(--acc);text-decoration:none}
+@media(max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="top">
+  <h1><span class="dot"></span>数据资产目录 <span>DATA CATALOG · lakehouse-prod</span></h1>
+  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+    <span class="clock" id="clock"></span>
+    <span class="pill">数据更新：<b>实时模拟</b> · 每 3.5 秒刷新</span>
+  </div>
+</div>
+
+<div class="kpis" id="kpis"></div>
+<div class="grid">
+  <div class="panel wide"><h3>表血缘关系图 · fact_order 血缘拓扑<span class="chip">11 节点 · 10 依赖 · 支持拖拽缩放</span></h3><div class="chart-lg" id="c-lineage"></div></div>
+  <div class="panel"><h3>数据质量分趋势（近 30 天）</h3><div class="chart" id="c-quality"></div></div>
+  <div class="panel"><h3>存储分层分布（TB）</h3><div class="chart" id="c-storage"></div></div>
+  <div class="panel wide"><h3>表访问热度 Top10（今日 PV）</h3><div class="chart" id="c-hot"></div></div>
+  <div class="panel wide"><h3>资产 Owner 责任制 · 质量分排行<span class="chip" id="ownChip"></span></h3><div class="tscroll"><table id="owners"></table></div></div>
+</div>
+
+<div class="back"><a href="../../">← 返回工作台矩阵</a></div>
+<div class="mock">MOCK DATA · 演示数据</div>
+
+<script>
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const irnd=(a,b)=>Math.round(rnd(a,b));
+const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
+const last=a=>a[a.length-1];
+const qDays=Array.from({length:30},(_,i)=>{const d=new Date(Date.now()-(29-i)*864e5);return (d.getMonth()+1)+'/'+d.getDate()});
+
+// 数据质量四维分（近 30 天，KPI 均分引用其最新值）
+let qCmp=qDays.map(()=>+rnd(92,98).toFixed(1)),qTim=qDays.map(()=>+rnd(87,94).toFixed(1)),
+    qCon=qDays.map(()=>+rnd(89,96).toFixed(1)),qAcc=qDays.map(()=>+rnd(91,97).toFixed(1));
+
+// KPI · 资产总览
+let tables=1286,coreN=86,newToday=12;
+function renderKpis(){
+  tables=clamp(tables+irnd(-3,5),1260,1320);
+  if(Math.random()<.35)newToday+=1;
+  coreN=clamp(coreN+irnd(-1,1),80,95);
+  const qAvg=+((last(qCmp)+last(qTim)+last(qCon)+last(qAcc))/4).toFixed(1);
+  const qOk=qAvg>=90;
+  const k=[
+    ['资产总表数',tables.toLocaleString(),' 张','up','+3 较昨日'],
+    ['核心资产',coreN,' 张','up','含 12 张实时表'],
+    ['今日新增',newToday,' 张','up','ODS 贴源层为主'],
+    ['质量平均分',qAvg,' 分',qOk?'up':'dn',qOk?'目标 ≥ 90 · 达标':'低于目标 90 需治理']];
+  document.getElementById('kpis').innerHTML=k.map(x=>`<div class="kpi"><div class="l">${x[0]}</div><div class="v">${x[1]}<small>${x[2]}</small></div><div class="trend ${x[3]}">${x[4]}</div></div>`).join('');
+}
+
+// 表血缘关系图（layout:none 坐标自动适配容器，节点按分层着色）
+const linC=echarts.init(document.getElementById('c-lineage'));
+const CATS=[
+  {name:'ODS',itemStyle:{color:'#a78bfa'}},
+  {name:'DWD',itemStyle:{color:'#4f8cff'}},
+  {name:'DWS',itemStyle:{color:'#22d3ee'}},
+  {name:'ADS',itemStyle:{color:'#34d399'}}];
+const nodes=[
+  {name:'ods_order_info',x:60,y:30,cat:0,q:93.1,s:20},
+  {name:'ods_payment_flow',x:60,y:110,cat:0,q:91.8,s:20},
+  {name:'ods_user_profile',x:60,y:190,cat:0,q:84.9,s:20},
+  {name:'ods_item_detail',x:60,y:270,cat:0,q:90.2,s:20},
+  {name:'fact_order',x:400,y:150,cat:1,q:97.5,s:42},
+  {name:'dws_trade_order_1d',x:700,y:80,cat:2,q:98.2,s:26},
+  {name:'dws_user_order_1d',x:700,y:220,cat:2,q:95.4,s:24},
+  {name:'ads_trade_overview',x:960,y:30,cat:3,q:96.1,s:22},
+  {name:'ads_gmv_daily',x:960,y:110,cat:3,q:96.8,s:22},
+  {name:'ads_user_retention',x:960,y:190,cat:3,q:95.6,s:22},
+  {name:'ads_sales_dashboard',x:960,y:270,cat:3,q:94.3,s:22}];
+const edges=[
+  ['ods_order_info','fact_order'],['ods_payment_flow','fact_order'],['ods_user_profile','fact_order'],['ods_item_detail','fact_order'],
+  ['fact_order','dws_trade_order_1d'],['fact_order','dws_user_order_1d'],
+  ['dws_trade_order_1d','ads_trade_overview'],['dws_trade_order_1d','ads_gmv_daily'],['dws_trade_order_1d','ads_sales_dashboard'],
+  ['dws_user_order_1d','ads_user_retention']];
+function renderLineage(){
+  nodes.forEach(n=>{n.q=+clamp(n.q+rnd(-.2,.2),80,99.9).toFixed(1)});
+  linC.setOption({
+    tooltip:{formatter:p=>p.dataType==='node'?`${p.name}<br/>分层 ${CATS[p.data.cat].name} · 质量分 <b>${p.data.q}</b>`:''},
+    legend:{data:CATS.map(c=>c.name),textStyle:{color:'#8494b8',fontSize:10},top:0,icon:'circle',itemWidth:8,itemHeight:8},
+    series:[{type:'graph',layout:'none',roam:true,zoom:1,categories:CATS,
+      itemStyle:{opacity:.92,borderColor:'#0a0f1c',borderWidth:2},
+      lineStyle:{color:'#22335c',width:1.5,curveness:.12},
+      emphasis:{focus:'adjacency',lineStyle:{width:2.5}},
+      label:{show:true,position:'bottom',color:'#8494b8',fontSize:9},
+      edgeSymbol:['none','arrow'],edgeSymbolSize:7,
+      data:nodes.map(n=>({name:n.name,x:n.x,y:n.y,category:n.cat,symbolSize:n.s,q:n.q})),
+      links:edges.map(e=>({source:e[0],target:e[1]}))}]});
+}
+
+// 数据质量分趋势（四维）
+const qC=echarts.init(document.getElementById('c-quality'));
+function renderQuality(){
+  qC.setOption({tooltip:{trigger:'axis'},legend:{textStyle:{color:'#8494b8',fontSize:10},top:0,itemWidth:10,itemHeight:10},
+    grid:{left:34,right:12,top:30,bottom:24},
+    xAxis:{type:'category',data:qDays,axisLabel:{color:'#8494b8',fontSize:9,interval:6}},
+    yAxis:{min:80,max:100,type:'value',splitLine:{lineStyle:{color:'#141d33'}},axisLabel:{color:'#8494b8',fontSize:10}},
+    series:[
+      {name:'完整性',type:'line',data:qCmp,smooth:true,showSymbol:false,lineStyle:{width:1.8,color:'#4f8cff'}},
+      {name:'及时性',type:'line',data:qTim,smooth:true,showSymbol:false,lineStyle:{width:1.8,color:'#22d3ee'}},
+      {name:'一致性',type:'line',data:qCon,smooth:true,showSymbol:false,lineStyle:{width:1.8,color:'#fbbf24'}},
+      {name:'准确性',type:'line',data:qAcc,smooth:true,showSymbol:false,lineStyle:{width:1.8,color:'#34d399'}}]});
+}
+
+// 存储分层分布（玫瑰图）
+const stC=echarts.init(document.getElementById('c-storage'));
+const STORE=[['ODS 贴源层',482,'#a78bfa'],['DWD 明细层',294,'#4f8cff'],['DWS 汇总层',168,'#22d3ee'],['ADS 应用层',96,'#34d399'],['DIM 维表层',156,'#fbbf24'],['TMP 临时层',61,'#8494b8']];
+let stData=STORE.map(s=>s[1]);
+function renderStorage(){
+  stData=stData.map(v=>Math.max(20,v+irnd(-5,6)));
+  stC.setOption({tooltip:{trigger:'item',formatter:'{b}: {c} TB ({d}%)'},legend:{bottom:0,textStyle:{color:'#8494b8',fontSize:9},itemWidth:9,itemHeight:9},
+    series:[{type:'pie',roseType:'radius',radius:['14%','62%'],center:['50%','42%'],itemStyle:{borderColor:'#0a0f1c',borderWidth:2},label:{show:false},
+      data:STORE.map((s,i)=>({name:s[0],value:stData[i],itemStyle:{color:s[2]}}))}]});
+}
+
+// 表访问热度 Top10（横向柱状图）
+const hotC=echarts.init(document.getElementById('c-hot'));
+const HOT=['dws_trade_order_1d','fact_order','ads_gmv_daily','ods_order_info','dwd_trade_order_detail','ads_trade_overview','dim_item','dim_user','dws_user_order_1d','ods_payment_flow'];
+let hotV=HOT.map(()=>irnd(1200,9800));
+function renderHot(){
+  hotV=hotV.map(v=>clamp(v+irnd(-160,190),800,12000));
+  const pairs=HOT.map((n,i)=>[n,hotV[i]]).sort((a,b)=>b[1]-a[1]);
+  hotC.setOption({tooltip:{trigger:'axis',axisPointer:{type:'shadow'},formatter:ps=>`${ps[0].name}　<b>${ps[0].value.toLocaleString()}</b> 次/日`},
+    grid:{left:128,right:44,top:10,bottom:22},
+    xAxis:{type:'value',splitLine:{lineStyle:{color:'#141d33'}},axisLabel:{color:'#8494b8',fontSize:9}},
+    yAxis:{type:'category',inverse:true,data:pairs.map(p=>p[0]),axisLabel:{color:'#8494b8',fontSize:9},axisLine:{lineStyle:{color:'#22304f'}},axisTick:{show:false}},
+    series:[{type:'bar',data:pairs.map(p=>p[1]),barWidth:10,label:{show:true,position:'right',fontSize:9,color:'#8494b8'},
+      itemStyle:{borderRadius:[0,3,3,0],color:{type:'linear',x:0,y:0,x2:1,y2:0,colorStops:[{offset:0,color:'#1d3a8f'},{offset:1,color:'#4f8cff'}]}}}]});
+}
+
+// 资产 Owner 责任制列表
+const owners=[
+  {t:'dws_trade_order_1d',o:'林晓芸',dept:'数据仓库组',q:98.2,freq:'每日 T+1'},
+  {t:'fact_order',o:'陈立群',dept:'交易中台',q:97.5,freq:'实时'},
+  {t:'ads_gmv_daily',o:'王思远',dept:'数据应用组',q:96.8,freq:'每日'},
+  {t:'ads_user_retention',o:'孙嘉禾',dept:'数据应用组',q:95.6,freq:'每日'},
+  {t:'ods_order_info',o:'赵文婷',dept:'数据采集组',q:93.1,freq:'每 15 分钟'},
+  {t:'dwd_trade_order_detail',o:'周子墨',dept:'数据仓库组',q:92.4,freq:'每日 T+1'},
+  {t:'dim_item',o:'吴静怡',dept:'维表服务组',q:89.7,freq:'每日'},
+  {t:'ods_user_profile',o:'郑一鸣',dept:'数据采集组',q:84.9,freq:'每小时'}];
+function renderOwners(){
+  owners.forEach(o=>{o.q=+clamp(o.q+rnd(-.3,.3),78,99.9).toFixed(1)});
+  const rows=[...owners].sort((a,b)=>b.q-a.q);
+  const good=rows.filter(o=>o.q>=90).length;
+  document.getElementById('ownChip').textContent=`达标 ${good}/${rows.length}（≥90 分）`;
+  document.getElementById('owners').innerHTML='<tr><th>表名</th><th>负责人</th><th>部门</th><th>质量分</th><th>更新频率</th></tr>'+
+    rows.map(o=>{const b=o.q>=95?['st-ok','健康']:o.q>=88?['st-warn','关注']:['st-bad','整改'];
+      return `<tr><td>${o.t}</td><td>${o.o}</td><td>${o.dept}</td><td><span class="badge ${b[0]}"><i></i>${o.q} ${b[1]}</span></td><td>${o.freq}</td></tr>`}).join('');
+}
+
+// 时钟
+const tickClock=()=>{document.getElementById('clock').textContent=new Date().toLocaleString('zh-CN',{hour12:false})};
+
+// 模拟实时
+function tick(){
+  qCmp.shift();qCmp.push(+rnd(92,98).toFixed(1));
+  qTim.shift();qTim.push(+rnd(87,94).toFixed(1));
+  qCon.shift();qCon.push(+rnd(89,96).toFixed(1));
+  qAcc.shift();qAcc.push(+rnd(91,97).toFixed(1));
+  renderKpis();renderQuality();renderStorage();renderHot();renderOwners();renderLineage();
+}
+renderKpis();renderQuality();renderStorage();renderHot();renderOwners();renderLineage();
+tickClock();setInterval(tickClock,1000);
+setInterval(tick,3500);
+window.addEventListener('resize',()=>[linC,qC,stC,hotC].forEach(c=>c.resize()));
+</script>
+</body>
+</html>
