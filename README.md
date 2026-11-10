@@ -14,13 +14,14 @@
 | 03 | 客户成功台 CRM Workbench | 管道漏斗 · MRR · 健康度 · 流失预警 | [打开](https://wuxiumu.github.io/zcode-workbench/workbenches/crm-workbench/) |
 | 04 | 内容运营台 Content Ops | 素材任务 · 渠道标签 · 审核队列（联动 zcode-tast-cms） | [打开](https://wuxiumu.github.io/zcode-workbench/workbenches/content-ops/) |
 | 05 | AI Agent 观测台 Agent Observatory | Token 吞吐 · 模型延迟 · Trace · 成本燃烧 | [打开](https://wuxiumu.github.io/zcode-workbench/workbenches/agent-observatory/) |
+| 06 | 供应链协同台 Supply Chain Hub | 库存水位 · 履约漏斗 · 供应商绩效 · 缺料预警 | [打开](https://wuxiumu.github.io/zcode-workbench/workbenches/supply-chain-hub/) |
 
 ## 为什么做这个矩阵
 
 FDE 的价值不在于写代码，而在于**把客户的业务问题翻译成可运行的系统**。这个仓库用最小成本演示这条链路：
 
 - **每个工作台都真实可访问** —— 不是截图，不是 PPT，是跑起来的页面；
-- **每个工作台都讲一个业务故事** —— 运维 / 增长 / 客户 / 内容 / AI，覆盖一家数字化公司最常见的五张作战地图；
+- **每个工作台都讲一个业务故事** —— 运维 / 增长 / 客户 / 内容 / AI / 供应链，覆盖一家数字化公司最常见的六张作战地图；
 - **每个工作台都是单文件** —— `workbenches/<name>/index.html`，复制粘贴即可嵌入任何系统，替换 Mock 数据源即为生产就绪。
 
 ## 技术形态
@@ -32,7 +33,7 @@ FDE 的价值不在于写代码，而在于**把客户的业务问题翻译成�
 ## 持续迭代
 
 路线与 backlog 见 [Issues](https://github.com/wuxiumu/zcode-workbench/issues)。
-计划中的工作台：供应链协同台 · 财务经营驾驶舱 · 数据资产目录 · LLM 评测台。
+计划中的工作台：财务经营驾驶舱 · 数据资产目录 · LLM 评测台。
 
 ## 本地预览
 
