@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>运维监控台 · Ops Center | ZCode Labs</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<style>
+:root{--bg:#070b14;--p1:#0d1322;--p2:#0a0f1c;--line:#1c2740;--txt:#dfe7ff;--sub:#8494b8;--acc:#4f8cff;--ok:#34d399;--warn:#fbbf24;--bad:#f87171}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:radial-gradient(900px 500px at 85% -10%,#101c3f 0%,var(--bg) 60%);color:var(--txt);font-family:"PingFang SC","Microsoft YaHei",sans-serif;padding:22px;min-height:100vh}
+.top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px}
+.top h1{font-size:20px;display:flex;align-items:center;gap:10px}
+.top h1 .dot{width:9px;height:9px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px var(--ok);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.clock{font-variant-numeric:tabular-nums;color:var(--sub);font-size:13px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px}
+.kpi{background:linear-gradient(160deg,var(--p1),var(--p2));border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.kpi .l{font-size:12px;color:var(--sub);letter-spacing:.06em}
+.kpi .v{font-size:24px;font-weight:800;margin-top:6px;font-variant-numeric:tabular-nums}
+.kpi .v small{font-size:12px;color:var(--sub);font-weight:400}
+.kpi .d{font-size:11px;margin-top:4px}.up{color:var(--ok)}.dn{color:var(--bad)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.panel{background:linear-gradient(160deg,var(--p1),var(--p2));border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.panel h3{font-size:13px;color:var(--sub);font-weight:600;margin-bottom:8px;letter-spacing:.06em}
+.chart{height:190px}
+.wide{grid-column:1/-1}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{color:var(--sub);font-weight:500;text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);letter-spacing:.05em}
+td{padding:7px 8px;border-bottom:1px solid rgba(28,39,64,.5);font-variant-numeric:tabular-nums}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:99px;font-size:11px}
+.badge i{width:5px;height:5px;border-radius:50%}
+.st-ok{color:var(--ok);background:rgba(52,211,153,.1)}.st-ok i{background:var(--ok)}
+.st-warn{color:var(--warn);background:rgba(251,191,36,.1)}.st-warn i{background:var(--warn)}
+.st-bad{color:var(--bad);background:rgba(248,113,113,.1)}.st-bad i{background:var(--bad)}
+.feed{max-height:190px;overflow-y:auto}
+.feed .row{display:flex;gap:10px;padding:8px 4px;border-bottom:1px solid rgba(28,39,64,.5);font-size:12px;align-items:baseline}
+.feed .t{color:var(--sub);font-variant-numeric:tabular-nums;flex-shrink:0}
+.feed .lv{flex-shrink:0;font-size:10px;padding:1px 7px;border-radius:4px}
+.lv-warn{color:var(--warn);background:rgba(251,191,36,.12)}.lv-info{color:var(--acc);background:rgba(79,140,255,.12)}.lv-bad{color:var(--bad);background:rgba(248,113,113,.12)}
+.bar{height:6px;border-radius:3px;background:#182242;overflow:hidden;margin-top:5px}
+.bar i{display:block;height:100%;border-radius:3px;transition:width .8s}
+.mock{position:fixed;right:16px;bottom:14px;font-size:11px;color:var(--warn);background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.3);border-radius:99px;padding:3px 12px;letter-spacing:.1em}
+.back{position:fixed;left:16px;bottom:14px;font-size:12px;color:var(--sub)}
+.back a{color:var(--acc);text-decoration:none}
+@media(max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="top">
+  <h1><span class="dot"></span>运维监控台 <span style="color:var(--sub);font-size:13px;font-weight:400">OPS CENTER · prod-cluster-bj</span></h1>
+  <div class="clock" id="clock"></div>
+</div>
+
+<div class="kpis" id="kpis"></div>
+<div class="grid">
+  <div class="panel"><h3>CPU 使用率 %</h3><div class="chart" id="c-cpu"></div></div>
+  <div class="panel"><h3>内存使用率 %</h3><div class="chart" id="c-mem"></div></div>
+  <div class="panel"><h3>网络吞吐 MB/s</h3><div class="chart" id="c-net"></div></div>
+  <div class="panel"><h3>磁盘 IOPS</h3><div class="chart" id="c-io"></div></div>
+  <div class="panel wide"><h3>服务状态矩阵 · Services</h3><table id="svc"></table></div>
+  <div class="panel"><h3>节点负载 Top5</h3><div id="nodes"></div></div>
+  <div class="panel"><h3>告警事件流 · Alerts</h3><div class="feed" id="feed"></div></div>
+</div>
+
+<div class="back"><a href="../../">← 返回工作台矩阵</a></div>
+<div class="mock">MOCK DATA · 演示数据</div>
+
+<script>
+const N=40, rnd=(a,b)=>a+Math.random()*(b-a);
+function walk(base,amp,lo,hi){let v=base;return()=>{v+=rnd(-amp,amp)*0.4;v=Math.max(lo,Math.min(hi,v));return +v.toFixed(1)}}
+const gen=f=>Array.from({length:N},f);
+const series={
+  cpu:walk(52,10,20,92), mem:walk(66,5,45,88),
+  netIn:walk(120,40,20,400), netOut:walk(64,25,10,220),
+  io:walk(820,150,200,2400)
+};
+function axis(){return{x:{type:'category',data:Array.from({length:N},(_,i)=>i),axisLine:{lineStyle:{color:'#22304f'}},axisLabel:{color:'#8494b8',fontSize:10}},y:{splitLine:{lineStyle:{color:'#141d33'}},axisLabel:{color:'#8494b8',fontSize:10}},grid:{left:38,right:12,top:14,bottom:22}}}
+const mk=(id,opt)=>{const c=echarts.init(document.getElementById(id));c.setOption(opt);return c};
+const baseLine=(data,color,name)=>({...axis(),series:[{type:'line',data,name,smooth:true,showSymbol:false,lineStyle:{width:2,color},areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:color+'55'},{offset:1,color:color+'00'}]}}}],tooltip:{trigger:'axis'}});
+const cpuC=mk('c-cpu',baseLine(gen(()=>series.cpu()),'#4f8cff','cpu'));
+const memC=mk('c-mem',baseLine(gen(()=>series.mem()),'#22d3ee','mem'));
+const netC=mk('c-net',{...axis(),legend:{textStyle:{color:'#8494b8',fontSize:10},top:0},series:[{type:'line',data:gen(()=>series.netIn()),name:'in',smooth:true,showSymbol:false,lineStyle:{width:2,color:'#34d399'},areaStyle:{color:'#34d39922'}},{type:'line',data:gen(()=>series.netOut()),name:'out',smooth:true,showSymbol:false,lineStyle:{width:2,color:'#fbbf24'},areaStyle:{color:'#fbbf2400'}}],tooltip:{trigger:'axis'}});
+const ioC=mk('c-io',baseLine(gen(()=>series.io()),'#a78bfa','iops'));
+
+const svcNames=['gateway-api','user-svc','order-svc','pay-svc','search-svc','cms-api','scheduler','cache-proxy','mq-broker','log-collector'];
+const svcs=svcNames.map(n=>({name:n,qps:Math.round(rnd(50,900)),lat:+rnd(8,120).toFixed(1),err:+(rnd(0.01,0.6)).toFixed(2),up:Math.random()>0.12}));
+function renderSvc(){
+  document.getElementById('svc').innerHTML='<tr><th>服务</th><th>QPS</th><th>P99 延迟 ms</th><th>错误率 %</th><th>状态</th></tr>'+svcs.map(s=>{
+    const st=s.err>0.4?['st-bad','异常']:s.err>0.15?['st-warn','抖动']:(s.qps>50?['st-ok','健康']:['st-warn','低流量']);
+    return `<tr><td>${s.name}</td><td>${s.qps}</td><td>${s.lat}</td><td>${s.err}</td><td><span class="badge ${st[0]}"><i></i>${st[1]}</span></td></tr>`}).join('');
+}
+const nodes=['bj-node-01','bj-node-02','bj-node-03','sh-node-01','gz-node-01'];
+function renderNodes(){
+  document.getElementById('nodes').innerHTML=nodes.map(n=>{const v=rnd(20,95);const c=v>85?'var(--bad)':v>65?'var(--warn)':'var(--ok)';
+  return `<div style="margin:10px 2px;font-size:12px"><div style="display:flex;justify-content:space-between"><span>${n}</span><span style="color:${c};font-variant-numeric:tabular-nums">${v.toFixed(0)}%</span></div><div class="bar"><i style="width:${v}%;background:${c}"></i></div></div>`}).join('');
+}
+const feedEl=document.getElementById('feed');
+const msgs=[['info','节点 sh-node-01 磁盘使用率超过 75%'],['warn','order-svc 错误率连续 5 分钟 > 0.3%'],['info','自动扩容：cms-api +2 副本完成'],['bad','mq-broker 消费堆积 > 5000，已触发告警'],['info','每日备份任务完成，耗时 4m12s'],['warn','gateway-api P99 延迟突增至 210ms'],['info','证书 ssl-prod 将于 42 天后到期'],['info','log-collector 日志摄入速率恢复正常']];
+function pushFeed(){
+  const now=new Date(),t=now.toTimeString().slice(0,8);
+  const m=msgs[Math.floor(Math.random()*msgs.length)];
+  const lv=m[0]==='bad'?'lv-bad':m[0]==='warn'?'lv-warn':'lv-info';
+  feedEl.insertAdjacentHTML('afterbegin',`<div class="row"><span class="t">${t}</span><span class="lv ${lv}">${m[0].toUpperCase()}</span><span>${m[1]}</span></div>`);
+  while(feedEl.children.length>12)feedEl.lastChild.remove();
+}
+function shift(chart,data,next){data.shift();data.push(next());chart.setOption({series:[{data}]})}
+const cpuD=cpuC.getOption().series[0].data,memD=memC.getOption().series[0].data,netD=netC.getOption().series,ioD=ioC.getOption().series[0].data;
+function tick(){
+  shift(cpuC,cpuD,series.cpu);shift(memC,memD,series.mem);shift(ioC,ioD,series.io);
+  netD[0].data.shift();netD[0].data.push(series.netIn());
+  netD[1].data.shift();netD[1].data.push(series.netOut());
+  netC.setOption({series:[{data:netD[0].data},{data:netD[1].data}]});
+  svcs.forEach(s=>{s.qps=Math.max(10,Math.round(s.qps+rnd(-30,30)));s.lat=+Math.max(5,s.lat+rnd(-6,6)).toFixed(1)});
+  renderSvc();renderNodes();pushFeed();renderKpis();
+}
+function renderKpis(){
+  const qps=svcs.reduce((a,s)=>a+s.qps,0);
+  const k=[['总 QPS',qps,'','+3.2% 较昨日','up'],['P99 延迟',Math.max(...svcs.map(s=>s.lat)).toFixed(0),' ms','-8ms 较昨日','up'],['错误率',(svcs.reduce((a,s)=>a+s.err,0)/svcs.length).toFixed(2),' %','+0.04 需关注','dn'],['在线节点',nodes.length+' / 5','','全部就绪','up']];
+  document.getElementById('kpis').innerHTML=k.map(x=>`<div class="kpi"><div class="l">${x[0]}</div><div class="v">${x[1]}<small>${x[2]}</small></div><div class="d ${x[4]}">${x[3]}</div></div>`).join('');
+}
+setInterval(()=>{document.getElementById('clock').textContent=new Date().toLocaleString('zh-CN',{hour12:false})},1000);
+renderSvc();renderNodes();pushFeed();pushFeed();renderKpis();
+setInterval(tick,2600);
+window.addEventListener('resize',()=>[cpuC,memC,netC,ioC].forEach(c=>c.resize()));
+</script>
+</body>
+</html>
