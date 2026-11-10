@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>增长分析台 · Growth Analytics | ZCode Labs</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<style>
+:root{--bg:#070b14;--p1:#0d1322;--p2:#0a0f1c;--line:#1c2740;--txt:#dfe7ff;--sub:#8494b8;--acc:#4f8cff;--ok:#34d399;--warn:#fbbf24;--bad:#f87171}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:radial-gradient(900px 500px at 15% -10%,#1a1436 0%,var(--bg) 60%);color:var(--txt);font-family:"PingFang SC","Microsoft YaHei",sans-serif;padding:22px;min-height:100vh}
+.top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:18px}
+.top h1{font-size:20px}.top h1 span{color:var(--sub);font-size:13px;font-weight:400}
+.pill{font-size:12px;color:var(--sub);background:var(--p1);border:1px solid var(--line);border-radius:99px;padding:6px 14px}
+.pill b{color:var(--ok)}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px}
+.kpi{background:linear-gradient(160deg,var(--p1),var(--p2));border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.kpi .l{font-size:12px;color:var(--sub)}.kpi .v{font-size:24px;font-weight:800;margin-top:6px;font-variant-numeric:tabular-nums}
+.kpi .v small{font-size:12px;color:var(--sub);font-weight:400}
+.grid{display:grid;grid-template-columns:1.2fr 1fr;gap:12px}
+.panel{background:linear-gradient(160deg,var(--p1),var(--p2));border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.panel h3{font-size:13px;color:var(--sub);font-weight:600;margin-bottom:8px}
+.chart{height:220px}.wide{grid-column:1/-1}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{color:var(--sub);font-weight:500;text-align:left;padding:8px;border-bottom:1px solid var(--line)}
+td{padding:8px;border-bottom:1px solid rgba(28,39,64,.5);font-variant-numeric:tabular-nums}
+.rank{display:inline-flex;width:20px;height:20px;border-radius:6px;align-items:center;justify-content:center;font-size:11px;background:#182242;color:var(--sub)}
+.r1{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#1a1206;font-weight:700}
+.r2{background:linear-gradient(135deg,#e2e8f0,#94a3b8);color:#1a1206;font-weight:700}
+.r3{background:linear-gradient(135deg,#f59e0b99,#b4530999);color:#fff;font-weight:700}
+.trend{font-size:11px}.trend.up{color:var(--ok)}.trend.dn{color:var(--bad)}
+.mock{position:fixed;right:16px;bottom:14px;font-size:11px;color:var(--warn);background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.3);border-radius:99px;padding:3px 12px}
+.back{position:fixed;left:16px;bottom:14px;font-size:12px}.back a{color:var(--acc);text-decoration:none}
+@media(max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="top">
+  <h1>增长分析台 <span>GROWTH ANALYTICS · 近 30 天</span></h1>
+  <div class="pill">数据更新：<b>实时模拟</b> · 每 4 秒刷新</div>
+</div>
+
+<div class="kpis" id="kpis"></div>
+<div class="grid">
+  <div class="panel"><h3>GMV 转化漏斗（今日）</h3><div class="chart" id="c-funnel"></div></div>
+  <div class="panel"><h3>渠道 GMV 归因</h3><div class="chart" id="c-channel"></div></div>
+  <div class="panel wide"><h3>DAU / 新增 / 留存 趋势（30 天）</h3><div class="chart" id="c-trend"></div></div>
+  <div class="panel"><h3>爆品榜 Top8（今日）</h3><table id="goods"></table></div>
+  <div class="panel"><h3>分时段下单热力（24h）</h3><div class="chart" id="c-heat"></div></div>
+</div>
+
+<div class="back"><a href="../../">← 返回工作台矩阵</a></div>
+<div class="mock">MOCK DATA · 演示数据</div>
+
+<script>
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const fmt=n=>n>=10000?(n/10000).toFixed(1)+'w':n.toLocaleString();
+
+// KPI
+let gmv=1286400, dau=86320;
+function renderKpis(){
+  gmv+=Math.round(rnd(-2000,9000));dau=Math.max(60000,dau+Math.round(rnd(-300,500)));
+  const k=[['今日 GMV','¥'+gmv.toLocaleString(),'','up','+12.4% 较昨日'],['DAU',dau.toLocaleString(),'','up','+5.1% 较昨日'],['转化率','3.42',' %','up','+0.18pt'],['客单价','¥'+(gmv/ (gmv/128)*1).toFixed(0),'','dn','-2.1% 需关注']];
+  document.getElementById('kpis').innerHTML=k.map(x=>`<div class="kpi"><div class="l">${x[0]}</div><div class="v">${x[1]}<small>${x[2]}</small></div><div class="trend ${x[3]}">${x[4]}</div></div>`).join('');
+}
+renderKpis();
+
+// 漏斗
+const funnel=echarts.init(document.getElementById('c-funnel'));
+let fdata=[{value:86320,name:'访客 UV'},{value:42150,name:'浏览商品'},{value:15800,name:'加入购物车'},{value:9420,name:'提交订单'},{value:7420,name:'支付成功'}];
+function renderFunnel(){funnel.setOption({tooltip:{trigger:'item',formatter:'{b}: {c}'},series:[{type:'funnel',left:'8%',right:'8%',top:8,bottom:8,sort:'descending',gap:3,label:{color:'#dfe7ff',fontSize:11,formatter:'{b}  {c}'},itemStyle:{borderWidth:0},data:fdata.map((d,i)=>({...d,itemStyle:{color:['#4f8cff','#38bdf8','#22d3ee','#34d399','#a3e635'][i]}}))}]})}
+renderFunnel();
+
+// 渠道
+const channel=echarts.init(document.getElementById('c-channel'));
+const chans=[{name:'抖音直播',value:38},{name:'小红书种草',value:22},{name:'视频号',value:16},{name:'自然搜索',value:12},{name:'老客复购',value:8},{name:'其他',value:4}];
+channel.setOption({tooltip:{trigger:'item'},legend:{bottom:0,textStyle:{color:'#8494b8',fontSize:10},itemWidth:10,itemHeight:10},series:[{type:'pie',radius:['42%','68%'],center:['50%','42%'],itemStyle:{borderColor:'#0a0f1c',borderWidth:2},label:{show:false},data:chans.map((c,i)=>({...c,itemStyle:{color:['#4f8cff','#f472b6','#22d3ee','#34d399','#fbbf24','#a78bfa'][i]}}))}]});
+
+// 趋势
+const trend=echarts.init(document.getElementById('c-trend'));
+const days=Array.from({length:30},(_,i)=>{const d=new Date(Date.now()-(29-i)*864e5);return (d.getMonth()+1)+'/'+d.getDate()});
+let vDau=days.map(()=>Math.round(rnd(60000,95000))),vNew=days.map(()=>Math.round(rnd(4000,12000))),vRet=days.map(()=>+rnd(28,46).toFixed(1));
+function renderTrend(){trend.setOption({tooltip:{trigger:'axis'},legend:{textStyle:{color:'#8494b8',fontSize:11},top:0},grid:{left:52,right:44,top:34,bottom:26},xAxis:{type:'category',data:days,axisLabel:{color:'#8494b8',fontSize:10}},yAxis:[{type:'value',splitLine:{lineStyle:{color:'#141d33'}},axisLabel:{color:'#8494b8',fontSize:10}},{type:'value',max:60,axisLabel:{color:'#8494b8',fontSize:10,formatter:'{value}%'},splitLine:{show:false}}],series:[{name:'DAU',type:'line',data:vDau,smooth:true,showSymbol:false,lineStyle:{width:2,color:'#4f8cff'},areaStyle:{color:'#4f8cff22'}},{name:'新增',type:'line',data:vNew,smooth:true,showSymbol:false,lineStyle:{width:2,color:'#22d3ee'}},{name:'次留 %',type:'line',yAxisIndex:1,data:vRet,smooth:true,showSymbol:false,lineStyle:{width:2,color:'#34d399',type:'dashed'}}]})}
+renderTrend();
+
+// 爆品榜
+const goods=['山系冲锋衣','便携咖啡机','宠物智能喂食器','机械键盘 TKL','香薰蜡烛礼盒','折叠露营车','蓝牙耳机 Pro','筋膜枪 Mini'];
+let gdata=goods.map(n=>({n,sales:Math.round(rnd(300,2200)),amt:0,trend:+rnd(-15,40).toFixed(1)}));
+function renderGoods(){
+  gdata.forEach(g=>{g.sales=Math.max(50,g.sales+Math.round(rnd(-40,60)));g.amt=g.sales*Math.round(rnd(89,899));});
+  const sorted=[...gdata].sort((a,b)=>b.amt-a.amt);
+  document.getElementById('goods').innerHTML='<tr><th>#</th><th>商品</th><th>销量</th><th>销售额</th><th>环比</th></tr>'+sorted.map((g,i)=>`<tr><td><span class="rank ${i<3?'r'+(i+1):''}">${i+1}</span></td><td>${g.n}</td><td>${g.sales}</td><td>¥${g.amt.toLocaleString()}</td><td class="trend ${g.trend>=0?'up':'dn'}">${g.trend>=0?'▲':'▼'} ${Math.abs(g.trend)}%</td></tr>`).join('');
+}
+renderGoods();
+
+// 热力
+const heat=echarts.init(document.getElementById('c-heat'));
+heat.setOption({tooltip:{position:'top'},grid:{left:50,right:10,top:10,bottom:44},xAxis:{type:'category',data:Array.from({length:24},(_,i)=>i+'时'),axisLabel:{color:'#8494b8',fontSize:9,interval:1},splitArea:{show:false}},yAxis:{type:'category',data:['周一','周二','周三','周四','周五','周六','周日'],axisLabel:{color:'#8494b8',fontSize:10}},visualMap:{min:0,max:100,orient:'horizontal',left:'center',bottom:2,inRange:{color:['#0e1424','#1d3a8f','#4f8cff','#22d3ee','#a3e635']},textStyle:{color:'#8494b8',fontSize:10}},series:[{type:'heatmap',data:Array.from({length:168},(_,i)=>{const h=i%24,d=Math.floor(i/24);const peak=(h>=19&&h<=23)||(d>=5&&h>=10&&h<=15);return [h,d,Math.round(peak?rnd(55,100):rnd(5,50))]}),itemStyle:{borderColor:'#0a0f1c',borderWidth:1}}]});
+
+// 模拟实时
+setInterval(()=>{
+  renderKpis();renderGoods();
+  fdata.forEach(d=>{d.value=Math.max(100,Math.round(d.value*rnd(0.98,1.03)))});fdata[0].value=dau;renderFunnel();
+  vDau.shift();vDau.push(Math.round(rnd(60000,95000)));vNew.shift();vNew.push(Math.round(rnd(4000,12000)));renderTrend();
+},4000);
+window.addEventListener('resize',()=>[funnel,channel,trend,heat].forEach(c=>c.resize()));
+</script>
+</body>
+</html>
