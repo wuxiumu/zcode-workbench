@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IoT 设备监控台 · Device Fleet | ZCode Labs</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<style>
+:root{--bg:#070b14;--p1:#0d1322;--p2:#0a0f1c;--line:#1c2740;--txt:#dfe7ff;--sub:#8494b8;--acc:#4f8cff;--ok:#34d399;--warn:#fbbf24;--bad:#f87171}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:radial-gradient(900px 500px at 85% -10%,#123a2a 0%,var(--bg) 60%);color:var(--txt);font-family:"PingFang SC","Microsoft YaHei",sans-serif;padding:22px;min-height:100vh}
+.top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px}
+.top h1{font-size:20px;display:flex;align-items:center;gap:10px}
+.top h1 .dot{width:9px;height:9px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px var(--ok);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.top h1 span{color:var(--sub);font-size:13px;font-weight:400}
+.clock{font-variant-numeric:tabular-nums;color:var(--sub);font-size:13px}
+.pill{font-size:12px;color:var(--sub);background:var(--p1);border:1px solid var(--line);border-radius:99px;padding:6px 14px}
+.pill b{color:var(--ok)}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px}
+.kpi{background:linear-gradient(160deg,var(--p1),var(--p2));border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.kpi .l{font-size:12px;color:var(--sub)}.kpi .v{font-size:24px;font-weight:800;margin-top:6px;font-variant-numeric:tabular-nums}
+.kpi .v small{font-size:12px;color:var(--sub);font-weight:400}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.panel{background:linear-gradient(160deg,var(--p1),var(--p2));border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.panel h3{font-size:13px;color:var(--sub);font-weight:600;margin-bottom:8px;letter-spacing:.06em}
+.panel h3 .chip{float:right;font-size:11px;letter-spacing:0;color:var(--sub)}
+.chart{height:220px}.chart-lg{height:300px}.wide{grid-column:1/-1}
+.tscroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{color:var(--sub);font-weight:500;text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);letter-spacing:.05em;white-space:nowrap}
+td{padding:7px 8px;border-bottom:1px solid rgba(28,39,64,.5);font-variant-numeric:tabular-nums;white-space:nowrap}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:99px;font-size:11px}
+.badge i{width:5px;height:5px;border-radius:50%}
+.st-ok{color:var(--ok);background:rgba(52,211,153,.1)}.st-ok i{background:var(--ok)}
+.st-warn{color:var(--warn);background:rgba(251,191,36,.1)}.st-warn i{background:var(--warn)}
+.st-bad{color:var(--bad);background:rgba(248,113,113,.1)}.st-bad i{background:var(--bad)}
+.st-info{color:var(--acc);background:rgba(79,140,255,.1)}.st-info i{background:var(--acc)}
+.trend{font-size:11px}.trend.up{color:var(--ok)}.trend.dn{color:var(--bad)}
+.mock{position:fixed;right:16px;bottom:14px;font-size:11px;color:var(--warn);background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.3);border-radius:99px;padding:3px 12px;letter-spacing:.1em}
+.back{position:fixed;left:16px;bottom:14px;font-size:12px}.back a{color:var(--acc);text-decoration:none}
+@media(max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="top">
+  <h1><span class="dot"></span>IoT 设备监控台 <span>DEVICE FLEET · iot-suite v1 · 设备 × 告警 × 固件</span></h1>
+  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+    <span class="clock" id="clock"></span>
+    <span class="pill">数据更新：<b>实时模拟</b> · 每 3.5 秒刷新</span>
+  </div>
+</div>
+
+<div class="kpis" id="kpis"></div>
+<div class="grid">
+  <div class="panel wide"><h3>近 24 小时在线率趋势 · 目标线 95%</h3><div class="chart" id="c-online"></div></div>
+  <div class="panel"><h3>在线状态分布<span class="chip" id="stChip"></span></h3><div class="chart-lg" id="c-status"></div></div>
+  <div class="panel"><h3>设备类型分布<span class="chip" id="typeChip"></span></h3><div class="chart-lg" id="c-type"></div></div>
+  <div class="panel"><h3>固件版本分布 · 6 个版本<span class="chip" id="fwChip"></span></h3><div class="chart-lg" id="c-fw"></div></div>
+  <div class="panel"><h3>平均温度与功耗双折线 · 近 24 小时<span class="chip" id="tpChip"></span></h3><div class="chart-lg" id="c-tp"></div></div>
+  <div class="panel wide"><h3>告警级别流水 · 今日<span class="chip" id="alChip"></span></h3><div class="tscroll"><table id="alerts"></table></div></div>
+</div>
+
+<div class="back"><a href="../../">← 返回工作台矩阵</a></div>
+<div class="mock">MOCK DATA · 演示数据</div>
+
+<script>
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const irnd=(a,b)=>Math.round(rnd(a,b));
+const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
+const last=a=>a[a.length-1];
+const H24=Array.from({length:24},(_,i)=>i+'时');
+
+// 设备总量与 KPI 基础量
+let total=2847,fwPending=128,rateVal=94.2;
+
+// 在线状态分布：在线 / 离线 / 告警 / 维护
+let statuses=[['在线',2682,'#34d399'],['离线',86,'#8494b8'],['告警',37,'#f87171'],['维护',42,'#fbbf24']];
+
+// 设备类型分布（玫瑰图）
+let types=[['传感器',1246,'#4f8cff'],['控制器',787,'#a78bfa'],['摄像头',486,'#fbbf24'],['网关',328,'#34d399']];
+
+// 固件版本分布
+let fwVer=[['v2.1.0',186,'#8494b8'],['v2.2.3',412,'#8494b8'],['v2.3.0',708,'#4f8cff'],['v2.3.5',642,'#4f8cff'],['v2.4.1',632,'#34d399'],['v2.5.0-beta',267,'#a78bfa']];
+
+// 近 24 小时在线率 / 平均温度 ℃ / 平均功耗 W
+let online24=H24.map(()=>+rnd(91,97.5).toFixed(1));
+let temp24=H24.map(()=>+rnd(39,45).toFixed(1));
+let power24=H24.map(()=>irnd(350,430));
+
+// 告警流水
+const DEVS=['GW-0142 园区网关','SN-2381 温湿度传感器','CAM-0907 北门摄像头','CT-1180 楼宇控制器','GW-0089 车间网关','SN-3052 液位传感器','CAM-0433 仓库摄像头','CT-2071 照明控制器'];
+const DESC=['CPU 温度过高 87℃','心跳丢失 3 次','信号强度骤降 -92dBm','电压波动超出阈值','固件升级失败重试','存储占用 > 90%','电池电量低于 10%','功耗异常升高 35%','OTA 任务超时','网络抖动丢包率 8%'];
+const nowT=()=>new Date().toTimeString().slice(0,8);
+const genAlert=()=>{const r=Math.random();return {t:nowT(),d:DEVS[irnd(0,DEVS.length-1)],lv:r<.12?'P0':r<.45?'P1':'P2',desc:DESC[irnd(0,DESC.length-1)]}};
+let alerts=Array.from({length:8},genAlert);
+
+// 在线状态分布（环形图）· 同步在线率给 KPI
+const stC=echarts.init(document.getElementById('c-status'));
+function renderStatus(){
+  statuses=statuses.map(([n,v,c],i)=>[n,Math.max(5,v+irnd(-8,9)),c]);
+  const sum=statuses.reduce((a,b)=>a+b[1],0);
+  rateVal=+(statuses[0][1]/sum*100).toFixed(1);
+  document.getElementById('stChip').textContent=`共 ${sum.toLocaleString()} 台 · 在线率 ${rateVal}%`;
+  stC.setOption({tooltip:{formatter:f=>`${f.name}　<b>${f.value.toLocaleString()}</b> 台（${f.percent}%）`},
+    legend:{bottom:0,textStyle:{color:'#8494b8',fontSize:10},itemWidth:10,itemHeight:10},
+    series:[{type:'pie',radius:['42%','68%'],center:['50%','46%'],
+      itemStyle:{borderColor:'#0a0f1c',borderWidth:2,borderRadius:4},
+      label:{show:false},
+      data:statuses.map(x=>({name:x[0],value:x[1],itemStyle:{color:x[2]}}))}]});
+}
+
+// 设备类型分布（玫瑰图）
+const typeC=echarts.init(document.getElementById('c-type'));
+function renderType(){
+  types=types.map(([n,v,c])=>[n,clamp(v+irnd(-4,5),100,1400),c]);
+  const totalT=types.reduce((a,b)=>a+b[1],0);
+  document.getElementById('typeChip').textContent=`4 类设备 · ${totalT.toLocaleString()} 台`;
+  typeC.setOption({tooltip:{formatter:f=>`${f.name}　<b>${f.value.toLocaleString()}</b> 台（${f.percent}%）`},
+    series:[{type:'pie',roseType:'radius',radius:['16%','72%'],center:['50%','56%'],
+      itemStyle:{borderColor:'#0a0f1c',borderWidth:2,borderRadius:4},
+      label:{color:'#8494b8',fontSize:10,formatter:'{b}'},
+      labelLine:{lineStyle:{color:'#1c2740'}},
+      data:types.map(x=>({name:x[0],value:x[1],itemStyle:{color:x[2]}}))}]});
+}
+
+// KPI · 设备总览
+function renderKpis(){
+  total=clamp(total+irnd(-2,4),2800,2900);
+  fwPending=clamp(fwPending+irnd(-6,7),95,170);
+  const offline=statuses[1][1],p0=alerts.filter(a=>a.lv==='P0').length;
+  const k=[
+    ['总设备数',total.toLocaleString(),' 台','up','本周新增 24 台 · 4 类设备'],
+    ['在线率',rateVal,' %',rateVal>=95?'up':'dn',`离线 ${offline} 台 · 目标 ≥ 95%`],
+    ['今日告警',statuses[2][1],' 条',statuses[2][1]>45?'dn':'up',`流水严重 P0 ${p0} 条待处理`],
+    ['固件待升级',fwPending,' 台',fwPending>140?'dn':'up',`占比 ${(fwPending/total*100).toFixed(1)}% · v2.4.1 已发布`]];
+  document.getElementById('kpis').innerHTML=k.map(x=>`<div class="kpi"><div class="l">${x[0]}</div><div class="v">${x[1]}<small>${x[2]}</small></div><div class="trend ${x[3]}">${x[4]}</div></div>`).join('');
+}
+
+// 近 24 小时在线率趋势（折线 + 目标线 95%）
+const onC=echarts.init(document.getElementById('c-online'));
+function renderOnline(){
+  onC.setOption({tooltip:{trigger:'axis',valueFormatter:v=>v+'%'},legend:{data:['在线率'],textStyle:{color:'#8494b8',fontSize:10},top:0,itemWidth:10,itemHeight:10},
+    grid:{left:36,right:14,top:30,bottom:24},
+    xAxis:{type:'category',data:H24,axisLabel:{color:'#8494b8',fontSize:9,interval:2}},
+    yAxis:{type:'value',min:88,max:100,nameTextStyle:{color:'#8494b8',fontSize:10},splitLine:{lineStyle:{color:'#141d33'}},axisLabel:{color:'#8494b8',fontSize:10,formatter:'{value}%'}},
+    series:[{name:'在线率',type:'line',data:online24,smooth:true,showSymbol:false,lineStyle:{width:2,color:'#22d3ee'},itemStyle:{color:'#22d3ee'},
+      areaStyle:{color:'rgba(34,211,238,.10)'},
+      markLine:{silent:true,symbol:'none',lineStyle:{type:'dashed',color:'rgba(52,211,153,.7)'},
+        data:[{yAxis:95,label:{formatter:'目标 95%',position:'insideEndTop',color:'#34d399',fontSize:9}}]}}]});
+}
+
+// 固件版本分布（柱状图）
+const fwC=echarts.init(document.getElementById('c-fw'));
+function renderFw(){
+  fwVer=fwVer.map(([n,v,c])=>[n,Math.max(20,v+irnd(-5,6)),c]);
+  const sum=fwVer.reduce((a,b)=>a+b[1],0);
+  document.getElementById('fwChip').textContent=`覆盖 ${sum.toLocaleString()} 台 · 待升级 ${fwPending} 台`;
+  fwC.setOption({tooltip:{trigger:'axis',axisPointer:{type:'shadow'},formatter:ps=>`${ps[0].name}　<b>${ps[0].value}</b> 台（${(ps[0].value/sum*100).toFixed(1)}%）`},
+    grid:{left:40,right:12,top:26,bottom:28},
+    xAxis:{type:'category',data:fwVer.map(x=>x[0]),axisLabel:{color:'#8494b8',fontSize:9}},
+    yAxis:{type:'value',splitLine:{lineStyle:{color:'#141d33'}},axisLabel:{color:'#8494b8',fontSize:10}},
+    series:[{type:'bar',barWidth:'52%',data:fwVer.map(x=>({value:x[1],itemStyle:{borderRadius:[3,3,0,0],color:x[2]}})),
+      label:{show:true,position:'top',fontSize:9,color:'#8494b8'}}]});
+}
+
+// 平均温度与功耗双折线（近 24 小时）
+const tpC=echarts.init(document.getElementById('c-tp'));
+function renderTp(){
+  tpC.setOption({tooltip:{trigger:'axis'},legend:{data:['平均温度 ℃','平均功耗 W'],textStyle:{color:'#8494b8',fontSize:10},top:0,itemWidth:10,itemHeight:10},
+    grid:{left:38,right:40,top:30,bottom:24},
+    xAxis:{type:'category',data:H24,axisLabel:{color:'#8494b8',fontSize:9,interval:3}},
+    yAxis:[
+      {name:'℃',type:'value',min:30,max:50,nameTextStyle:{color:'#8494b8',fontSize:10},splitLine:{lineStyle:{color:'#141d33'}},axisLabel:{color:'#8494b8',fontSize:10}},
+      {name:'W',type:'value',min:250,max:500,position:'right',nameTextStyle:{color:'#8494b8',fontSize:10},splitLine:{show:false},axisLabel:{color:'#8494b8',fontSize:10}}],
+    series:[
+      {name:'平均温度 ℃',type:'line',data:temp24,smooth:true,showSymbol:false,lineStyle:{width:2,color:'#fbbf24'},itemStyle:{color:'#fbbf24'}},
+      {name:'平均功耗 W',type:'line',yAxisIndex:1,data:power24,smooth:true,showSymbol:false,lineStyle:{width:2,color:'#22d3ee'},itemStyle:{color:'#22d3ee'}}]});
+  document.getElementById('tpChip').textContent=`温度 ${last(temp24)}℃ · 功耗 ${last(power24)}W`;
+}
+
+// 告警级别流水表（P0 严重 / P1 警告 / P2 提示）
+const LVST={P0:['st-bad','严重'],P1:['st-warn','警告'],P2:['st-info','提示']},LVORD={P0:0,P1:1,P2:2};
+function renderAlerts(){
+  if(Math.random()<.35){alerts.pop();alerts.unshift(genAlert());}
+  const cnt=l=>alerts.filter(a=>a.lv===l).length;
+  document.getElementById('alChip').textContent=`P0 ${cnt('P0')} · P1 ${cnt('P1')} · P2 ${cnt('P2')}`;
+  document.getElementById('alerts').innerHTML='<tr><th>时间</th><th>设备</th><th>级别</th><th>描述</th></tr>'+
+    [...alerts].sort((a,b)=>LVORD[a.lv]-LVORD[b.lv]).map(a=>`<tr><td>${a.t}</td><td>${a.d}</td><td><span class="badge ${LVST[a.lv][0]}"><i></i>${a.lv} ${LVST[a.lv][1]}</span></td><td>${a.desc}</td></tr>`).join('');
+}
+
+// 时钟
+const tickClock=()=>{document.getElementById('clock').textContent=new Date().toLocaleString('zh-CN',{hour12:false})};
+
+// 模拟实时
+function tick(){
+  online24.shift();online24.push(+rnd(91,97.5).toFixed(1));
+  temp24.shift();temp24.push(+rnd(39,45).toFixed(1));
+  power24.shift();power24.push(irnd(350,430));
+  renderStatus();renderType();renderKpis();renderOnline();renderFw();renderTp();renderAlerts();
+}
+renderStatus();renderType();renderKpis();renderOnline();renderFw();renderTp();renderAlerts();
+tickClock();setInterval(tickClock,1000);
+setInterval(tick,3500);
+window.addEventListener('resize',()=>[onC,stC,typeC,fwC,tpC].forEach(c=>c.resize()));
+</script>
+</body>
+</html>
