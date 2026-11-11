@@ -26,22 +26,45 @@
   .stat .n em{font-style:normal;font-size:13px;color:var(--sub);font-weight:400}
   h2{font-size:20px;margin:44px 0 18px;display:flex;align-items:center;gap:12px}
   h2::before{content:"";width:4px;height:18px;border-radius:2px;background:linear-gradient(var(--acc),var(--acc2))}
+  .toolbar{margin:0 0 18px;display:flex;flex-direction:column;gap:12px}
+  .searchrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .search{flex:1;min-width:220px;max-width:520px;background:linear-gradient(160deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:10px;padding:10px 14px;color:var(--txt);font-size:14px;outline:none;transition:border-color .25s,box-shadow .25s;font-family:inherit}
+  .search:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(79,140,255,.15)}
+  .search::placeholder{color:rgba(139,152,184,.6)}
+  .fc{font-size:12px;color:var(--sub);font-variant-numeric:tabular-nums}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{font-size:12px;color:var(--sub);background:linear-gradient(160deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:99px;padding:5px 13px;cursor:pointer;transition:color .2s,border-color .2s,transform .2s;user-select:none;font-family:inherit}
+  .chip:hover{color:var(--txt);border-color:rgba(79,140,255,.5);transform:translateY(-1px)}
+  .chip.on{color:#fff;background:rgba(79,140,255,.2);border-color:var(--acc)}
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:18px}
+  .empty{padding:40px;text-align:center;color:var(--sub);border:1px dashed var(--line);border-radius:14px;font-size:14px}
   .card{position:relative;display:block;text-decoration:none;color:inherit;background:linear-gradient(165deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:16px;padding:24px;transition:transform .25s,border-color .25s,box-shadow .25s;overflow:hidden}
   .card::after{content:"";position:absolute;inset:0;background:radial-gradient(400px 160px at var(--mx,50%) -20%,rgba(79,140,255,.14),transparent 70%);opacity:0;transition:opacity .25s;pointer-events:none}
   .card:hover{transform:translateY(-4px);border-color:rgba(79,140,255,.5);box-shadow:0 18px 40px -18px rgba(0,0,0,.7)}
   .card:hover::after{opacity:1}
-  .card .no{position:absolute;right:18px;top:14px;font-size:40px;font-weight:800;color:rgba(139,152,184,.14);font-variant-numeric:tabular-nums}
-  .card .tag{display:inline-block;font-size:11px;color:var(--acc2);border:1px solid rgba(34,211,238,.3);border-radius:6px;padding:2px 8px;letter-spacing:.08em;margin-bottom:12px}
+  .card:active{transform:translateY(-2px) scale(.99)}
+  .card .no{position:absolute;right:18px;top:14px;font-size:40px;font-weight:800;color:rgba(139,152,184,.14);font-variant-numeric:tabular-nums;transition:color .25s}
+  .card:hover .no{color:rgba(79,140,255,.24)}
+  .card .tag{display:inline-block;font-size:11px;color:var(--acc2);border:1px solid rgba(34,211,238,.3);border-radius:6px;padding:2px 8px;letter-spacing:.08em;margin-bottom:12px;transition:color .25s,border-color .25s}
+  .card:hover .tag{color:#7dd3fc;border-color:rgba(34,211,238,.6)}
   .card h3{font-size:18px;margin-bottom:6px}
   .card .en{font-size:12px;color:var(--sub);letter-spacing:.1em;margin-bottom:12px}
   .card p{font-size:13px;color:var(--sub);line-height:1.7;min-height:44px}
-  .card .go{margin-top:16px;font-size:13px;color:var(--acc);display:flex;align-items:center;gap:6px}
+  .card .meta{margin-top:16px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .card .go{font-size:13px;color:var(--acc);display:flex;align-items:center;gap:6px}
   .card .go svg{transition:transform .25s}
   .card:hover .go svg{transform:translateX(4px)}
+  .card .upd{font-size:11px;color:var(--sub);border:1px dashed var(--line);border-radius:6px;padding:2px 8px;white-space:nowrap;transition:color .25s,border-color .25s}
+  .card:hover .upd{color:var(--txt);border-color:rgba(79,140,255,.5)}
   .foot{margin-top:64px;padding-top:24px;border-top:1px solid var(--line);color:var(--sub);font-size:13px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
   .foot a{color:var(--acc);text-decoration:none}
   .mock{position:fixed;right:18px;bottom:16px;font-size:11px;color:var(--warn);background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.3);border-radius:99px;padding:4px 12px;letter-spacing:.1em}
+  @media(max-width:900px){
+    .searchrow{flex-direction:column;align-items:stretch}
+    .search{max-width:none;width:100%}
+    .chips{gap:6px}
+    .chip{padding:4px 11px;font-size:11px}
+  }
   @media(max-width:720px){.strip{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
@@ -54,7 +77,15 @@
   <div class="strip" id="stats"></div>
 
   <h2>工作台矩阵 · Workbench Matrix</h2>
+  <div class="toolbar">
+    <div class="searchrow">
+      <input id="kw" class="search" type="search" placeholder="🔍 搜索工作台：名称 / 标签 / 描述…" autocomplete="off">
+      <span class="fc" id="fc"></span>
+    </div>
+    <div class="chips" id="chips"></div>
+  </div>
   <div class="grid" id="grid"></div>
+  <div class="empty" id="empty" hidden>没有匹配的工作台 —— 换个关键词试试</div>
 
   <div class="foot">
     <span>© 2026 五朽木 · 数据均为 Mock，仅用于能力演示</span>
@@ -65,37 +96,74 @@
 
 <script>
 const workbenches=[
-  {no:"01",tag:"OPERATIONS",name:"运维监控台",en:"OPS CENTER",desc:"服务器 CPU / 内存 / 网络实时曲线，服务健康状态矩阵与告警事件流 —— SRE 值班一屏尽览。",href:"workbenches/ops-center/",live:"live"},
-  {no:"02",tag:"GROWTH",name:"增长分析台",en:"GROWTH ANALYTICS",desc:"GMV 转化漏斗、DAU 趋势、渠道归因与爆品排行榜 —— 增长团队的每日作战地图。",href:"workbenches/growth-analytics/",live:"live"},
-  {no:"03",tag:"CUSTOMER",name:"客户成功台",en:"CRM WORKBENCH",desc:"销售管道漏斗、MRR 走势、客户健康度分布与流失预警名单 —— CSM 的风险雷达。",href:"workbenches/crm-workbench/",live:"live"},
-  {no:"04",tag:"CONTENT",name:"内容运营台",en:"CONTENT OPS",desc:"素材任务看板、渠道标签分布、审核队列与奖励流水 —— 与 zcode-tast-cms 同源设计。",href:"workbenches/content-ops/",live:"live"},
-  {no:"05",tag:"AI",name:"AI Agent 观测台",en:"AGENT OBSERVATORY",desc:"Token 吞吐、模型延迟分布、Trace 瀑布与成本燃烧曲线 —— AI 应用的生产级可观测面板。",href:"workbenches/agent-observatory/",live:"live"},
-  {no:"06",tag:"SUPPLY CHAIN",name:"供应链协同台",en:"SUPPLY CHAIN HUB",desc:"库存水位与周转、采购履约漏斗、供应商绩效与缺料预警清单 —— 供应链团队的协同作战屏。",href:"workbenches/supply-chain-hub/",live:"live"},
-  {no:"07",tag:"FINANCE",name:"财务经营驾驶舱",en:"FINANCE COCKPIT",desc:"收入-成本-利润趋势、13 周现金流预测水位、预算执行与应收账龄 —— 财务团队的经营驾驶舱。",href:"workbenches/finance-cockpit/",live:"live"},
-  {no:"08",tag:"DATA",name:"数据资产目录",en:"DATA CATALOG",desc:"表血缘图谱、质量分四维趋势、Owner 责任制与访问热度 —— 数据资产的治理驾驶舱。",href:"workbenches/data-catalog/",live:"live"},
-  {no:"09",tag:"AI EVAL",name:"LLM 评测台",en:"MODEL EVAL LAB",desc:"四模型横评雷达、回归通过率趋势、人工偏好投票与 Badcase 流水 —— 大模型迭代的质检中枢。",href:"workbenches/llm-eval/",live:"live"},
-  {no:"10",tag:"HR",name:"HR 人力效能台",en:"PEOPLE ANALYTICS",desc:"入离职趋势、招聘漏斗、离职率仪表、绩效玫瑰图与考勤异常榜 —— 人力效能的一屏作战室。",href:"workbenches/hr-analytics/",live:"live"},
-  {no:"11",tag:"SUPPORT",name:"客服工单台",en:"SUPPORT DESK",desc:"工单分时热流、SLA 达标仪表、坐席负载榜与满意度分布 —— 客服团队的指挥调度屏。",href:"workbenches/support-desk/",live:"live"},
-  {no:"12",tag:"AD TECH",name:"营销投放台",en:"ADS PERFORMANCE",desc:"渠道消耗占比、ROAS 趋势、转化漏斗与亏损计划预警 —— 投放优化师的每日弹药库。",href:"workbenches/ads-performance/",live:"live"},
-  {no:"13",tag:"IOT",name:"IoT 设备监控台",en:"DEVICE FLEET",desc:"在线率趋势、状态分布、告警流水、固件版本与温度功耗 —— 设备资产的一屏运维中枢。",href:"workbenches/iot-fleet/",live:"live"},
-  {no:"14",tag:"SAFETY",name:"内容审核台",en:"TRUST & SAFETY",desc:"机审人审堆叠、违规类型分布、审核时效仪表、申诉处理与高危账号榜 —— 平台风控的合规闸门。",href:"workbenches/content-moderation/",live:"live"},
-  {no:"15",tag:"EXPERIMENT",name:"A/B 实验台",en:"EXPERIMENT HUB",desc:"在跑实验看板、Uplift 分布、样本累积曲线、显著性占比与分层流量 —— 增长团队的实验中枢。",href:"workbenches/ab-experiments/",live:"live"},
+  {no:"01",tag:"OPERATIONS",cn:"运维",upd:"09-12",name:"运维监控台",en:"OPS CENTER",desc:"服务器 CPU / 内存 / 网络实时曲线，服务健康状态矩阵与告警事件流 —— SRE 值班一屏尽览。",href:"workbenches/ops-center/",live:"live"},
+  {no:"02",tag:"GROWTH",cn:"增长",upd:"09-18",name:"增长分析台",en:"GROWTH ANALYTICS",desc:"GMV 转化漏斗、DAU 趋势、渠道归因与爆品排行榜 —— 增长团队的每日作战地图。",href:"workbenches/growth-analytics/",live:"live"},
+  {no:"03",tag:"CUSTOMER",cn:"客户",upd:"09-25",name:"客户成功台",en:"CRM WORKBENCH",desc:"销售管道漏斗、MRR 走势、客户健康度分布与流失预警名单 —— CSM 的风险雷达。",href:"workbenches/crm-workbench/",live:"live"},
+  {no:"04",tag:"CONTENT",cn:"内容",upd:"10-08",name:"内容运营台",en:"CONTENT OPS",desc:"素材任务看板、渠道标签分布、审核队列与奖励流水 —— 与 zcode-tast-cms 同源设计。",href:"workbenches/content-ops/",live:"live"},
+  {no:"05",tag:"AI",cn:"AI",upd:"10-15",name:"AI Agent 观测台",en:"AGENT OBSERVATORY",desc:"Token 吞吐、模型延迟分布、Trace 瀑布与成本燃烧曲线 —— AI 应用的生产级可观测面板。",href:"workbenches/agent-observatory/",live:"live"},
+  {no:"06",tag:"SUPPLY CHAIN",cn:"供应链",upd:"10-22",name:"供应链协同台",en:"SUPPLY CHAIN HUB",desc:"库存水位与周转、采购履约漏斗、供应商绩效与缺料预警清单 —— 供应链团队的协同作战屏。",href:"workbenches/supply-chain-hub/",live:"live"},
+  {no:"07",tag:"FINANCE",cn:"财务",upd:"10-28",name:"财务经营驾驶舱",en:"FINANCE COCKPIT",desc:"收入-成本-利润趋势、13 周现金流预测水位、预算执行与应收账龄 —— 财务团队的经营驾驶舱。",href:"workbenches/finance-cockpit/",live:"live"},
+  {no:"08",tag:"DATA",cn:"数据",upd:"11-02",name:"数据资产目录",en:"DATA CATALOG",desc:"表血缘图谱、质量分四维趋势、Owner 责任制与访问热度 —— 数据资产的治理驾驶舱。",href:"workbenches/data-catalog/",live:"live"},
+  {no:"09",tag:"AI EVAL",cn:"评测",upd:"11-04",name:"LLM 评测台",en:"MODEL EVAL LAB",desc:"四模型横评雷达、回归通过率趋势、人工偏好投票与 Badcase 流水 —— 大模型迭代的质检中枢。",href:"workbenches/llm-eval/",live:"live"},
+  {no:"10",tag:"HR",cn:"HR",upd:"11-06",name:"HR 人力效能台",en:"PEOPLE ANALYTICS",desc:"入离职趋势、招聘漏斗、离职率仪表、绩效玫瑰图与考勤异常榜 —— 人力效能的一屏作战室。",href:"workbenches/hr-analytics/",live:"live"},
+  {no:"11",tag:"SUPPORT",cn:"客服",upd:"11-08",name:"客服工单台",en:"SUPPORT DESK",desc:"工单分时热流、SLA 达标仪表、坐席负载榜与满意度分布 —— 客服团队的指挥调度屏。",href:"workbenches/support-desk/",live:"live"},
+  {no:"12",tag:"AD TECH",cn:"投放",upd:"11-09",name:"营销投放台",en:"ADS PERFORMANCE",desc:"渠道消耗占比、ROAS 趋势、转化漏斗与亏损计划预警 —— 投放优化师的每日弹药库。",href:"workbenches/ads-performance/",live:"live"},
+  {no:"13",tag:"IOT",cn:"IoT",upd:"11-10",name:"IoT 设备监控台",en:"DEVICE FLEET",desc:"在线率趋势、状态分布、告警流水、固件版本与温度功耗 —— 设备资产的一屏运维中枢。",href:"workbenches/iot-fleet/",live:"live"},
+  {no:"14",tag:"SAFETY",cn:"审核",upd:"11-10",name:"内容审核台",en:"TRUST & SAFETY",desc:"机审人审堆叠、违规类型分布、审核时效仪表、申诉处理与高危账号榜 —— 平台风控的合规闸门。",href:"workbenches/content-moderation/",live:"live"},
+  {no:"15",tag:"EXPERIMENT",cn:"实验",upd:"11-11",name:"A/B 实验台",en:"EXPERIMENT HUB",desc:"在跑实验看板、Uplift 分布、样本累积曲线、显著性占比与分层流量 —— 增长团队的实验中枢。",href:"workbenches/ab-experiments/",live:"live"},
 ];
-const grid=document.getElementById("grid");
-workbenches.forEach(w=>{
+
+// 卡片渲染（保留 hover 光斑跟随微动效，新增「更新于」角标）
+const grid=document.getElementById("grid"),kw=document.getElementById("kw"),
+      chipsBox=document.getElementById("chips"),fc=document.getElementById("fc"),emptyBox=document.getElementById("empty");
+let activeTag="ALL";
+const cards=workbenches.map(w=>{
   const a=document.createElement("a");
   a.className="card";a.href=w.href;
-  a.innerHTML=`<span class="no">${w.no}</span><span class="tag">${w.tag}</span><h3>${w.name}</h3><div class="en">${w.en}</div><p>${w.desc}</p><span class="go">进入工作台 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>`;
+  a.innerHTML=`<span class="no">${w.no}</span><span class="tag">${w.tag} · ${w.cn}</span><h3>${w.name}</h3><div class="en">${w.en}</div><p>${w.desc}</p><div class="meta"><span class="go">进入工作台 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span><span class="upd">更新于 ${w.upd}</span></div>`;
   a.addEventListener("mousemove",e=>{const r=a.getBoundingClientRect();a.style.setProperty("--mx",((e.clientX-r.left)/r.width*100)+"%")});
   grid.appendChild(a);
+  return a;
 });
-// Mock 统计条（轻微浮动模拟实时）
+
+// 标签筛选 chips（由数据派生，全部 + 15 类）
+const tagCns=[...new Set(workbenches.map(w=>w.cn))];
+const chipEls=[["ALL","全部"],...tagCns.map(t=>[t,t])].map(([v,label])=>{
+  const b=document.createElement("button");
+  b.type="button";b.className="chip"+(v==="ALL"?" on":"");b.textContent=label;b.dataset.tag=v;
+  chipsBox.appendChild(b);
+  return b;
+});
+chipsBox.addEventListener("click",e=>{
+  const b=e.target.closest(".chip");if(!b)return;
+  activeTag=b.dataset.tag;
+  chipEls.forEach(x=>x.classList.toggle("on",x===b));
+  applyFilter();
+});
+
+// 搜索 + 标签实时过滤（名称 / 英文名 / 中文分类 / 英文标签 / 描述）
+function applyFilter(){
+  const q=kw.value.trim().toLowerCase();
+  let shown=0;
+  workbenches.forEach((w,i)=>{
+    const hit=(activeTag==="ALL"||w.cn===activeTag)&&(!q||(w.name+w.en+w.cn+w.tag+w.desc).toLowerCase().includes(q));
+    cards[i].style.display=hit?"":"none";
+    if(hit)shown++;
+  });
+  fc.textContent=`${shown} / ${workbenches.length} 个工作台`;
+  emptyBox.hidden=shown>0;
+}
+kw.addEventListener("input",applyFilter);
+applyFilter();
+
+// 统计条：工作台总数与分类数（真实统计）+ PV / 可用性（Mock 浮动）
 function rnd(base,amp){return base+Math.round((Math.random()-.5)*amp)}
+const catCount=[...new Set(workbenches.map(w=>w.cn))].length;
 const stats=[
+  {n:()=>workbenches.length,em:" 个",l:"工作台总数"},
+  {n:()=>catCount,em:" 类",l:"覆盖业务分类"},
   {n:()=>rnd(12480,60),em:"+",l:"本周工作台 PV"},
   {n:()=>"99.9",em:"%",l:"Pages 可用性(模拟)"},
-  {n:()=>rnd(15,0),em:"",l:"在线工作台"},
-  {n:()=>rnd(38,4),em:"ms",l:"全球访问延迟(模拟)"},
 ];
 const box=document.getElementById("stats");
 function renderStats(){box.innerHTML=stats.map(s=>`<div class="stat"><div class="n">${s.n()}<em>${s.em}</em></div><div class="l">${s.l}</div></div>`).join("")}
