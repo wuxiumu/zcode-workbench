@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>营销投放台 · Ads Performance | ZCode Labs</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<style>
+:root{--bg:#070b14;--p1:#0d1322;--p2:#0a0f1c;--line:#1c2740;--txt:#dfe7ff;--sub:#8494b8;--acc:#4f8cff;--ok:#34d399;--warn:#fbbf24;--bad:#f87171}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:radial-gradient(900px 500px at 85% -10%,#3a1230 0%,var(--bg) 60%);color:var(--txt);font-family:"PingFang SC","Microsoft YaHei",sans-serif;padding:22px;min-height:100vh}
+.top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px}
+.top h1{font-size:20px;display:flex;align-items:center;gap:10px}
+.top h1 .dot{width:9px;height:9px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px var(--ok);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.top h1 span{color:var(--sub);font-size:13px;font-weight:400}
+.clock{font-variant-numeric:tabular-nums;color:var(--sub);font-size:13px}
+.pill{font-size:12px;color:var(--sub);background:var(--p1);border:1px solid var(--line);border-radius:99px;padding:6px 14px}
+.pill b{color:var(--ok)}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px}
+.kpi{background:linear-gradient(160deg,var(--p1),var(--p2));border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.kpi .l{font-size:12px;color:var(--sub)}.kpi .v{font-size:24px;font-weight:800;margin-top:6px;font-variant-numeric:tabular-nums}
+.kpi .v small{font-size:12px;color:var(--sub);font-weight:400}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.panel{background:linear-gradient(160deg,var(--p1),var(--p2));border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.panel h3{font-size:13px;color:var(--sub);font-weight:600;margin-bottom:8px;letter-spacing:.06em}
+.panel h3 .chip{float:right;font-size:11px;letter-spacing:0;color:var(--sub)}
+.chart{height:220px}.chart-lg{height:300px}.wide{grid-column:1/-1}
+.tscroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{color:var(--sub);font-weight:500;text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);letter-spacing:.05em;white-space:nowrap}
+td{padding:7px 8px;border-bottom:1px solid rgba(28,39,64,.5);font-variant-numeric:tabular-nums;white-space:nowrap}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:99px;font-size:11px}
+.badge i{width:5px;height:5px;border-radius:50%}
+.st-ok{color:var(--ok);background:rgba(52,211,153,.1)}.st-ok i{background:var(--ok)}
+.st-warn{color:var(--warn);background:rgba(251,191,36,.1)}.st-warn i{background:var(--warn)}
+.st-bad{color:var(--bad);background:rgba(248,113,113,.1)}.st-bad i{background:var(--bad)}
+.trend{font-size:11px}.trend.up{color:var(--ok)}.trend.dn{color:var(--bad)}
+.mock{position:fixed;right:16px;bottom:14px;font-size:11px;color:var(--warn);background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.3);border-radius:99px;padding:3px 12px;letter-spacing:.1em}
+.back{position:fixed;left:16px;bottom:14px;font-size:12px}.back a{color:var(--acc);text-decoration:none}
+@media(max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="top">
+  <h1><span class="dot"></span>营销投放台 <span>ADS PERFORMANCE · ads-suite v1 · 渠道 × 素材 × ROI</span></h1>
+  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+    <span class="clock" id="clock"></span>
+    <span class="pill">数据更新：<b>实时模拟</b> · 每 3.5 秒刷新</span>
+  </div>
+</div>
+
+<div class="kpis" id="kpis"></div>
+<div class="grid">
+  <div class="panel wide"><h3>近 30 天 ROAS 趋势 · 目标线 2.5</h3><div class="chart" id="c-roas"></div></div>
+  <div class="panel"><h3>各渠道消耗占比 · 今日<span class="chip" id="chanChip"></span></h3><div class="chart-lg" id="c-chan"></div></div>
+  <div class="panel"><h3>转化漏斗 · 曝光 → 支付<span class="chip" id="funChip"></span></h3><div class="chart-lg" id="c-funnel"></div></div>
+  <div class="panel"><h3>CPC / CPM 双轴趋势 · 近 14 天<span class="chip" id="cpcChip"></span></h3><div class="chart-lg" id="c-cpc"></div></div>
+  <div class="panel"><h3>素材 CTR Top10 · 近 7 天<span class="chip" id="ctrChip"></span></h3><div class="chart-lg" id="c-ctr"></div></div>
+  <div class="panel wide"><h3>亏损计划预警 · 今日快照<span class="chip" id="lossChip"></span></h3><div class="tscroll"><table id="loss"></table></div></div>
+</div>
+
+<div class="back"><a href="../../">← 返回工作台矩阵</a></div>
+<div class="mock">MOCK DATA · 演示数据</div>
+
+<script>
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const irnd=(a,b)=>Math.round(rnd(a,b));
+const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
+const last=a=>a[a.length-1];
+const fmt=v=>v>=10000?(v/10000).toFixed(1)+' 万':v.toLocaleString();
+const d30=Array.from({length:30},(_,i)=>{const d=new Date(Date.now()-(29-i)*864e5);return (d.getMonth()+1)+'/'+d.getDate()});
+const d14=Array.from({length:14},(_,i)=>{const d=new Date(Date.now()-(13-i)*864e5);return (d.getMonth()+1)+'/'+d.getDate()});
+
+// KPI 基础量（金额单位：元）
+let spend=48652,imps=3284000,clicks=96240,conv=1842;
+
+// 各渠道消耗占比（今日）：抖音 / 快手 / 微信 / 百度 / 小红书
+let chans=[['抖音',18600,'#4f8cff'],['微信',10400,'#34d399'],['快手',8200,'#22d3ee'],['百度',6900,'#fbbf24'],['小红书',4552,'#fb7185']];
+
+// 近 30 天 ROAS（目标 2.5）
+let roas=d30.map(()=>+rnd(2.2,3.1).toFixed(2));
+
+// 转化漏斗（今日）：曝光 → 点击 → 落地页 → 加购 → 支付
+let funnel=[['曝光',3284000],['点击',96240],['落地页',61300],['加购',12860],['支付',1842]];
+const FUNC=['#4f8cff','#38bdf8','#22d3ee','#a78bfa','#34d399'];
+
+// 近 14 天 CPC / CPM（元）
+let cpc=d14.map(()=>+rnd(.42,.62).toFixed(2)),cpm=d14.map(()=>+rnd(13,18).toFixed(1));
+
+// 素材 CTR Top10（近 7 天，%）
+let ctrs=[
+  ['618 大促 · 直降短视频',4.8],['明星口播 · 种草版',4.2],['剧情反转 · 办公室篇',3.9],
+  ['开箱测评 · 旗舰机',3.6],['直播切片 · 爆款返场',3.3],['街采挑战 · 路人反应',3.0],
+  ['KOL 测评 · 平价替代',2.8],['动态图文 · 限时秒杀',2.5],['UGC 混剪 · 买家秀',2.3],['品牌 TVC · 15s 版',2.1]];
+
+// 亏损计划预警（今日快照）：[计划名, 渠道, 消耗, 转化, ROAS]
+let plans=[
+  ['短视频信息流-泛流量','抖音',4110,25,0.72],
+  ['下沉市场拉新-B2','快手',3150,18,0.86],
+  ['朋友圈8-新客促首单','微信',1960,12,0.94],
+  ['直播间引流-晚场','抖音',2870,35,1.31],
+  ['618 爆款直降-07','抖音',4820,42,1.08],
+  ['品牌搜索-品牌词','百度',2280,31,1.62],
+  ['应用商店 CPD-安卓','百度',1890,26,1.74],
+  ['种草笔记-美妆线','小红书',1540,21,1.85]];
+
+// KPI · 投放总览
+function renderKpis(){
+  spend=clamp(spend+irnd(-260,300),42000,58000);
+  imps=clamp(imps+irnd(-9000,11000),2900000,3800000);
+  clicks=clamp(clicks+irnd(-260,320),85000,110000);
+  conv=clamp(conv+irnd(-8,12),1600,2100);
+  const k=[
+    ['今日消耗',spend.toLocaleString(),' 元','up',`日预算 8 万 · 进度 ${(spend/80000*100).toFixed(0)}%`],
+    ['曝光量',(imps/10000).toFixed(1),' 万','up',`CPM ${(spend/imps*1000).toFixed(2)} 元`],
+    ['点击量',(clicks/10000).toFixed(2),' 万','up',`CTR ${(clicks/imps*100).toFixed(2)}% · CPC ${(spend/clicks).toFixed(2)} 元`],
+    ['转化量',conv.toLocaleString(),' 单','up',`CVR ${(conv/clicks*100).toFixed(2)}% · CPA ${(spend/conv).toFixed(1)} 元`]];
+  document.getElementById('kpis').innerHTML=k.map(x=>`<div class="kpi"><div class="l">${x[0]}</div><div class="v">${x[1]}<small>${x[2]}</small></div><div class="trend ${x[3]}">${x[4]}</div></div>`).join('');
+}
+
+// 近 30 天 ROAS 趋势（折线 + 目标线 2.5）
+const roasC=echarts.init(document.getElementById('c-roas'));
+function renderRoas(){
+  roasC.setOption({tooltip:{trigger:'axis'},legend:{data:['ROAS'],textStyle:{color:'#8494b8',fontSize:10},top:0,itemWidth:10,itemHeight:10},
+    grid:{left:36,right:14,top:30,bottom:24},
+    xAxis:{type:'category',data:d30,axisLabel:{color:'#8494b8',fontSize:9,interval:4}},
+    yAxis:{type:'value',min:1.5,max:3.5,nameTextStyle:{color:'#8494b8',fontSize:10},splitLine:{lineStyle:{color:'#141d33'}},axisLabel:{color:'#8494b8',fontSize:10}},
+    series:[{name:'ROAS',type:'line',data:roas,smooth:true,showSymbol:false,lineStyle:{width:2,color:'#4f8cff'},itemStyle:{color:'#4f8cff'},
+      areaStyle:{color:'rgba(79,140,255,.10)'},
+      markLine:{silent:true,symbol:'none',lineStyle:{type:'dashed',color:'rgba(52,211,153,.7)'},
+        data:[{yAxis:2.5,label:{formatter:'目标 ROAS 2.5',position:'insideEndTop',color:'#34d399',fontSize:9}}]}}]});
+}
+
+// 各渠道消耗占比（环形饼图）
+const chanC=echarts.init(document.getElementById('c-chan'));
+function renderChan(){
+  chans=chans.map(([n,v,c])=>[n,Math.max(500,v+irnd(-150,180)),c]);
+  const total=chans.reduce((a,b)=>a+b[1],0),top=[...chans].sort((a,b)=>b[1]-a[1])[0];
+  document.getElementById('chanChip').textContent=`今日消耗 ¥${total.toLocaleString()} · Top1 ${top[0]}`;
+  chanC.setOption({tooltip:{formatter:f=>`${f.name}　<b>¥${f.value.toLocaleString()}</b>（${f.percent}%）`},
+    legend:{bottom:0,textStyle:{color:'#8494b8',fontSize:10},itemWidth:10,itemHeight:10},
+    series:[{type:'pie',radius:['40%','68%'],center:['50%','46%'],
+      itemStyle:{borderColor:'#0a0f1c',borderWidth:2,borderRadius:4},
+      label:{color:'#8494b8',fontSize:10,formatter:'{b}\n{d}%'},
+      labelLine:{lineStyle:{color:'#1c2740'}},
+      data:chans.map(x=>({name:x[0],value:x[1],itemStyle:{color:x[2]}}))}]});
+}
+
+// 转化漏斗（曝光 → 点击 → 落地页 → 加购 → 支付）
+const funC=echarts.init(document.getElementById('c-funnel'));
+function renderFunnel(){
+  funnel=funnel.map(([n,v],i)=>[n,Math.max(500,Math.round(v*(1+rnd(-.006,.006))))]);
+  const cvr=(funnel[4][1]/funnel[0][1]*100).toFixed(3);
+  document.getElementById('funChip').textContent=`曝光→支付 转化率 ${cvr}%`;
+  funC.setOption({tooltip:{formatter:f=>`${f.name}　<b>${fmt(f.value)}</b> · 全程 ${(f.value/funnel[0][1]*100).toFixed(3)}%`},
+    series:[{type:'funnel',left:'14%',right:'14%',top:16,bottom:4,minSize:'16%',sort:'descending',gap:4,
+      label:{show:true,position:'inside',fontSize:10,color:'#dfe7ff',formatter:p=>`${p.name} ${fmt(p.value)}`},
+      itemStyle:{borderColor:'#1c2740',borderWidth:1},
+      data:funnel.map((x,i)=>({name:x[0],value:x[1],itemStyle:{color:FUNC[i]}}))}]});
+}
+
+// CPC / CPM 双轴趋势（近 14 天）
+const cpcC=echarts.init(document.getElementById('c-cpc'));
+function renderCpc(){
+  cpcC.setOption({tooltip:{trigger:'axis',valueFormatter:v=>`¥${v}`},legend:{data:['CPC','CPM'],textStyle:{color:'#8494b8',fontSize:10},top:0,itemWidth:10,itemHeight:10},
+    grid:{left:36,right:36,top:30,bottom:24},
+    xAxis:{type:'category',data:d14,axisLabel:{color:'#8494b8',fontSize:9,interval:3}},
+    yAxis:[
+      {name:'CPC 元',type:'value',min:0,max:.8,nameTextStyle:{color:'#8494b8',fontSize:10},splitLine:{lineStyle:{color:'#141d33'}},axisLabel:{color:'#8494b8',fontSize:10}},
+      {name:'CPM 元',type:'value',min:0,max:20,position:'right',nameTextStyle:{color:'#8494b8',fontSize:10},splitLine:{show:false},axisLabel:{color:'#8494b8',fontSize:10}}],
+    series:[
+      {name:'CPC',type:'line',data:cpc,smooth:true,showSymbol:false,lineStyle:{width:2,color:'#22d3ee'},itemStyle:{color:'#22d3ee'}},
+      {name:'CPM',type:'line',yAxisIndex:1,data:cpm,smooth:true,showSymbol:false,lineStyle:{width:2,color:'#a78bfa'},itemStyle:{color:'#a78bfa'}}]});
+  cpc.shift();cpc.push(+rnd(.42,.62).toFixed(2));
+  cpm.shift();cpm.push(+rnd(13,18).toFixed(1));
+  document.getElementById('cpcChip').textContent=`CPC ¥${last(cpc)} · CPM ¥${last(cpm)}`;
+}
+
+// 素材 CTR Top10（横向柱状图）
+const ctrC=echarts.init(document.getElementById('c-ctr'));
+function renderCtr(){
+  ctrs=ctrs.map(([n,v])=>[n,+clamp(v+rnd(-.08,.1),1,6).toFixed(2)]);
+  const sorted=[...ctrs].sort((a,b)=>b[1]-a[1]);
+  const avg=sorted.reduce((a,b)=>a+b[1],0)/sorted.length;
+  document.getElementById('ctrChip').textContent=`Top10 平均 CTR ${avg.toFixed(2)}%`;
+  ctrC.setOption({tooltip:{trigger:'axis',axisPointer:{type:'shadow'},formatter:ps=>`${ps[0].name}　<b>${ps[0].value}%</b>`},
+    grid:{left:150,right:46,top:10,bottom:10},
+    xAxis:{type:'value',show:false,max:v=>Math.round(v.max*1.15*10)/10},
+    yAxis:{type:'category',inverse:true,data:sorted.map(x=>x[0]),axisLabel:{color:'#8494b8',fontSize:10},axisLine:{show:false},axisTick:{show:false}},
+    series:[{type:'bar',barWidth:12,data:sorted.map((x,i)=>({value:x[1],itemStyle:{borderRadius:[0,3,3,0],color:i===0?'#fb7185':'#4f8cff'}})),
+      label:{show:true,position:'right',fontSize:10,color:'#8494b8',formatter:p=>`${p.value}%`}}]});
+}
+
+// 亏损计划预警表（ROAS < 1 严重 / ≥ 1 亏损，目标 2.5）
+function renderLoss(){
+  plans=plans.map(([n,c,s,cv,r])=>[n,c,Math.max(500,s+irnd(-60,80)),Math.max(1,cv+irnd(-2,3)),+clamp(r+rnd(-.03,.03),.4,2.2).toFixed(2)]);
+  const rows=[...plans].sort((a,b)=>a[4]-b[4]);
+  const sev=rows.filter(p=>p[4]<1).length,cost=rows.reduce((a,b)=>a+b[2],0);
+  document.getElementById('lossChip').textContent=`预警 ${rows.length} 条 · 合计消耗 ¥${cost.toLocaleString()} · 严重 ${sev} 条`;
+  document.getElementById('loss').innerHTML='<tr><th>计划名</th><th>渠道</th><th>消耗(元)</th><th>转化</th><th>ROAS</th><th>状态</th></tr>'+
+    rows.map(p=>{const lv=p[4]<1?['st-bad','严重亏损']:['st-warn','亏损'];return `<tr><td>${p[0]}</td><td>${p[1]}</td><td>${p[2].toLocaleString()}</td><td>${p[3]}</td><td style="color:${p[4]<1?'var(--bad)':'var(--warn)'}">${p[4]}</td><td><span class="badge ${lv[0]}"><i></i>${lv[1]}</span></td></tr>`}).join('');
+}
+
+// 时钟
+const tickClock=()=>{document.getElementById('clock').textContent=new Date().toLocaleString('zh-CN',{hour12:false})};
+
+// 模拟实时
+function tick(){
+  roas.shift();roas.push(+rnd(2.2,3.1).toFixed(2));
+  renderKpis();renderRoas();renderChan();renderFunnel();renderCpc();renderCtr();renderLoss();
+}
+renderKpis();renderRoas();renderChan();renderFunnel();renderCpc();renderCtr();renderLoss();
+tickClock();setInterval(tickClock,1000);
+setInterval(tick,3500);
+window.addEventListener('resize',()=>[roasC,chanC,funC,cpcC,ctrC].forEach(c=>c.resize()));
+</script>
+</body>
+</html>
