@@ -85,28 +85,34 @@
     }catch(e){ console.warn('[export-tools] CSV 导出失败：', e); }
   }
 
+  function attach(box){
+    if(box.dataset.exportReady) return;
+    box.dataset.exportReady = '1';
+    var host = box.parentElement;
+    if(!host) return;
+    if(getComputedStyle(host).position === 'static') host.style.position = 'relative';
+    var bar = document.createElement('div');
+    bar.className = 'wb-export';
+    bar.innerHTML = '<button type="button" data-k="png" title="导出这张图为 PNG" aria-label="导出 PNG">PNG</button>' +
+                    '<button type="button" data-k="csv" title="导出这张图的数据为 CSV" aria-label="导出 CSV">CSV</button>';
+    host.appendChild(bar);
+    bar.addEventListener('click', function(e){
+      var b = e.target.closest('button'); if(!b) return;
+      var inst = echarts.getInstanceByDom(box); if(!inst) return;
+      b.dataset.k === 'png' ? dlPng(inst, box) : dlCsv(inst);
+    });
+  }
+
   function init(){
     if(!window.echarts || !echarts.getInstanceByDom) return; // stub 兜底模式：静默退出
     var style = document.createElement('style');
     style.textContent = CSS;
     document.head.appendChild(style);
 
-    document.querySelectorAll('[_echarts_instance_]').forEach(function(box){
-      if(box.dataset.exportReady) return;
-      box.dataset.exportReady = '1';
-      var host = box.parentElement;
-      if(!host) return;
-      if(getComputedStyle(host).position === 'static') host.style.position = 'relative';
-      var bar = document.createElement('div');
-      bar.className = 'wb-export';
-      bar.innerHTML = '<button type="button" data-k="png" title="导出这张图为 PNG" aria-label="导出 PNG">PNG</button>' +
-                      '<button type="button" data-k="csv" title="导出这张图的数据为 CSV" aria-label="导出 CSV">CSV</button>';
-      host.appendChild(bar);
-      bar.addEventListener('click', function(e){
-        var b = e.target.closest('button'); if(!b) return;
-        var inst = echarts.getInstanceByDom(box); if(!inst) return;
-        b.dataset.k === 'png' ? dlPng(inst, box) : dlCsv(inst);
-      });
+    document.querySelectorAll('[_echarts_instance_]').forEach(attach);
+    // perf-guard 懒初始化的图表在进入视口后才真正 init，借此事件补挂按钮
+    document.addEventListener('wb:chart-real', function(e){
+      if(e.target && e.target.hasAttribute && e.target.hasAttribute('_echarts_instance_')) attach(e.target);
     });
   }
 
