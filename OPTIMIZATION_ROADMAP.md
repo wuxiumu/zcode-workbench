@@ -23,7 +23,7 @@
 - [x] [同行] 抽取全站设计变量到 `assets/theme.css`（颜色/间距/圆角统一 token），各工作台引用，消除重复定义（✅ 2026-11-12 完成：核心色 11 变量 × 亮暗两套收编为单一事实来源，15 个工作台 link 引用并剥离内联重复；每页专属强调色与氛围光保留页级；agent-observatory 的 --track 单页特例保留覆盖；顺带修复 boss-one-pager 未定义的 --acc2-line；间距/圆角 token 化为后续迭代）
 - [x] [同行] 门户页加 ⌘K / Ctrl+K 命令面板：键盘快速搜索并跳转任意工作台，支持上下键与回车（✅ 2026-11-12 完成：combobox/listbox 语义 + aria-activedescendant，悬停即选中，搜索框旁加 ⌘K 快捷键提示）
 - [x] [同行] 每个工作台图表支持「导出 PNG」与「导出 CSV」按钮（ECharts 自带 getDataURL，CSV 由 Mock 数据生成）（✅ 2026-11-12 完成：新建共享组件 assets/export-tools.js，按 _echarts_instance_ 自动发现全部图表实例并注入悬浮按钮（父容器 hover 显示），15 工作台一行接入；PNG 2 倍像素比+当前主题背景，CSV 由 getOption 泛化提取（直角坐标/饼图/对象值/散点对 4 形态，5 组单测），带 BOM 防 Excel 乱码；stub 兜底模式静默退出）
-- [ ] [同行] 可访问性巡检：交互元素补 aria-label、检查亮暗主题文字对比度、支持 prefers-reduced-motion 关闭动效
+- [x] [同行] 可访问性巡检：交互元素补 aria-label、检查亮暗主题文字对比度、支持 prefers-reduced-motion 关闭动效（✅ 2026-11-12 完成：新增可复用审计工具 tools/a11y_audit.py（结构类检查 + WCAG 对比度：文字 4.5:1 / 图形 1.4.11 3:1）；修复 17 页 theme-btn 无可访问名；theme.css 全局补 prefers-reduced-motion 规则；亮色 --warn #d97706→#b45309 使对比度 2.97→4.49:1；终审 17 页 0 问题 0 建议）
 - [ ] [同行] 性能优化：图表用 IntersectionObserver 懒初始化，页面不可见时停止实时刷新定时器（document.visibilityState）
 - [ ] [同行] 移动端响应式完善：≤768px 下卡片单列、图表高度自适应、筛选栏可横向滚动
 - [ ] [同行] 新增 `self-check.html` 自检页：iframe 逐个加载 15 个工作台，捕获加载报错并汇总红绿表格，作为回归冒烟工具

@@ -37,6 +37,17 @@
   --txt:#1f2733;
   --sub:#5a6675;
   --ok:#0e9f6e;
-  --warn:#d97706;
+  --warn:#b45309; /* amber-700：亮色背景上图形对比度 ≥3:1（WCAG 1.4.11） */
   --bad:#dc2626;
+}
+
+/* 减动效偏好：关闭装饰性动画与过渡（随 theme.css 全工作台生效；
+   ECharts 为 canvas 绘制不受此影响，图表自身动画由各页 retheme 控制） */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:.01ms !important;
+    scroll-behavior:auto !important;
+  }
 }
