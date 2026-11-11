@@ -5,11 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>内容审核台 · Trust & Safety | ZCode Labs</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<script>try{document.documentElement.dataset.theme=localStorage.getItem('zwb-theme')||'dark'}catch(e){}</script>
 <style>
-:root{--bg:#070b14;--p1:#0d1322;--p2:#0a0f1c;--line:#1c2740;--txt:#dfe7ff;--sub:#8494b8;--acc:#4f8cff;--ok:#34d399;--warn:#fbbf24;--bad:#f87171}
+:root{--bg:#070b14;--p1:#0d1322;--p2:#0a0f1c;--line:#1c2740;--txt:#dfe7ff;--sub:#8494b8;--acc:#4f8cff;--ok:#34d399;--warn:#fbbf24;--bad:#f87171;--purple:#a78bfa;--pink:#f472b6;--glow:#2a123a;--track:#182242;--split:#141d33;--acc-soft:rgba(79,140,255,.1);--ok-soft:rgba(52,211,153,.1);--warn-soft:rgba(251,191,36,.1);--warn-line:rgba(251,191,36,.3);--bad-soft:rgba(248,113,113,.1)}
+[data-theme="light"]{--bg:#f5f7fa;--p1:#ffffff;--p2:#f7f9fc;--line:#e3e8ef;--txt:#1f2733;--sub:#5a6675;--acc:#2f6cff;--ok:#0e9f6e;--warn:#d97706;--bad:#dc2626;--purple:#7c3aed;--pink:#db2777;--glow:#efe2f5;--track:#e8edf5;--split:#e3e8ef;--acc-soft:rgba(47,108,255,.09);--ok-soft:rgba(14,159,110,.1);--warn-soft:rgba(217,119,6,.1);--warn-line:rgba(217,119,6,.35);--bad-soft:rgba(220,38,38,.08)}
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:radial-gradient(900px 500px at 85% -10%,#2a123a 0%,var(--bg) 60%);color:var(--txt);font-family:"PingFang SC","Microsoft YaHei",sans-serif;padding:22px;min-height:100vh}
-.top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px}
+body{background:radial-gradient(900px 500px at 85% -10%,var(--glow) 0%,var(--bg) 60%);color:var(--txt);font-family:"PingFang SC","Microsoft YaHei",sans-serif;padding:22px;min-height:100vh}
+.top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px;padding-right:56px}
 .top h1{font-size:20px;display:flex;align-items:center;gap:10px}
 .top h1 .dot{width:9px;height:9px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px var(--ok);animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
@@ -29,20 +31,23 @@ body{background:radial-gradient(900px 500px at 85% -10%,#2a123a 0%,var(--bg) 60%
 .tscroll{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:12px}
 th{color:var(--sub);font-weight:500;text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);letter-spacing:.05em;white-space:nowrap}
-td{padding:7px 8px;border-bottom:1px solid rgba(28,39,64,.5);font-variant-numeric:tabular-nums;white-space:nowrap}
+td{padding:7px 8px;border-bottom:1px solid var(--split);font-variant-numeric:tabular-nums;white-space:nowrap}
 .badge{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:99px;font-size:11px}
 .badge i{width:5px;height:5px;border-radius:50%}
-.st-ok{color:var(--ok);background:rgba(52,211,153,.1)}.st-ok i{background:var(--ok)}
-.st-warn{color:var(--warn);background:rgba(251,191,36,.1)}.st-warn i{background:var(--warn)}
-.st-bad{color:var(--bad);background:rgba(248,113,113,.1)}.st-bad i{background:var(--bad)}
-.st-info{color:var(--acc);background:rgba(79,140,255,.1)}.st-info i{background:var(--acc)}
+.st-ok{color:var(--ok);background:var(--ok-soft)}.st-ok i{background:var(--ok)}
+.st-warn{color:var(--warn);background:var(--warn-soft)}.st-warn i{background:var(--warn)}
+.st-bad{color:var(--bad);background:var(--bad-soft)}.st-bad i{background:var(--bad)}
+.st-info{color:var(--acc);background:var(--acc-soft)}.st-info i{background:var(--acc)}
 .trend{font-size:11px}.trend.up{color:var(--ok)}.trend.dn{color:var(--bad)}
-.mock{position:fixed;right:16px;bottom:14px;font-size:11px;color:var(--warn);background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.3);border-radius:99px;padding:3px 12px;letter-spacing:.1em}
+.theme-btn{position:fixed;right:16px;top:12px;z-index:9999;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--p1);color:var(--txt);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .2s,border-color .2s}
+.theme-btn:hover{transform:scale(1.1);border-color:var(--acc)}
+.mock{position:fixed;right:16px;bottom:14px;font-size:11px;color:var(--warn);background:var(--warn-soft);border:1px solid var(--warn-line);border-radius:99px;padding:3px 12px;letter-spacing:.1em}
 .back{position:fixed;left:16px;bottom:14px;font-size:12px}.back a{color:var(--acc);text-decoration:none}
 @media(max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
+<button class="theme-btn" id="themeBtn" title="切换亮 / 暗主题"></button>
 <div class="top">
   <h1><span class="dot"></span>内容审核台 <span>TRUST &amp; SAFETY · safety-suite v1 · 机审 × 人审 × 申诉</span></h1>
   <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
@@ -65,6 +70,7 @@ td{padding:7px 8px;border-bottom:1px solid rgba(28,39,64,.5);font-variant-numeri
 <div class="mock">MOCK DATA · 演示数据</div>
 
 <script>
+const V=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const rnd=(a,b)=>a+Math.random()*(b-a);
 const irnd=(a,b)=>Math.round(rnd(a,b));
 const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
@@ -80,8 +86,8 @@ let pending=1284,reviewed=24680,blockRate=3.8,avgMin=4.2;
 let machine=[720,540,410,360,390,460,820,1180,1360,1420,1310,1250,1180,1220,1280,1350,1290,1120,980,860,790,760,740,700];
 let human=[120,95,70,60,65,85,160,240,290,310,280,260,250,255,270,285,265,230,205,185,170,160,150,140];
 
-// 违规类型分布（今日拦截）
-let cats=[['广告',396,'#4f8cff'],['色情',168,'#f472b6'],['侵权',142,'#a78bfa'],['谣言',112,'#fbbf24'],['其他',92,'#8494b8'],['暴恐',28,'#f87171']];
+// 违规类型分布（今日拦截）· 颜色存 CSS 变量名
+let cats=[['广告',396,'--acc'],['色情',168,'--pink'],['侵权',142,'--purple'],['谣言',112,'--warn'],['其他',92,'--sub'],['暴恐',28,'--bad']];
 
 // 近 14 天拦截率（%）
 let block14=d14.map(()=>+rnd(3.2,4.4).toFixed(2));
@@ -132,13 +138,13 @@ function renderKpis(){
 // 审核量分时堆叠柱状图（机审 / 人审）
 const hourC=echarts.init(document.getElementById('c-hour'));
 function renderHour(){
-  hourC.setOption({tooltip:{trigger:'axis',axisPointer:{type:'shadow'}},legend:{data:['机审','人审'],textStyle:{color:'#8494b8',fontSize:10},top:0,itemWidth:10,itemHeight:10},
+  hourC.setOption({tooltip:{trigger:'axis',axisPointer:{type:'shadow'}},legend:{data:['机审','人审'],textStyle:{color:V('--sub'),fontSize:10},top:0,itemWidth:10,itemHeight:10},
     grid:{left:44,right:14,top:30,bottom:24},
-    xAxis:{type:'category',data:H24,axisLabel:{color:'#8494b8',fontSize:9,interval:2}},
-    yAxis:{type:'value',nameTextStyle:{color:'#8494b8',fontSize:10},splitLine:{lineStyle:{color:'#141d33'}},axisLabel:{color:'#8494b8',fontSize:10}},
+    xAxis:{type:'category',data:H24,axisLabel:{color:V('--sub'),fontSize:9,interval:2}},
+    yAxis:{type:'value',nameTextStyle:{color:V('--sub'),fontSize:10},splitLine:{lineStyle:{color:V('--split')}},axisLabel:{color:V('--sub'),fontSize:10}},
     series:[
-      {name:'机审',type:'bar',stack:'total',data:machine.map(v=>clamp(v+irnd(-18,22),0,1600)),barWidth:'62%',itemStyle:{color:'#4f8cff'}},
-      {name:'人审',type:'bar',stack:'total',data:human.map(v=>clamp(v+irnd(-8,10),0,400)),itemStyle:{color:'#fbbf24',borderRadius:[3,3,0,0]}}]});
+      {name:'机审',type:'bar',stack:'total',data:machine.map(v=>clamp(v+irnd(-18,22),0,1600)),barWidth:'62%',itemStyle:{color:V('--acc')}},
+      {name:'人审',type:'bar',stack:'total',data:human.map(v=>clamp(v+irnd(-8,10),0,400)),itemStyle:{color:V('--warn'),borderRadius:[3,3,0,0]}}]});
   const mT=machine.reduce((a,b)=>a+b,0),hT=human.reduce((a,b)=>a+b,0);
   document.getElementById('hrChip').textContent=`机审 ${fmtW(mT)} · 人审 ${hT.toLocaleString()} 条 · 人工占比 ${(hT/(mT+hT)*100).toFixed(1)}%`;
 }
@@ -150,24 +156,24 @@ function renderCat(){
   const total=cats.reduce((a,b)=>a+b[1],0),top=[...cats].sort((a,b)=>b[1]-a[1])[0];
   document.getElementById('catChip').textContent=`今日拦截 ${total} 条 · Top1 ${top[0]}`;
   catC.setOption({tooltip:{formatter:f=>`${f.name}　<b>${f.value}</b> 条（${f.percent}%）`},
-    legend:{bottom:0,textStyle:{color:'#8494b8',fontSize:10},itemWidth:10,itemHeight:10},
+    legend:{bottom:0,textStyle:{color:V('--sub'),fontSize:10},itemWidth:10,itemHeight:10},
     series:[{type:'pie',radius:['40%','68%'],center:['50%','46%'],
-      itemStyle:{borderColor:'#0a0f1c',borderWidth:2,borderRadius:4},
+      itemStyle:{borderColor:V('--p2'),borderWidth:2,borderRadius:4},
       label:{show:false},
-      data:cats.map(x=>({name:x[0],value:x[1],itemStyle:{color:x[2]}}))}]});
+      data:cats.map(x=>({name:x[0],value:x[1],itemStyle:{color:V(x[2])}}))}]});
 }
 
 // 近 14 天拦截率趋势
 const blC=echarts.init(document.getElementById('c-block'));
 function renderBlock(){
-  blC.setOption({tooltip:{trigger:'axis',valueFormatter:v=>v+'%'},legend:{data:['拦截率'],textStyle:{color:'#8494b8',fontSize:10},top:0,itemWidth:10,itemHeight:10},
+  blC.setOption({tooltip:{trigger:'axis',valueFormatter:v=>v+'%'},legend:{data:['拦截率'],textStyle:{color:V('--sub'),fontSize:10},top:0,itemWidth:10,itemHeight:10},
     grid:{left:36,right:14,top:30,bottom:24},
-    xAxis:{type:'category',data:d14,axisLabel:{color:'#8494b8',fontSize:9,interval:3}},
-    yAxis:{type:'value',min:2,max:5,nameTextStyle:{color:'#8494b8',fontSize:10},splitLine:{lineStyle:{color:'#141d33'}},axisLabel:{color:'#8494b8',fontSize:10,formatter:'{value}%'}},
-    series:[{name:'拦截率',type:'line',data:block14,smooth:true,showSymbol:false,lineStyle:{width:2,color:'#a78bfa'},itemStyle:{color:'#a78bfa'},
-      areaStyle:{color:'rgba(167,139,250,.10)'},
-      markLine:{silent:true,symbol:'none',lineStyle:{type:'dashed',color:'rgba(52,211,153,.7)'},
-        data:[{yAxis:4,label:{formatter:'警戒 4%',position:'insideEndTop',color:'#34d399',fontSize:9}}]}}]});
+    xAxis:{type:'category',data:d14,axisLabel:{color:V('--sub'),fontSize:9,interval:3}},
+    yAxis:{type:'value',min:2,max:5,nameTextStyle:{color:V('--sub'),fontSize:10},splitLine:{lineStyle:{color:V('--split')}},axisLabel:{color:V('--sub'),fontSize:10,formatter:'{value}%'}},
+    series:[{name:'拦截率',type:'line',data:block14,smooth:true,showSymbol:false,lineStyle:{width:2,color:V('--purple')},itemStyle:{color:V('--purple')},
+      areaStyle:{color:V('--purple')+'1a'},
+      markLine:{silent:true,symbol:'none',lineStyle:{type:'dashed',color:V('--ok')+'b3'},
+        data:[{yAxis:4,label:{formatter:'警戒 4%',position:'insideEndTop',color:V('--ok'),fontSize:9}}]}}]});
   document.getElementById('blChip').textContent=`今日 ${blockRate}% · 峰值 ${Math.max(...block14)}%`;
 }
 
@@ -176,13 +182,13 @@ const timeC=echarts.init(document.getElementById('c-time'));
 function renderTime(){
   avgMin=+clamp(avgMin+rnd(-.18,.18),3.2,5.8).toFixed(1);
   timeC.setOption({series:[{type:'gauge',startAngle:210,endAngle:-30,min:0,max:10,splitNumber:5,center:['50%','56%'],radius:'95%',
-    axisLine:{lineStyle:{width:12,color:[[.3,'#34d399'],[.5,'#fbbf24'],[1,'#f87171']]}},
-    pointer:{length:'58%',width:4,itemStyle:{color:'#dfe7ff'}},
-    axisTick:{distance:-12,length:4,lineStyle:{color:'#0a0f1c',width:1}},
-    splitLine:{distance:-14,length:12,lineStyle:{color:'#0a0f1c',width:2}},
-    axisLabel:{distance:14,color:'#8494b8',fontSize:9,formatter:'{value} 分'},
-    detail:{valueAnimation:true,formatter:'{value} 分',color:avgMin<=5?'#34d399':'#f87171',fontSize:24,fontWeight:700,offsetCenter:[0,'58%']},
-    title:{offsetCenter:[0,'92%'],color:'#8494b8',fontSize:11},
+    axisLine:{lineStyle:{width:12,color:[[.3,V('--ok')],[.5,V('--warn')],[1,V('--bad')]]}},
+    pointer:{length:'58%',width:4,itemStyle:{color:V('--txt')}},
+    axisTick:{distance:-12,length:4,lineStyle:{color:V('--p2'),width:1}},
+    splitLine:{distance:-14,length:12,lineStyle:{color:V('--p2'),width:2}},
+    axisLabel:{distance:14,color:V('--sub'),fontSize:9,formatter:'{value} 分'},
+    detail:{valueAnimation:true,formatter:'{value} 分',color:avgMin<=5?V('--ok'):V('--bad'),fontSize:24,fontWeight:700,offsetCenter:[0,'58%']},
+    title:{offsetCenter:[0,'92%'],color:V('--sub'),fontSize:11},
     data:[{value:avgMin,name:'平均审核时长 · 目标 ≤ 5 分钟'}]}]});
 }
 
@@ -209,6 +215,13 @@ function renderAppeals(){
 
 // 时钟
 const tickClock=()=>{document.getElementById('clock').textContent=new Date().toLocaleString('zh-CN',{hour12:false})};
+
+// 主题切换：图表按当前 CSS 变量重建
+function retheme(){renderHour();renderCat();renderBlock();renderTime();}
+const themeBtn=document.getElementById('themeBtn');
+function applyTheme(t){document.documentElement.dataset.theme=t;try{localStorage.setItem('zwb-theme',t)}catch(e){}themeBtn.textContent=t==='light'?'🌙':'☀️';retheme();}
+themeBtn.addEventListener('click',()=>applyTheme(document.documentElement.dataset.theme==='light'?'dark':'light'));
+themeBtn.textContent=document.documentElement.dataset.theme==='light'?'🌙':'☀️';
 
 // 模拟实时
 function tick(){
