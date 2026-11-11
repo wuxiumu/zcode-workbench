@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>一页纸看懂 · 这个网站是干什么的</title>
+<meta name="description" content="不讲技术，只讲三个小故事：这个网站如何帮公司发现问题、找到原因、挽回损失。">
+<script>try{document.documentElement.dataset.theme=localStorage.getItem('zwb-theme')||'dark'}catch(e){}</script>
+<style>
+  /* 与门户页同一套设计变量，亮暗主题互通（共用 zwb-theme 键） */
+  :root{
+    --bg:#0a0e1a; --panel:#121829; --panel2:#0e1424; --line:#1f2a44;
+    --txt:#e6ecff; --sub:#8b98b8; --acc:#4f8cff; --acc2:#22d3ee; --ok:#34d399; --warn:#fbbf24; --bad:#f87171;
+    --glow:#16204a; --faint:rgba(139,152,184,.14);
+  }
+  [data-theme="light"]{
+    --bg:#f5f7fa; --panel:#ffffff; --panel2:#f7f9fc; --line:#e3e8ef;
+    --txt:#1f2733; --sub:#5a6675; --acc:#2f6cff; --acc2:#0891b2; --ok:#0e9f6e; --warn:#d97706; --bad:#dc2626;
+    --glow:#dce7fb; --faint:rgba(31,39,51,.1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:radial-gradient(1200px 600px at 80% -10%,var(--glow) 0%,var(--bg) 55%);color:var(--txt);font-family:"PingFang SC","Microsoft YaHei",-apple-system,sans-serif;min-height:100vh}
+  .theme-btn{position:fixed;right:18px;top:16px;z-index:99;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--panel);color:var(--txt);font-size:17px;cursor:pointer;transition:transform .2s,border-color .2s}
+  .theme-btn:hover{transform:scale(1.1);border-color:var(--acc)}
+  .wrap{max-width:880px;margin:0 auto;padding:56px 24px 80px}
+  .badge{display:inline-flex;align-items:center;gap:8px;font-size:12px;color:var(--acc2);border:1px solid var(--acc2-line,#22d3ee59);border-radius:99px;padding:4px 14px;letter-spacing:.12em}
+  h1{font-size:clamp(28px,5vw,46px);line-height:1.2;margin:20px 0 14px;font-weight:800}
+  .oneline{font-size:clamp(17px,2.6vw,21px);line-height:1.8;color:var(--sub);max-width:680px}
+  .oneline b{color:var(--txt)}
+  .oneline .hl{color:var(--acc);font-weight:700}
+
+  .story{margin-top:34px;background:linear-gradient(165deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:18px;padding:26px 28px;display:grid;grid-template-columns:1fr 190px;gap:26px;align-items:center;opacity:0;transform:translateY(18px);transition:opacity .6s,transform .6s}
+  .story.in{opacity:1;transform:none}
+  .story .k{font-size:12px;letter-spacing:.16em;color:var(--acc2);margin-bottom:8px}
+  .story h2{font-size:20px;margin-bottom:10px}
+  .story p{font-size:14px;color:var(--sub);line-height:1.85}
+  .story p b{color:var(--txt)}
+  .story .res{margin-top:12px;font-size:13px;color:var(--ok)}
+  .story .num{font-size:46px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .story .num small{font-size:18px;font-weight:700;margin-left:2px}
+  .story .cap{font-size:12px;color:var(--sub);margin-top:8px;line-height:1.6}
+  .story .viz{padding-left:26px;border-left:1px dashed var(--line)}
+  .s1 .num{color:var(--bad)} .s2 .num{color:var(--warn)} .s3 .num{color:var(--ok)}
+  .story svg{width:100%;height:auto;display:block;margin-top:14px}
+
+  .strip{margin-top:44px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .stat{background:linear-gradient(160deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:14px;padding:18px 20px;text-align:center}
+  .stat .n{font-size:30px;font-weight:800;font-variant-numeric:tabular-nums}
+  .stat .n em{font-style:normal;font-size:14px;color:var(--sub);font-weight:400}
+  .stat .l{font-size:12px;color:var(--sub);margin-top:6px;letter-spacing:.08em}
+
+  .cta{margin-top:40px;text-align:center}
+  .cta .tip{font-size:14px;color:var(--sub);margin-bottom:16px}
+  .btn{display:inline-flex;align-items:center;gap:8px;font-size:15px;font-weight:700;color:#fff;background:linear-gradient(92deg,var(--acc),var(--acc2));border-radius:99px;padding:12px 26px;text-decoration:none;box-shadow:0 10px 26px -10px rgba(79,140,255,.7);transition:transform .2s,box-shadow .2s}
+  .btn:hover{transform:translateY(-2px);box-shadow:0 14px 32px -10px rgba(79,140,255,.9)}
+  .ghost{margin-left:10px;font-size:14px;color:var(--sub);border:1px solid var(--line);border-radius:99px;padding:11px 22px;text-decoration:none;transition:color .2s,border-color .2s}
+  .ghost:hover{color:var(--txt);border-color:var(--acc)}
+  .foot{margin-top:56px;padding-top:20px;border-top:1px solid var(--line);color:var(--sub);font-size:12px;text-align:center}
+
+  @media(max-width:760px){
+    .story{grid-template-columns:1fr}
+    .story .viz{padding-left:0;border-left:none;border-top:1px dashed var(--line);padding-top:16px}
+    .strip{grid-template-columns:1fr}
+  }
+  @media(prefers-reduced-motion:reduce){
+    .story{transition:none;opacity:1;transform:none}
+    .dash-flow{animation:none !important}
+  }
+  /* 示意图：告警流点（仅在未开启减动效时流动） */
+  .dash-flow{stroke-dasharray:6 6;animation:flow 1.2s linear infinite}
+  @keyframes flow{to{stroke-dashoffset:-12}}
+</style>
+</head>
+<body>
+<button class="theme-btn" id="themeBtn" title="切换亮 / 暗主题"></button>
+<div class="wrap">
+  <span class="badge">BOSS EDITION · 不讲技术，只讲结果</span>
+  <h1>这个网站是干什么的？<br>看三个小故事就够了。</h1>
+  <p class="oneline">一句话：<b>我把公司里 15 张「每天都要看的作战地图」做成了直接点开就能看的网页</b>。<span class="hl">不用装软件、不用等 IT 排期</span>，手机电脑都能打开 —— 下面三个故事，就是它能帮公司干的三件事。</p>
+
+  <!-- 故事一：发现异常 -->
+  <section class="story s1">
+    <div>
+      <div class="k">故事一 · 发现问题</div>
+      <h2>机器半夜出事，不用等客户来骂</h2>
+      <p>凌晨 2:47，一台服务器CPU 快跑满了。<b>网页在第 3 秒变红报警</b>，值班同学的手机就响了 —— 而以前的做法是：第二天客户投诉「系统怎么卡」，我们才知道出了事。</p>
+      <div class="res">✔ 从「客户先发现」变成「我们先发现」</div>
+    </div>
+    <div class="viz">
+      <div class="num" data-count="3"><span class="v">0</span><small>秒</small></div>
+      <div class="cap">发现问题的时间<br>（以前平均要 4 个小时）</div>
+      <svg viewBox="0 0 160 70" aria-hidden="true">
+        <polyline points="4,55 30,52 52,50 74,46 96,40 112,14 156,10" fill="none" stroke="var(--bad)" stroke-width="2.5"/>
+        <circle cx="112" cy="14" r="4" fill="var(--bad)"/>
+        <line class="dash-flow" x1="112" y1="14" x2="112" y2="62" stroke="var(--sub)" stroke-width="1.5"/>
+        <text x="4" y="68" font-size="9" fill="var(--sub)">正常 → 飙升报警</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- 故事二：定位原因 -->
+  <section class="story s2">
+    <div>
+      <div class="k">故事二 · 找到原因</div>
+      <h2>广告费多烧了，知道是烧在哪</h2>
+      <p>上个月广告费涨了，销量却没涨。打开投放台一看：<b>有 6 个广告计划一直在亏钱</b>，钱漏在哪一目了然 —— 当场停掉，下个月就省出来。</p>
+      <div class="res">✔ 从「感觉不对劲」变成「指着屏幕说哪里不对」</div>
+    </div>
+    <div class="viz">
+      <div class="num" data-count="48">¥<span class="v">0</span><small>万/月</small></div>
+      <div class="cap">这类「漏钱口子」<br>每月能堵回来的金额（模拟）</div>
+      <svg viewBox="0 0 160 70" aria-hidden="true">
+        <rect x="10" y="18" width="30" height="40" rx="4" fill="var(--acc)" opacity=".85"/>
+        <rect x="65" y="30" width="30" height="28" rx="4" fill="var(--acc)" opacity=".6"/>
+        <rect x="120" y="44" width="30" height="14" rx="4" fill="var(--bad)"/>
+        <text x="10" y="12" font-size="9" fill="var(--sub)">花钱多 → 效果差 → 亏钱（红色）</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- 故事三：挽回损失 -->
+  <section class="story s3">
+    <div>
+      <div class="k">故事三 · 挽回损失</div>
+      <h2>大客户要跑，提前一个月就知道</h2>
+      <p>以前客户不续约，都是<b>签完字我们才发现</b>。现在客户成功台会提前 30 天把「可能要走」的客户拉成红名单，客户经理挨个上门去谈。</p>
+      <div class="res">✔ 从「事后挽留」变成「事前上门」</div>
+    </div>
+    <div class="viz">
+      <div class="num" data-count="120">¥<span class="v">0</span><small>万/年</small></div>
+      <div class="cap">靠提前预警保住的<br>客户合同金额（模拟）</div>
+      <svg viewBox="0 0 160 70" aria-hidden="true">
+        <path d="M80 62 L36 40 Q18 30 18 16 Q18 6 30 6 Q40 6 46 14 L52 6 Q64 6 64 16 Q64 30 46 40 Z" transform="translate(0,2)" fill="none" stroke="var(--ok)" stroke-width="2.5"/>
+        <text x="96" y="38" font-size="9" fill="var(--sub)">红名单 → 提前上门</text>
+      </svg>
+    </div>
+  </section>
+
+  <div class="strip">
+    <div class="stat"><div class="n">15<em> 个</em></div><div class="l">能直接点开的作战地图</div></div>
+    <div class="stat"><div class="n">0<em> 元</em></div><div class="l">不用买软件、不用建机房</div></div>
+    <div class="stat"><div class="n">1<em> 个</em></div><div class="l">会讲业务故事的工程师（FDE）</div></div>
+  </div>
+
+  <div class="cta">
+    <div class="tip">这些都不是 PPT 里的截图 —— 每一张都是真的能点开、会动的网页。</div>
+    <a class="btn" href="index.html">▶ 回首页，点开随便看</a>
+    <a class="ghost" href="workbenches/ads-performance/">先看「广告钱花得值不值」那个 →</a>
+  </div>
+
+  <div class="foot">本页所有金额与场景为演示数据（Mock），用于展示 FDE「把业务问题翻译成系统」的工作方式。</div>
+</div>
+
+<script>
+// 主题切换（与全站共用 zwb-theme 键）
+const themeBtn=document.getElementById("themeBtn");
+function applyTheme(t){document.documentElement.dataset.theme=t;try{localStorage.setItem("zwb-theme",t)}catch(e){}themeBtn.textContent=t==="light"?"🌙":"☀️";}
+themeBtn.addEventListener("click",()=>applyTheme(document.documentElement.dataset.theme==="light"?"dark":"light"));
+themeBtn.textContent=document.documentElement.dataset.theme==="light"?"🌙":"☀️";
+
+/* 数字滚动：进入视口时从 0 数到目标值（老板视角：让「省了多少钱」有动感） */
+const reduced=matchMedia("(prefers-reduced-motion: reduce)").matches;
+function countUp(el){
+  const target=+el.dataset.count,v=el.querySelector(".v"),dur=1100,t0=performance.now();
+  if(reduced){v.textContent=target;return}
+  (function tick(now){
+    const p=Math.min((now-t0)/dur,1),eased=1-Math.pow(1-p,3); // easeOutCubic
+    v.textContent=Math.round(target*eased);
+    if(p<1)requestAnimationFrame(tick);
+  })(t0);
+}
+const stories=document.querySelectorAll(".story");
+const io=new IntersectionObserver(es=>{
+  es.forEach(e=>{
+    if(!e.isIntersecting)return;
+    e.target.classList.add("in");
+    e.target.querySelectorAll("[data-count]").forEach(countUp);
+    io.unobserve(e.target); // 只播一次
+  });
+},{threshold:.35});
+stories.forEach(s=>io.observe(s));
+</script>
+</body>
+</html>

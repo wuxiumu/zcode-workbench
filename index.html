@@ -77,7 +77,9 @@
   .foot a{color:var(--acc);text-decoration:none}
   .mock{position:fixed;right:18px;bottom:16px;font-size:11px;color:var(--warn);background:var(--warn-soft);border:1px solid var(--warn-line);border-radius:99px;padding:4px 12px;letter-spacing:.1em}
   /* ===== 30 秒自动导览（老板视角：一键看懂整个矩阵） ===== */
-  .tour-btn{display:inline-flex;align-items:center;gap:9px;margin-top:24px;font-size:14px;font-weight:700;color:#fff;background:linear-gradient(92deg,var(--acc),var(--acc2));border:none;border-radius:99px;padding:11px 22px;cursor:pointer;letter-spacing:.04em;box-shadow:0 10px 26px -10px rgba(79,140,255,.7);transition:transform .2s,box-shadow .2s;font-family:inherit}
+  .tour-btn{display:inline-flex;align-items:center;gap:9px;margin-top:24px;font-size:14px;font-weight:700;color:#fff;background:linear-gradient(92deg,var(--acc),var(--acc2));border:none;border-radius:99px;padding:11px 22px;cursor:pointer;letter-spacing:.04em;box-shadow:0 10px 26px -10px rgba(79,140,255,.7);transition:transform .2s,box-shadow .2s;font-family:inherit;text-decoration:none}
+  .boss-btn{display:inline-flex;align-items:center;gap:8px;margin:24px 0 0 10px;font-size:13px;color:var(--sub);border:1px solid var(--line);border-radius:99px;padding:11px 20px;text-decoration:none;vertical-align:top;transition:color .2s,border-color .2s,transform .2s;font-family:inherit}
+  .boss-btn:hover{color:var(--txt);border-color:var(--acc);transform:translateY(-2px)}
   .tour-btn:hover{transform:translateY(-2px);box-shadow:0 14px 32px -10px rgba(79,140,255,.9)}
   .tour-btn:disabled{opacity:.6;cursor:default;transform:none}
   .tour-btn .dot{width:8px;height:8px;border-radius:50%;background:#fff;animation:pulse 1.6s infinite}
@@ -112,6 +114,7 @@
   <h1>十五张作战地图，<br><span class="grad">一个工程师的业务翻译能力。</span></h1>
   <p class="lead">你好，我是<b>五朽木</b>，一名 FDE（Forward Deployed Engineer）。这个站点是我把「客户的业务问题 → 可运行系统」的翻译过程公开演示的地方：每个工作台都是<b>真实可访问的单文件应用</b>，Mock 数据驱动，点开即用。</p>
   <button class="tour-btn" id="tourBtn" type="button" aria-label="播放 30 秒自动导览，逐个介绍每个工作台是做什么的"><span class="dot" aria-hidden="true"></span>▶ 30 秒看懂整个矩阵 · 自动导览</button>
+  <a class="boss-btn" href="boss-one-pager.html">📄 老板版 · 一页纸看懂（零术语）</a>
 
   <div class="strip" id="stats"></div>
 
