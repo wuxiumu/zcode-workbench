@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A/B 实验台 · Experiment Hub | ZCode Labs</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<style>
+:root{--bg:#070b14;--p1:#0d1322;--p2:#0a0f1c;--line:#1c2740;--txt:#dfe7ff;--sub:#8494b8;--acc:#4f8cff;--ok:#34d399;--warn:#fbbf24;--bad:#f87171}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:radial-gradient(900px 500px at 85% -10%,#1a123a 0%,var(--bg) 60%);color:var(--txt);font-family:"PingFang SC","Microsoft YaHei",sans-serif;padding:22px;min-height:100vh}
+.top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px}
+.top h1{font-size:20px;display:flex;align-items:center;gap:10px}
+.top h1 .dot{width:9px;height:9px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px var(--ok);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.top h1 span{color:var(--sub);font-size:13px;font-weight:400}
+.clock{font-variant-numeric:tabular-nums;color:var(--sub);font-size:13px}
+.pill{font-size:12px;color:var(--sub);background:var(--p1);border:1px solid var(--line);border-radius:99px;padding:6px 14px}
+.pill b{color:var(--ok)}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px}
+.kpi{background:linear-gradient(160deg,var(--p1),var(--p2));border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.kpi .l{font-size:12px;color:var(--sub)}.kpi .v{font-size:24px;font-weight:800;margin-top:6px;font-variant-numeric:tabular-nums}
+.kpi .v small{font-size:12px;color:var(--sub);font-weight:400}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.panel{background:linear-gradient(160deg,var(--p1),var(--p2));border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.panel h3{font-size:13px;color:var(--sub);font-weight:600;margin-bottom:8px;letter-spacing:.06em}
+.panel h3 .chip{float:right;font-size:11px;letter-spacing:0;color:var(--sub)}
+.chart{height:220px}.chart-lg{height:300px}.wide{grid-column:1/-1}
+.tscroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{color:var(--sub);font-weight:500;text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);letter-spacing:.05em;white-space:nowrap}
+td{padding:7px 8px;border-bottom:1px solid rgba(28,39,64,.5);font-variant-numeric:tabular-nums;white-space:nowrap}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:99px;font-size:11px}
+.badge i{width:5px;height:5px;border-radius:50%}
+.st-ok{color:var(--ok);background:rgba(52,211,153,.1)}.st-ok i{background:var(--ok)}
+.st-warn{color:var(--warn);background:rgba(251,191,36,.1)}.st-warn i{background:var(--warn)}
+.st-bad{color:var(--bad);background:rgba(248,113,113,.1)}.st-bad i{background:var(--bad)}
+.st-info{color:var(--acc);background:rgba(79,140,255,.1)}.st-info i{background:var(--acc)}
+.trend{font-size:11px}.trend.up{color:var(--ok)}.trend.dn{color:var(--bad)}
+.prog{display:inline-block;width:110px;height:6px;background:rgba(28,39,64,.9);border-radius:99px;vertical-align:middle}
+.prog i{display:block;height:100%;border-radius:99px;background:var(--acc)}
+.mock{position:fixed;right:16px;bottom:14px;font-size:11px;color:var(--warn);background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.3);border-radius:99px;padding:3px 12px;letter-spacing:.1em}
+.back{position:fixed;left:16px;bottom:14px;font-size:12px}.back a{color:var(--acc);text-decoration:none}
+@media(max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="top">
+  <h1><span class="dot"></span>A/B 实验台 <span>EXPERIMENT HUB · ab-suite v1 · 分层 × 显著性 × Uplift</span></h1>
+  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+    <span class="clock" id="clock"></span>
+    <span class="pill">数据更新：<b>实时模拟</b> · 每 3.5 秒刷新</span>
+  </div>
+</div>
+
+<div class="kpis" id="kpis"></div>
+<div class="grid">
+  <div class="panel wide"><h3>在跑实验 · 实时看板<span class="chip" id="runChip"></span></h3><div class="tscroll"><table id="runs"></table></div></div>
+  <div class="panel"><h3>Uplift 分布 · Top8 实验<span class="chip" id="upChip"></span></h3><div class="chart-lg" id="c-up"></div></div>
+  <div class="panel"><h3>样本量累积曲线 · 近 14 天<span class="chip" id="smChip"></span></h3><div class="chart-lg" id="c-sample"></div></div>
+  <div class="panel"><h3>指标显著提升占比 · 目标 ≥ 60%</h3><div class="chart-lg" id="c-sig"></div></div>
+  <div class="panel"><h3>历史实验结论 · 本季<span class="chip" id="ccChip"></span></h3><div class="chart-lg" id="c-conc"></div></div>
+  <div class="panel wide"><h3>实验分层流量分配 · 占用 vs 剩余<span class="chip" id="lyChip"></span></h3><div class="chart" id="c-layer"></div></div>
+</div>
+
+<div class="back"><a href="../../">← 返回工作台矩阵</a></div>
+<div class="mock">MOCK DATA · 演示数据</div>
+
+<script>
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const irnd=(a,b)=>Math.round(rnd(a,b));
+const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
+const last=a=>a[a.length-1];
+const d14=Array.from({length:14},(_,i)=>{const d=new Date(Date.now()-(13-i)*864e5);return (d.getMonth()+1)+'/'+d.getDate()});
+
+// KPI 基础量
+let running=23,launched=5,users=486,sigVal=63.4;
+
+// 在跑实验（8 个）：实验名 / 负责人 / 核心指标 / Uplift % / 置信度 % / 样本进度 %
+let runs=[
+  {n:'搜索联想词个性化',o:'周凯',m:'CTR',up:12.4,cf:99.1,p:94},
+  {n:'首页信息流推荐-v3',o:'陈默',m:'人均时长',up:8.2,cf:97.2,p:86},
+  {n:'详情页视频置顶',o:'许诺',m:'转化率',up:6.4,cf:94.7,p:88},
+  {n:'结账页一键支付',o:'林芳',m:'支付转化率',up:5.6,cf:96.1,p:72},
+  {n:'新用户引导流程简化',o:'吴迪',m:'次日留存',up:3.1,cf:93.8,p:58},
+  {n:'Push 文案 emoji 化',o:'郑洁',m:'点击率',up:1.8,cf:91.6,p:67},
+  {n:'会员价格锚点测试',o:'何斌',m:'ARPU',up:-2.3,cf:88.4,p:41},
+  {n:'签到奖励翻倍',o:'高翔',m:'DAU 留存',up:-0.9,cf:68.2,p:35}];
+const SHORT=['联想个性化','推荐-v3','视频置顶','一键支付','引导简化','Push emoji','价格锚点','签到翻倍'];
+
+// 置信度徽标：≥95% 显著 / ≥90% 观察中 / 其余不显著
+const CFST=cf=>cf>=95?['st-ok','显著']:cf>=90?['st-warn','观察中']:['st-info','不显著'];
+
+// 样本量累积曲线（近 14 天，万）
+const cum=incs=>incs.reduce((arr,v)=>{arr.push(+(last(arr)+v).toFixed(1));return arr},[incs[0]]);
+let sampleE=cum(Array.from({length:14},()=>+rnd(1.8,3.2).toFixed(2)));
+let sampleC=cum(Array.from({length:14},()=>+rnd(1.6,2.9).toFixed(2)));
+
+// 历史实验结论（本季）
+let concl=[['显著正向',58,'#34d399'],['不显著',71,'#8494b8'],['显著负向',13,'#f87171']];
+
+// 实验分层流量分配（占用 %）
+let layers=[['L1 首页',68],['L2 交易',45],['L3 增长',72],['L4 会员',30],['L5 搜索',58]];
+
+// KPI · 实验总览
+function renderKpis(){
+  running=clamp(running+irnd(-1,2),20,26);
+  launched=clamp(launched+irnd(-1,1),3,8);
+  users=clamp(users+irnd(-4,5),460,520);
+  const k=[
+    ['在跑实验数',running,' 个','up',`分层 L1~L5 · 冲突检测 0`],
+    ['本周上线',launched,' 个','up','已结业 3 个 · 待评审 2 个'],
+    ['显著提升率',sigVal,' %',sigVal>=60?'up':'dn',sigVal>=60?'目标 60% · 达标':'低于目标 60% 需复盘'],
+    ['覆盖用户',users,' 万','up',`全量 1,200 万 · 占 ${(users/1200*100).toFixed(1)}%`]];
+  document.getElementById('kpis').innerHTML=k.map(x=>`<div class="kpi"><div class="l">${x[0]}</div><div class="v">${x[1]}<small>${x[2]}</small></div><div class="trend ${x[3]}">${x[4]}</div></div>`).join('');
+}
+
+// 在跑实验表（Uplift / 置信度徽标 / 样本进度条）
+function renderRuns(){
+  runs=runs.map(r=>({...r,up:+(r.up+rnd(-.12,.12)).toFixed(1),cf:+clamp(r.cf+rnd(-.3,.3),60,99.9).toFixed(1),p:clamp(r.p+irnd(-2,2),10,100)}));
+  const sig=runs.filter(r=>r.cf>=95).length;
+  document.getElementById('runChip').textContent=`在跑 ${runs.length} 个 · 已达显著 ${sig} 个`;
+  document.getElementById('runs').innerHTML='<tr><th>实验名</th><th>负责人</th><th>核心指标</th><th>Uplift</th><th>置信度</th><th>样本进度</th></tr>'+
+    runs.map((r,i)=>{const lv=CFST(r.cf),upc=r.up>=0?'var(--ok)':'var(--bad)';return `<tr><td>${r.n}</td><td>${r.o}</td><td>${r.m}</td><td style="color:${upc}">${r.up>=0?'+':''}${r.up}%</td><td><span class="badge ${lv[0]}"><i></i>${lv[1]} ${r.cf}%</span></td><td><span class="prog"><i style="width:${r.p}%;background:${r.p>=90?'var(--ok)':r.p>=50?'var(--acc)':'var(--warn)'}"></i></span> ${r.p}%</td></tr>`}).join('');
+}
+
+// Uplift 分布 Top8（横向柱状图，正负分色）
+const upC=echarts.init(document.getElementById('c-up'));
+function renderUp(){
+  const pairs=runs.map((r,i)=>({n:SHORT[i],v:r.up})).sort((a,b)=>b.v-a.v);
+  const avg=pairs.reduce((a,b)=>a+b.v,0)/pairs.length;
+  document.getElementById('upChip').textContent=`Top8 平均 Uplift ${avg>=0?'+':''}${avg.toFixed(1)}%`;
+  upC.setOption({tooltip:{trigger:'axis',axisPointer:{type:'shadow'},formatter:ps=>`${ps[0].name}　<b>${ps[0].value>=0?'+':''}${ps[0].value}%</b>`},
+    grid:{left:92,right:52,top:12,bottom:12},
+    xAxis:{type:'value',show:false,max:v=>Math.round(v.max*1.2*10)/10,min:v=>Math.round(v.min*1.2*10)/10},
+    yAxis:{type:'category',inverse:true,data:pairs.map(p=>p.n),axisLabel:{color:'#8494b8',fontSize:10},axisLine:{show:false},axisTick:{show:false}},
+    series:[{type:'bar',barWidth:12,data:pairs.map(p=>({value:p.v,itemStyle:{borderRadius:[0,3,3,0],color:p.v>=0?'#34d399':'#f87171'}})),
+      label:{show:true,position:'right',fontSize:10,color:'#8494b8',formatter:p=>`${p.value>=0?'+':''}${p.value}%`}}]});
+}
+
+// 样本量累积曲线（实验组 / 对照组，万）
+const smC=echarts.init(document.getElementById('c-sample'));
+function renderSample(){
+  smC.setOption({tooltip:{trigger:'axis',valueFormatter:v=>v+' 万'},legend:{data:['实验组','对照组'],textStyle:{color:'#8494b8',fontSize:10},top:0,itemWidth:10,itemHeight:10},
+    grid:{left:38,right:14,top:30,bottom:24},
+    xAxis:{type:'category',data:d14,axisLabel:{color:'#8494b8',fontSize:9,interval:3}},
+    yAxis:{type:'value',min:0,nameTextStyle:{color:'#8494b8',fontSize:10},splitLine:{lineStyle:{color:'#141d33'}},axisLabel:{color:'#8494b8',fontSize:10,formatter:'{value} 万'}},
+    series:[
+      {name:'实验组',type:'line',data:sampleE,smooth:true,showSymbol:false,lineStyle:{width:2,color:'#4f8cff'},itemStyle:{color:'#4f8cff'},areaStyle:{color:'rgba(79,140,255,.10)'}},
+      {name:'对照组',type:'line',data:sampleC,smooth:true,showSymbol:false,lineStyle:{width:2,color:'#22d3ee',type:'dashed'},itemStyle:{color:'#22d3ee'}}]});
+  document.getElementById('smChip').textContent=`实验组 ${last(sampleE)} 万 · 对照组 ${last(sampleC)} 万`;
+}
+
+// 指标显著提升占比 gauge（目标 ≥ 60%，<40% 红区）
+const sigC=echarts.init(document.getElementById('c-sig'));
+function renderSig(){
+  sigVal=+clamp(sigVal+rnd(-.5,.5),52,72).toFixed(1);
+  sigC.setOption({series:[{type:'gauge',startAngle:210,endAngle:-30,min:0,max:100,splitNumber:5,center:['50%','56%'],radius:'95%',
+    axisLine:{lineStyle:{width:12,color:[[.4,'#f87171'],[.6,'#fbbf24'],[1,'#34d399']]}},
+    pointer:{length:'58%',width:4,itemStyle:{color:'#dfe7ff'}},
+    axisTick:{distance:-12,length:4,lineStyle:{color:'#0a0f1c',width:1}},
+    splitLine:{distance:-14,length:12,lineStyle:{color:'#0a0f1c',width:2}},
+    axisLabel:{distance:14,color:'#8494b8',fontSize:9,formatter:'{value}%'},
+    detail:{valueAnimation:true,formatter:'{value}%',color:sigVal>=60?'#34d399':'#fbbf24',fontSize:24,fontWeight:700,offsetCenter:[0,'58%']},
+    title:{offsetCenter:[0,'92%'],color:'#8494b8',fontSize:11},
+    data:[{value:sigVal,name:'显著提升占比 · 目标 ≥ 60%'}]}]});
+}
+
+// 历史实验结论玫瑰图（显著正向 / 不显著 / 显著负向）
+const ccC=echarts.init(document.getElementById('c-conc'));
+function renderConc(){
+  const total=concl.reduce((a,b)=>a+b[1],0);
+  document.getElementById('ccChip').textContent=`本季 ${total} 个 · 正向占比 ${(concl[0][1]/total*100).toFixed(0)}%`;
+  ccC.setOption({tooltip:{formatter:f=>`${f.name}　<b>${f.value}</b> 个（${f.percent}%）`},
+    series:[{type:'pie',roseType:'radius',radius:['16%','72%'],center:['50%','56%'],
+      itemStyle:{borderColor:'#0a0f1c',borderWidth:2,borderRadius:4},
+      label:{color:'#8494b8',fontSize:10,formatter:'{b}'},
+      labelLine:{lineStyle:{color:'#1c2740'}},
+      data:concl.map(x=>({name:x[0],value:x[1],itemStyle:{color:x[2]}}))}]});
+}
+
+// 实验分层流量分配（占用 vs 剩余，堆叠至 100%）
+const lyC=echarts.init(document.getElementById('c-layer'));
+function renderLayer(){
+  layers=layers.map(([n,v])=>[n,clamp(v+irnd(-2,2),15,85)]);
+  const avg=layers.reduce((a,b)=>a+b[1],0)/layers.length;
+  document.getElementById('lyChip').textContent=`5 个分层 · 平均利用率 ${avg.toFixed(0)}% · L3 已达 72% 建议扩容`;
+  lyC.setOption({tooltip:{trigger:'axis',axisPointer:{type:'shadow'},formatter:ps=>`${ps[0].name}　占用 <b>${ps[0].value}%</b> · 剩余 ${100-ps[0].value}%`},
+    legend:{data:['已占用','剩余'],textStyle:{color:'#8494b8',fontSize:10},top:0,itemWidth:10,itemHeight:10},
+    grid:{left:64,right:16,top:30,bottom:24},
+    xAxis:{type:'category',data:layers.map(x=>x[0]),axisLabel:{color:'#8494b8',fontSize:10}},
+    yAxis:{type:'value',max:100,splitLine:{lineStyle:{color:'#141d33'}},axisLabel:{color:'#8494b8',fontSize:10,formatter:'{value}%'}},
+    series:[
+      {name:'已占用',type:'bar',stack:'t',data:layers.map(x=>x[1]),barWidth:'46%',itemStyle:{color:'#4f8cff'},
+        label:{show:true,position:'inside',fontSize:9,color:'#dfe7ff',formatter:'{c}%'}},
+      {name:'剩余',type:'bar',stack:'t',data:layers.map(x=>100-x[1]),itemStyle:{color:'rgba(132,148,184,.25)'}}]});
+}
+
+// 时钟
+const tickClock=()=>{document.getElementById('clock').textContent=new Date().toLocaleString('zh-CN',{hour12:false})};
+
+// 模拟实时
+function tick(){
+  sampleE.shift();sampleE.push(+(last(sampleE)+rnd(1.8,3.2)).toFixed(1));
+  sampleC.shift();sampleC.push(+(last(sampleC)+rnd(1.6,2.9)).toFixed(1));
+  renderSig();renderKpis();renderRuns();renderUp();renderSample();renderConc();renderLayer();
+}
+renderSig();renderKpis();renderRuns();renderUp();renderSample();renderConc();renderLayer();
+tickClock();setInterval(tickClock,1000);
+setInterval(tick,3500);
+window.addEventListener('resize',()=>[upC,smC,sigC,ccC,lyC].forEach(c=>c.resize()));
+</script>
+</body>
+</html>
