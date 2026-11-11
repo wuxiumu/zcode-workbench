@@ -94,6 +94,22 @@
   .tour-stop{margin-top:12px;width:100%;font-size:12px;color:var(--sub);background:none;border:1px solid var(--line);border-radius:8px;padding:6px 0;cursor:pointer;font-family:inherit;transition:color .2s,border-color .2s}
   .tour-stop:hover{color:var(--txt);border-color:var(--acc)}
   .card.spot{z-index:9001;border-color:var(--acc);box-shadow:0 0 0 4px rgba(79,140,255,.35),0 24px 60px rgba(0,0,0,.8);transform:translateY(-4px)}
+  /* ===== ⌘K 命令面板（键盘党的快速跳转） ===== */
+  .kbd{font-size:11px;color:var(--sub);border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;padding:2px 7px;background:var(--panel);font-family:inherit;flex:none}
+  .pal-ov{position:fixed;inset:0;z-index:9100;background:rgba(5,9,20,.6);backdrop-filter:blur(2px);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .25s,visibility .25s}
+  .pal-ov.on{opacity:1;visibility:visible;pointer-events:auto}
+  .pal{position:fixed;left:50%;top:14vh;transform:translate(-50%,-8px);z-index:9101;width:min(560px,92vw);background:var(--panel);border:1px solid var(--line);border-radius:16px;box-shadow:0 30px 80px rgba(0,0,0,.65);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .25s,transform .25s,visibility .25s;overflow:hidden}
+  .pal.on{opacity:1;visibility:visible;pointer-events:auto;transform:translate(-50%,0)}
+  .pal input{width:100%;background:none;border:none;outline:none;color:var(--txt);font-size:15px;padding:16px 18px;font-family:inherit;border-bottom:1px solid var(--line)}
+  .pal input::placeholder{color:rgba(139,152,184,.6)}
+  .pal-list{max-height:46vh;overflow:auto;padding:6px}
+  .pal-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;font-size:14px}
+  .pal-item .t{font-size:11px;color:var(--acc2);border:1px solid var(--acc2-line);border-radius:5px;padding:1px 6px;letter-spacing:.06em;white-space:nowrap}
+  .pal-item .nm{font-weight:600}
+  .pal-item .en{font-size:11px;color:var(--sub);letter-spacing:.08em;margin-left:auto;white-space:nowrap}
+  .pal-item.sel{background:rgba(79,140,255,.15);outline:1px solid var(--acc)}
+  .pal-empty{padding:22px;text-align:center;color:var(--sub);font-size:13px}
+  .pal-foot{display:flex;gap:14px;padding:9px 14px;border-top:1px solid var(--line);font-size:11px;color:var(--sub)}
   @media(prefers-reduced-motion:reduce){
     .tour-btn .dot{animation:none}
     .tour-overlay,.tour-hud,.card{transition:none}
@@ -122,6 +138,7 @@
   <div class="toolbar">
     <div class="searchrow">
       <input id="kw" class="search" type="search" placeholder="🔍 搜索工作台：名称 / 标签 / 描述…" autocomplete="off">
+      <span class="kbd" aria-hidden="true">⌘K</span>
       <span class="fc" id="fc"></span>
     </div>
     <div class="chips" id="chips"></div>
@@ -143,6 +160,15 @@
   <div class="say" id="tourSay"></div>
   <div class="bar" aria-hidden="true"><i id="tourBarFill"></i></div>
   <button class="tour-stop" id="tourStop" type="button">停止导览</button>
+</div>
+
+<!-- ⌘K 命令面板：键盘快速跳转任意工作台（combobox 语义，方向键+回车全程免鼠标） -->
+<div class="pal-ov" id="palOv"></div>
+<div class="pal" id="pal" role="dialog" aria-modal="true" aria-label="快速跳转命令面板">
+  <input id="palInput" type="text" placeholder="输入名称 / 标签 / 描述，回车打开…" autocomplete="off"
+         role="combobox" aria-expanded="true" aria-controls="palList">
+  <div class="pal-list" id="palList" role="listbox"></div>
+  <div class="pal-foot"><span>↑ ↓ 选择</span><span>↵ 打开</span><span>Esc 关闭</span></div>
 </div>
 
 <script>
@@ -308,6 +334,51 @@ tourBtn.addEventListener("click",tourStart);
 document.getElementById("tourStop").addEventListener("click",tourStop);
 tourOverlay.addEventListener("click",tourStop);
 addEventListener("keydown",e=>{if(e.key==="Escape"&&tourOverlay.classList.contains("on"))tourStop()});
+
+/* ===== ⌘K / Ctrl+K 命令面板：方向键选择，回车直达 ===== */
+const palOv=document.getElementById("palOv"),pal=document.getElementById("pal"),
+      palInput=document.getElementById("palInput"),palList=document.getElementById("palList");
+let palHits=[],palSel=0;
+function palRender(){
+  const q=palInput.value.trim().toLowerCase();
+  palHits=workbenches.map((w,i)=>({w,i})).filter(({w})=>!q||(w.name+w.en+w.cn+w.tag+w.desc).toLowerCase().includes(q));
+  palSel=Math.min(palSel,Math.max(palHits.length-1,0));
+  palList.innerHTML=palHits.length?palHits.map(({w,i},j)=>
+    `<div class="pal-item${j===palSel?" sel":""}" id="pal-opt-${j}" role="option" aria-selected="${j===palSel}" data-i="${i}" data-j="${j}"><span class="t">${w.no} ${w.cn}</span><span class="nm">${w.name}</span><span class="en">${w.en}</span></div>`
+  ).join(""):`<div class="pal-empty">没有匹配的工作台 —— 换个关键词试试</div>`;
+  palInput.setAttribute("aria-activedescendant",palHits.length?`pal-opt-${palSel}`:"");
+}
+function palMove(d){
+  if(!palHits.length)return;
+  palSel=(palSel+d+palHits.length)%palHits.length;
+  palRender();
+  const el=palList.querySelector(".sel");el&&el.scrollIntoView({block:"nearest"});
+}
+function palOpen(){
+  palOv.classList.add("on");pal.classList.add("on");
+  palInput.value="";palSel=0;palRender();
+  setTimeout(()=>palInput.focus(),30);
+}
+function palClose(){palOv.classList.remove("on");pal.classList.remove("on");palInput.blur();}
+function palGo(i){palClose();location.href=workbenches[i].href;}
+palInput.addEventListener("input",()=>{palSel=0;palRender()});
+palInput.addEventListener("keydown",e=>{
+  if(e.key==="ArrowDown"){e.preventDefault();palMove(1)}
+  else if(e.key==="ArrowUp"){e.preventDefault();palMove(-1)}
+  else if(e.key==="Enter"&&palHits[palSel]){palGo(palHits[palSel].i)}
+});
+palList.addEventListener("click",e=>{const it=e.target.closest(".pal-item");if(it)palGo(+it.dataset.i)});
+palList.addEventListener("mousemove",e=>{ // 悬停即选中（避免二次点击）
+  const it=e.target.closest(".pal-item");
+  if(it&&+it.dataset.j!==palSel){palSel=+it.dataset.j;palRender()}
+});
+palOv.addEventListener("click",palClose);
+addEventListener("keydown",e=>{
+  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="k"){
+    e.preventDefault();
+    pal.classList.contains("on")?palClose():palOpen();
+  }else if(e.key==="Escape"&&pal.classList.contains("on")){palClose()}
+});
 </script>
 </body>
 </html>
