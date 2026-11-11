@@ -47,6 +47,8 @@ FDE 的价值不在于写代码，而在于**把客户的业务问题翻译成�
 
 ## 技术形态
 
+![系统架构](docs/architecture.svg)
+
 - 零构建：原生 HTML/CSS/JS + [ECharts](https://echarts.apache.org/)（CDN 三级回退引入），单文件交付；
 - 零后端：Mock 数据由内置生成器产生，支持定时刷新模拟实时流；
 - 零配置：Fork 本仓库即自动获得同款 Pages 站点；

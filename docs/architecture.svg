@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 940 660" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif">
+  <title>FDE 工作台矩阵 · 系统架构：纯前端单文件 + Mock 数据 + GitHub Pages 自动部署</title>
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#4f8cff"/>
+    </marker>
+    <marker id="arg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#34d399"/>
+    </marker>
+  </defs>
+
+  <!-- 画布 -->
+  <rect width="940" height="660" rx="16" fill="#0a0e1a"/>
+  <text x="470" y="44" text-anchor="middle" font-size="22" font-weight="700" fill="#e6ecff">ZCode Labs · FDE 工作台矩阵 · 系统架构</text>
+  <text x="470" y="68" text-anchor="middle" font-size="12" fill="#8b98b8">零后端 · 零数据库 · 零构建 —— 一次 git push，全部自动上线</text>
+
+  <!-- ═══ 第一层：浏览器 ═══ -->
+  <text x="60" y="106" font-size="13" fill="#22d3ee" letter-spacing="2">① 访客浏览器</text>
+  <rect x="50" y="118" width="840" height="330" rx="12" fill="#121829" stroke="#1f2a44"/>
+
+  <!-- 左列：入口页面 -->
+  <rect x="70" y="140" width="220" height="180" rx="10" fill="#0e1424" stroke="#4f8cff"/>
+  <text x="180" y="166" text-anchor="middle" font-size="14" font-weight="700" fill="#e6ecff">门户 index.html</text>
+  <text x="180" y="186" text-anchor="middle" font-size="11" fill="#8b98b8">搜索 / 标签筛选 / ⌘K 面板</text>
+  <text x="180" y="204" text-anchor="middle" font-size="11" fill="#8b98b8">30 秒自动导览</text>
+  <line x1="180" y1="216" x2="180" y2="246" stroke="#4f8cff" marker-end="url(#ar)"/>
+  <rect x="82" y="252" width="196" height="28" rx="6" fill="#16204a"/>
+  <text x="180" y="271" text-anchor="middle" font-size="12" fill="#e6ecff">boss-one-pager 老板一页纸</text>
+  <rect x="82" y="288" width="196" height="28" rx="6" fill="#16204a"/>
+  <text x="180" y="307" text-anchor="middle" font-size="12" fill="#e6ecff">self-check 回归自检页</text>
+
+  <!-- 右列：工作台 -->
+  <rect x="320" y="140" width="550" height="180" rx="10" fill="#0e1424" stroke="#4f8cff"/>
+  <text x="595" y="166" text-anchor="middle" font-size="14" font-weight="700" fill="#e6ecff">工作台 × 15　<tspan fill="#8b98b8" font-size="11">workbenches/*/index.html —— 单文件，复制即用</tspan></text>
+  <rect x="340" y="180" width="510" height="30" rx="6" fill="#16204a"/>
+  <text x="595" y="200" text-anchor="middle" font-size="12" fill="#e6ecff">ECharts 图表　·　CDN 三级回退 → <tspan fill="#fbbf24">stub 兜底保住数据面板</tspan></text>
+  <rect x="340" y="216" width="510" height="30" rx="6" fill="#16204a"/>
+  <text x="595" y="236" text-anchor="middle" font-size="12" fill="#e6ecff">theme.css 设计令牌（单一事实来源）　·　亮暗主题互通</text>
+  <rect x="340" y="252" width="247" height="30" rx="6" fill="#16204a"/>
+  <text x="463" y="272" text-anchor="middle" font-size="12" fill="#e6ecff">perf-guard 懒加载 · 后台暂停</text>
+  <rect x="603" y="252" width="247" height="30" rx="6" fill="#16204a"/>
+  <text x="726" y="272" text-anchor="middle" font-size="12" fill="#e6ecff">export-tools 导出 PNG / CSV</text>
+
+  <!-- AI 助手横贯 -->
+  <rect x="70" y="336" width="800" height="42" rx="10" fill="#0c2331" stroke="#22d3ee"/>
+  <text x="470" y="356" text-anchor="middle" font-size="13" fill="#22d3ee">🤖 AI 解读助手　assets/ai-assistant/</text>
+  <text x="470" y="372" text-anchor="middle" font-size="11" fill="#8b98b8">一个 &lt;script&gt; 接入任意工作台 · 解读内容由页面实时数据驱动，非固定文案</text>
+  <line x1="180" y1="320" x2="180" y2="336" stroke="#22d3ee"/>
+  <line x1="595" y1="320" x2="595" y2="336" stroke="#22d3ee"/>
+
+  <!-- Mock 数据说明 -->
+  <rect x="70" y="392" width="800" height="40" rx="10" fill="#2a1b45" stroke="#a78bfa"/>
+  <text x="470" y="417" text-anchor="middle" font-size="13" fill="#e6ecff">📊 Mock 数据生成器（内置于每个页面）　<tspan fill="#a78bfa" font-size="12">定时刷新模拟实时流 · 无需任何后端与数据库</tspan></text>
+
+  <!-- ═══ 第二层：部署链路 ═══ -->
+  <text x="60" y="478" font-size="13" fill="#34d399" letter-spacing="2">② 部署链路</text>
+  <rect x="60" y="492" width="180" height="52" rx="10" fill="#121829" stroke="#1f2a44"/>
+  <text x="150" y="513" text-anchor="middle" font-size="13" fill="#e6ecff">工程师</text>
+  <text x="150" y="532" text-anchor="middle" font-size="11" fill="#8b98b8">git push origin main</text>
+  <line x1="240" y1="518" x2="330" y2="518" stroke="#34d399" marker-end="url(#arg)"/>
+  <rect x="336" y="492" width="240" height="52" rx="10" fill="#121829" stroke="#1f2a44"/>
+  <text x="456" y="513" text-anchor="middle" font-size="13" fill="#e6ecff">GitHub Actions</text>
+  <text x="456" y="532" text-anchor="middle" font-size="11" fill="#8b98b8">push 触发自动构建</text>
+  <line x1="576" y1="518" x2="666" y2="518" stroke="#34d399" marker-end="url(#arg)"/>
+  <rect x="672" y="492" width="218" height="52" rx="10" fill="#121829" stroke="#34d399"/>
+  <text x="781" y="513" text-anchor="middle" font-size="13" fill="#e6ecff">GitHub Pages</text>
+  <text x="781" y="532" text-anchor="middle" font-size="11" fill="#8b98b8">wuxiumu.github.io/zcode-workbench</text>
+
+  <!-- 回路：访客访问 -->
+  <path d="M781,544 C781,600 470,620 150,600" fill="none" stroke="#4f8cff" stroke-dasharray="6 5" marker-end="url(#ar)"/>
+  <text x="470" y="622" text-anchor="middle" font-size="12" fill="#4f8cff">访客打开网址即可使用 —— Fork 本仓库即获得同款站点</text>
+</svg>
