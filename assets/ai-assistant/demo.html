@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 解读助手 · 独立演示 | ZCode Labs</title>
+<script>try{document.documentElement.dataset.theme=localStorage.getItem('zwb-theme')||'dark'}catch(e){}</script>
+<style>
+:root{--bg:#070b14;--p1:#0d1322;--p2:#0a0f1c;--line:#1c2740;--txt:#dfe7ff;--sub:#8494b8;--acc:#4f8cff;--ok:#34d399;--warn:#fbbf24;--bad:#f87171;--cyan:#22d3ee;--glow:#16204a;--split:#141d33}
+[data-theme="light"]{--bg:#f5f7fa;--p1:#ffffff;--p2:#f7f9fc;--line:#e3e8ef;--txt:#1f2733;--sub:#5a6675;--acc:#2f6cff;--ok:#0e9f6e;--warn:#d97706;--bad:#dc2626;--cyan:#0891b2;--glow:#dce7fb;--split:#e3e8ef}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:radial-gradient(900px 500px at 85% -10%,var(--glow) 0%,var(--bg) 60%);color:var(--txt);font-family:"PingFang SC","Microsoft YaHei",sans-serif;padding:22px;min-height:100vh}
+h1{font-size:20px;display:flex;align-items:center;gap:10px;margin-bottom:6px}
+h1 span{color:var(--sub);font-size:13px;font-weight:400}
+p{color:var(--sub);font-size:13px;line-height:1.8;max-width:640px;margin-bottom:22px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px}
+.kpi{background:linear-gradient(160deg,var(--p1),var(--p2));border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.kpi .l{font-size:12px;color:var(--sub)}.kpi .v{font-size:24px;font-weight:800;margin-top:6px;font-variant-numeric:tabular-nums}
+.kpi .v small{font-size:12px;color:var(--sub);font-weight:400}
+.theme-btn{position:fixed;right:16px;top:12px;z-index:9999;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--p1);color:var(--txt);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.mock{position:fixed;right:16px;bottom:14px;font-size:11px;color:var(--warn);background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.3);border-radius:99px;padding:3px 12px}
+</style>
+</head>
+<body>
+<button class="theme-btn" id="themeBtn" title="切换亮 / 暗主题"></button>
+<h1>🤖 AI 解读助手 <span>STANDALONE DEMO · assets/ai-assistant</span></h1>
+<p>这是一个独立演示页：模拟一个「财务驾驶舱」的 4 项指标，注入 <code>window.AI_ASSISTANT</code> 配置并引入 <code>ai-assistant.js</code>。点击右下角机器人，体验数据解读、风险提示、优化建议与 Toast 事件提醒。</p>
+<div class="kpis">
+  <div class="kpi"><div class="l">本月营收</div><div class="v" id="k1">¥1,286<small> 万</small></div></div>
+  <div class="kpi"><div class="l">本月净利</div><div class="v" id="k2">¥219<small> 万</small></div></div>
+  <div class="kpi"><div class="l">净利率</div><div class="v" id="k3">17.0<small> %</small></div></div>
+  <div class="kpi"><div class="l">现金余额</div><div class="v" id="k4">¥4,210<small> 万</small></div></div>
+</div>
+<div class="mock">MOCK DATA · 演示数据</div>
+<script>
+const themeBtn=document.getElementById('themeBtn');
+themeBtn.textContent=document.documentElement.dataset.theme==='light'?'🌙':'☀️';
+themeBtn.addEventListener('click',()=>{const t=document.documentElement.dataset.theme==='light'?'dark':'light';document.documentElement.dataset.theme=t;try{localStorage.setItem('zwb-theme',t)}catch(e){}themeBtn.textContent=t==='light'?'🌙':'☀️';});
+// 模拟实时数据
+let rev=1286,npRate=.17,cash=4210;
+function tick(){rev+=Math.round(Math.random()*8-2);npRate=Math.max(.12,Math.min(.2,npRate+Math.random()*.01-.005));cash=Math.max(1800,Math.min(4800,cash+Math.round(Math.random()*120-60)));
+document.getElementById('k1').innerHTML='¥'+rev.toLocaleString()+'<small> 万</small>';
+document.getElementById('k2').innerHTML='¥'+Math.round(rev*npRate)+'<small> 万</small>';
+document.getElementById('k3').innerHTML=(npRate*100).toFixed(1)+'<small> %</small>';
+document.getElementById('k4').innerHTML='¥'+cash.toLocaleString()+'<small> 万</small>';}
+setInterval(tick,3000);tick();
+// 注入本页的 AI 配置（独立项目的接入方式）
+window.AI_ASSISTANT={
+  title:'财务驾驶舱（演示）',subtitle:'DEMO PAGE',
+  insights(){return [
+    {tag:'营收',lv:'ok',text:'本月营收 ¥'+rev.toLocaleString()+' 万，环比 +8.6%，收入端保持双位数弹性。'},
+    {tag:'净利率',lv:npRate>=.15?'ok':'warn',text:'净利率 '+(npRate*100).toFixed(1)+'%，'+(npRate>=.15?'高于 15% 目标线，盈利质量健康。':'低于 15% 目标线，需关注费效比。')},
+    {tag:'现金流',lv:cash>=2500?'ok':'bad',text:'当前现金 ¥'+cash.toLocaleString()+' 万，'+(cash>=2500?'高于 ¥2,500 万安全水位。':'已跌破 ¥2,500 万安全水位，请启动资金预案！')}
+  ];},
+  advice(){return ['现金水位低于安全线时，优先冻结低 ROI 计划的投放预算。','净利率若连续两周低于 15%，建议复核三项费用的环比弹性。'];},
+  alerts(){const r=Math.random();return r<.3?{lv:'warn',text:'⚠️ 演示提醒：现金流 '+ (cash<2500?'已跌破':'接近')+' 安全水位'}:r<.5?{lv:'ok',text:'✅ 演示提醒：本月营收目标完成率 91%'}:null;}
+};
+</script>
+<script src="./ai-assistant.js" defer></script>
+</body>
+</html>
