@@ -26,6 +26,7 @@
 - README「效果速览」：真实截图 ×3 + 30 秒导览 GIF（`docs/showcase.gif`，无头浏览器自动合成）
 - `docs/architecture.svg` 系统架构图（浏览器组件图 + 部署链路 + 访客回路）
 - `tools/screenshot.sh` / `tools/make_showcase_gif.py`：截图与 GIF 自动化工具
+- 全站 18 页补 OG meta（title/description/og:url，三页带真实截图 og:image）—— 分享到聊天工具有规范卡片
 
 ### 修复
 - **P0**：ops-center 四张图表从未渲染 —— 创建时即存在的非法轴键 `x`/`y`（应为 `xAxis`/`yAxis`），无头截图验证恢复

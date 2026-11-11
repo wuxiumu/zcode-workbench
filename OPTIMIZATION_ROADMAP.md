@@ -34,7 +34,7 @@
 - [x] [物料] 用 Playwright 录制门户页 30 秒导览 GIF 存到 `docs/showcase.gif` 并嵌入 README（环境不可用则制作 CSS 动画演示页替代）（✅ 2026-11-12 完成：无 Playwright npm，改用缓存 Chromium headless shell——门户导览新增 ?tour=auto 自动播放与 ?tour=N 同步定格深链（兼具分享价值），1280x2400 全页帧避开滚动竞态，tools/make_showcase_gif.py 检测聚光灯位置裁窗+PingFang/Hiragino 自绘字幕条+贪心换行，PIL 合成 17 帧 1MB GIF 嵌入 README）
 - [x] [物料] 新增 `docs/architecture.svg` 架构图：纯前端单文件 + Mock 生成器 + Pages 部署链路 + AI 解读组件接入方式，嵌入 README（✅ 2026-11-12 完成：手绘 SVG 与站点同款暗色设计语言，两层结构（访客浏览器组件图 + git push→Actions→Pages 部署链路+访客回路），无头浏览器渲染目检通过，XML 校验通过）
 - [x] [物料] 新增 `CHANGELOG.md`：按 git 历史回溯整理版本线（01→11b），以后每轮优化追加一条（✅ 2026-11-12 完成：五段版本线 0.1.0→0.5.0（奠基/十五张地图/亮暗主题/AI 助手/持续优化轮），Keep a Changelog 风格 + compare 链接，README「持续迭代」节加入口）
-- [ ] [物料] 每个工作台 `<head>` 补 OG meta（title/description），分享到聊天工具时出现规范卡片
+- [x] [物料] 每个工作台 `<head>` 补 OG meta（title/description），分享到聊天工具时出现规范卡片（✅ 2026-11-12 完成：18 页全量（15 工作台+门户+一页纸+自检页），og:description 复用各页一句话价值，og:image 指向已上线真实截图（3 页），og:url 规范地址；脚本注入+逐页断言，C 线全部收官）
 
 ## 扩展候选（全部完成后从这里取）
 
