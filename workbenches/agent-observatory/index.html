@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AI Agent 观测台 · Agent Observatory | ZCode Labs</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<script>/* CDN 三级回退：国内镜像 → unpkg → cdnjs；全部失败则 stub 兜底保住数据面板 */window.echarts||document.write("<script src='https://registry.npmmirror.com/echarts/5.5.0/files/dist/echarts.min.js'><\/script>")</script>
+<script>window.echarts||document.write("<script src='https://unpkg.com/echarts@5.5.0/dist/echarts.min.js'><\/script>")</script>
+<script>window.echarts||document.write("<script src='https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js'><\/script>")</script>
+<script>window.echarts||(window.echarts={init:el=>{try{el.innerHTML='<div style="display:flex;height:100%;align-items:center;justify-content:center;color:#8494b8;font-size:12px">📉 图表库加载失败 · 文字数据面板不受影响</div>'}catch(e){}return{setOption(){},getOption(){return{}},resize(){}}}})</script>
 <script>try{document.documentElement.dataset.theme=localStorage.getItem('zwb-theme')||'dark'}catch(e){}</script>
 <style>
 :root{--bg:#070b14;--p1:#0d1322;--p2:#0a0f1c;--line:#1c2740;--txt:#dfe7ff;--sub:#8494b8;--acc:#4f8cff;--ok:#34d399;--warn:#fbbf24;--bad:#f87171;--cy:#22d3ee;--purple:#a78bfa;--pink:#f472b6;--glow:#0a2a2a;--track:#131c33;--split:#141d33;--acc-soft:rgba(79,140,255,.12);--cy-soft:rgba(34,211,238,.12);--purple-soft:rgba(167,139,250,.12);--pink-soft:rgba(244,114,182,.12);--ok-soft:rgba(52,211,153,.08);--ok-line:rgba(52,211,153,.35);--warn-soft:rgba(251,191,36,.08);--warn-line:rgba(251,191,36,.3)}
@@ -119,6 +123,8 @@ themeBtn.textContent=document.documentElement.dataset.theme==='light'?'🌙':'�
 setInterval(()=>{
   tokIn.shift();tokIn.push(Math.round(rnd(3000,9000)));
   tokOut.shift();tokOut.push(Math.round(rnd(1500,5000)));renderTok();
+  Object.keys(latData).forEach(k=>{latData[k]=latData[k].map(v=>Math.max(400,v+Math.round(rnd(-60,60))))});
+  renderLat();
   costV[costV.length-1]=+(costV[costV.length-1]+rnd(0.5,3)).toFixed(1);cost.setOption({series:[{data:costV}]});
   renderKpis();
 },3000);

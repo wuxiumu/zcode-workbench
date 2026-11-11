@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>客户成功台 · CRM Workbench | ZCode Labs</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<script>/* CDN 三级回退：国内镜像 → unpkg → cdnjs；全部失败则 stub 兜底保住数据面板 */window.echarts||document.write("<script src='https://registry.npmmirror.com/echarts/5.5.0/files/dist/echarts.min.js'><\/script>")</script>
+<script>window.echarts||document.write("<script src='https://unpkg.com/echarts@5.5.0/dist/echarts.min.js'><\/script>")</script>
+<script>window.echarts||document.write("<script src='https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js'><\/script>")</script>
+<script>window.echarts||(window.echarts={init:el=>{try{el.innerHTML='<div style="display:flex;height:100%;align-items:center;justify-content:center;color:#8494b8;font-size:12px">📉 图表库加载失败 · 文字数据面板不受影响</div>'}catch(e){}return{setOption(){},getOption(){return{}},resize(){}}}})</script>
 <script>try{document.documentElement.dataset.theme=localStorage.getItem('zwb-theme')||'dark'}catch(e){}</script>
 <style>
 :root{--bg:#070b14;--p1:#0d1322;--p2:#0a0f1c;--line:#1c2740;--txt:#dfe7ff;--sub:#8494b8;--acc:#4f8cff;--ok:#34d399;--warn:#fbbf24;--bad:#f87171;--sky:#38bdf8;--cyan:#22d3ee;--lime:#a3e635;--purple:#a78bfa;--glow:#0c2331;--track:#182242;--split:#141d33;--acc-deep:#1d3a8f;--ok-soft:rgba(52,211,153,.1);--warn-soft:rgba(251,191,36,.1);--warn-line:rgba(251,191,36,.3);--bad-soft:rgba(248,113,113,.1)}
@@ -60,23 +64,32 @@ td{padding:8px;border-bottom:1px solid var(--split);font-variant-numeric:tabular
 <script>
 const V=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const rnd=(a,b)=>a+Math.random()*(b-a);
+const irnd=(a,b)=>Math.round(rnd(a,b));
+const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
 const M=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
 // MRR
 const mrr=echarts.init(document.getElementById('c-mrr'));
 let mrrV=M.map((_,i)=>Math.round(380000*Math.pow(1.085,i)+rnd(-8000,8000)));
 function renderMrr(){mrr.setOption({tooltip:{trigger:'axis'},grid:{left:60,right:16,top:20,bottom:26},xAxis:{type:'category',data:M,axisLabel:{color:V('--sub'),fontSize:10}},yAxis:{type:'value',splitLine:{lineStyle:{color:V('--split')}},axisLabel:{color:V('--sub'),fontSize:10,formatter:v=>(v/10000)+'w'}},series:[{type:'bar',data:mrrV,barWidth:14,itemStyle:{borderRadius:[4,4,0,0],color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:V('--acc')},{offset:1,color:V('--acc-deep')}]}},},{type:'line',data:mrrV,smooth:true,symbol:'circle',symbolSize:5,lineStyle:{width:2,color:V('--cyan')}}]})}
 renderMrr();
-// 管道漏斗
+// 管道漏斗（数据抽离为可变数组，支持实时刷新）
 const pipe=echarts.init(document.getElementById('c-pipe'));
-function renderPipe(){pipe.setOption({tooltip:{trigger:'item'},series:[{type:'funnel',left:'6%',right:'6%',top:6,bottom:6,sort:'descending',gap:3,label:{color:V('--txt'),fontSize:11,formatter:'{b}  {c}'},data:[{value:286,name:'线索 Leads',itemStyle:{color:V('--acc')}},{value:172,name:'初步沟通',itemStyle:{color:V('--sky')}},{value:98,name:'方案演示',itemStyle:{color:V('--cyan')}},{value:52,name:'商务谈判',itemStyle:{color:V('--ok')}},{value:31,name:'赢单 Won',itemStyle:{color:V('--lime')}}]}]})}
+const PIPE_NAMES=['线索 Leads','初步沟通','方案演示','商务谈判','赢单 Won'];
+const PIPE_COLORS=['--acc','--sky','--cyan','--ok','--lime'];
+const pipeData=[286,172,98,52,31];
+function renderPipe(){pipe.setOption({tooltip:{trigger:'item'},series:[{type:'funnel',left:'6%',right:'6%',top:6,bottom:6,sort:'descending',gap:3,label:{color:V('--txt'),fontSize:11,formatter:'{b}  {c}'},data:pipeData.map((v,i)=>({value:v,name:PIPE_NAMES[i],itemStyle:{color:V(PIPE_COLORS[i])}}))}]})}
 renderPipe();
 // 健康度
 const health=echarts.init(document.getElementById('c-health'));
-function renderHealth(){health.setOption({tooltip:{trigger:'item'},legend:{bottom:0,textStyle:{color:V('--sub'),fontSize:10},itemWidth:10,itemHeight:10},series:[{type:'pie',radius:['45%','70%'],center:['50%','42%'],label:{show:false},itemStyle:{borderColor:V('--p2'),borderWidth:2},data:[{value:58,name:'健康',itemStyle:{color:V('--ok')}},{value:27,name:'关注',itemStyle:{color:V('--warn')}},{value:15,name:'危险',itemStyle:{color:V('--bad')}}]}]})}
+const healthData=[58,27,15];
+function renderHealth(){health.setOption({tooltip:{trigger:'item'},legend:{bottom:0,textStyle:{color:V('--sub'),fontSize:10},itemWidth:10,itemHeight:10},series:[{type:'pie',radius:['45%','70%'],center:['50%','42%'],label:{show:false},itemStyle:{borderColor:V('--p2'),borderWidth:2},data:[['健康','--ok'],['关注','--warn'],['危险','--bad']].map((x,i)=>({name:x[0],value:healthData[i],itemStyle:{color:V(x[1])}}))}]})}
 renderHealth();
 // 行业
 const ind=echarts.init(document.getElementById('c-ind'));
-function renderInd(){ind.setOption({tooltip:{trigger:'item'},legend:{bottom:0,textStyle:{color:V('--sub'),fontSize:10},itemWidth:10,itemHeight:10},series:[{type:'pie',radius:['0%','68%'],roseType:'radius',center:['50%','42%'],label:{color:V('--sub'),fontSize:10},data:[{value:32,name:'零售电商',itemStyle:{color:V('--acc')}},{value:24,name:'制造',itemStyle:{color:V('--cyan')}},{value:18,name:'教育',itemStyle:{color:V('--purple')}},{value:14,name:'金融',itemStyle:{color:V('--ok')}},{value:12,name:'其他',itemStyle:{color:V('--warn')}}]}]})}
+const indNames=['零售电商','制造','教育','金融','其他'];
+const indColors=['--acc','--cyan','--purple','--ok','--warn'];
+const indData=[32,24,18,14,12];
+function renderInd(){ind.setOption({tooltip:{trigger:'item'},legend:{bottom:0,textStyle:{color:V('--sub'),fontSize:10},itemWidth:10,itemHeight:10},series:[{type:'pie',radius:['0%','68%'],roseType:'radius',center:['50%','42%'],label:{color:V('--sub'),fontSize:10},data:indData.map((v,i)=>({value:v,name:indNames[i],itemStyle:{color:V(indColors[i])}}))}]})}
 renderInd();
 // NPS
 const nps=echarts.init(document.getElementById('c-nps'));
@@ -102,16 +115,28 @@ const riskData=[
 const hCls={'危险':'h-bad','关注':'h-mid','健康':'h-good'};
 document.getElementById('risk').innerHTML='<tr><th>客户</th><th>行业</th><th>风险分</th><th>信号</th><th>等级</th></tr>'+riskData.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td style="color:var(--sub)">${r[3]}</td><td><span class="badge ${hCls[r[4]]}"><i></i>${r[4]}</span></td></tr>`).join('');
 // KPI
+let renewRate=91.2,npsVal=47;
 function renderKpis(){
   const mrrNow=mrrV[mrrV.length-1];
   document.getElementById('kpis').innerHTML=[
     ['MRR','¥'+(mrrNow/10000).toFixed(1)+'w','up','+8.5% MoM'],
     ['企业客户','1,286','up','本月 +23'],
-    ['续约率','91.2',' %','up','+1.8pt'],
-    ['NPS 净推荐值','47','','dn','-2 分'],
+    ['续约率',renewRate.toFixed(1),' %',renewRate>=90?'up':'dn',renewRate>=90?'高于 90% 基线 +1.8pt':'跌破 90% 基线需关注'],
+    ['NPS 净推荐值',String(npsVal),'',npsVal>=45?'up':'dn',npsVal>=45?'健康 · 行业均值 36':'低于行业均值 36'],
   ].map(x=>`<div class="kpi"><div class="l">${x[0]}</div><div class="v">${x[1]}<small>${x[2]}</small></div><div class="d ${x[3]}">${x[4]}</div></div>`).join('');
 }
 renderKpis();
+// 模拟实时：全图表联动刷新
+setInterval(()=>{
+  mrrV.shift();mrrV.push(Math.round(mrrV[mrrV.length-1]*rnd(1.055,1.10)));
+  npsV.shift();npsV.push(Math.round(rnd(30,62)));tkV.shift();tkV.push(Math.round(rnd(80,320)));
+  pipeData.forEach((v,i)=>pipeData[i]=Math.max(6,Math.round(v*rnd(.985,1.02))));
+  healthData.forEach((v,i)=>healthData[i]=clamp(v+irnd(-2,3),8,70));
+  indData.forEach((v,i)=>indData[i]=Math.max(5,v+irnd(-1,2)));
+  renewRate=+clamp(renewRate+rnd(-.2,.2),88,95).toFixed(1);
+  npsVal=clamp(npsVal+irnd(-1,1),40,55);
+  renderMrr();renderPipe();renderHealth();renderInd();renderNps();renderRenew();renderKpis();
+},4000);
 // 主题切换：图表按当前 CSS 变量重建
 function retheme(){renderMrr();renderPipe();renderHealth();renderInd();renderNps();renderRenew();}
 const themeBtn=document.getElementById('themeBtn');

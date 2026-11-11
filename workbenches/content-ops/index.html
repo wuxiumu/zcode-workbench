@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>内容运营台 · Content Ops | ZCode Labs</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<script>/* CDN 三级回退：国内镜像 → unpkg → cdnjs；全部失败则 stub 兜底保住数据面板 */window.echarts||document.write("<script src='https://registry.npmmirror.com/echarts/5.5.0/files/dist/echarts.min.js'><\/script>")</script>
+<script>window.echarts||document.write("<script src='https://unpkg.com/echarts@5.5.0/dist/echarts.min.js'><\/script>")</script>
+<script>window.echarts||document.write("<script src='https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js'><\/script>")</script>
+<script>window.echarts||(window.echarts={init:el=>{try{el.innerHTML='<div style="display:flex;height:100%;align-items:center;justify-content:center;color:#8494b8;font-size:12px">📉 图表库加载失败 · 文字数据面板不受影响</div>'}catch(e){}return{setOption(){},getOption(){return{}},resize(){}}}})</script>
 <script>try{document.documentElement.dataset.theme=localStorage.getItem('zwb-theme')||'dark'}catch(e){}</script>
 <style>
 :root{--bg:#070b14;--p1:#0d1322;--p2:#0a0f1c;--line:#1c2740;--txt:#dfe7ff;--sub:#8494b8;--acc:#4f8cff;--ok:#34d399;--warn:#fbbf24;--bad:#f87171;--pink:#f472b6;--cyan:#22d3ee;--glow:#251234;--track:#182242;--split:#141d33;--acc-deep:#1d3a8f;--ok-soft:rgba(52,211,153,.12);--cyan-soft:rgba(34,211,238,.12);--warn-soft:rgba(251,191,36,.12);--warn-line:rgba(251,191,36,.3);--bad-soft:rgba(248,113,113,.12);--pink-soft:rgba(244,114,182,.12)}
@@ -86,17 +90,23 @@ const days=Array.from({length:14},(_,i)=>{const d=new Date(Date.now()-(13-i)*864
 const convData=[days.map(()=>Math.round(rnd(180,420))),days.map(()=>Math.round(rnd(140,320))),days.map(()=>Math.round(rnd(120,260)))];
 function renderConv(){conv.setOption({tooltip:{trigger:'axis'},legend:{textStyle:{color:V('--sub'),fontSize:10},top:0},grid:{left:36,right:12,top:30,bottom:24},xAxis:{type:'category',data:days,axisLabel:{color:V('--sub'),fontSize:9}},yAxis:{type:'value',splitLine:{lineStyle:{color:V('--split')}},axisLabel:{color:V('--sub'),fontSize:10}},series:[{name:'领取',type:'line',smooth:true,data:convData[0],showSymbol:false,lineStyle:{width:2,color:V('--acc')}},{name:'发布',type:'line',smooth:true,data:convData[1],showSymbol:false,lineStyle:{width:2,color:V('--cyan')}},{name:'通过',type:'line',smooth:true,data:convData[2],showSymbol:false,lineStyle:{width:2,color:V('--ok')}}]})}
 renderConv();
-// 渠道
+// 渠道（数据抽离为可变数组，支持实时刷新）
 const chan=echarts.init(document.getElementById('c-chan'));
-function renderChan(){chan.setOption({tooltip:{trigger:'item'},legend:{bottom:0,textStyle:{color:V('--sub'),fontSize:10},itemWidth:10,itemHeight:10},series:[{type:'pie',radius:['42%','66%'],center:['50%','42%'],label:{show:false},itemStyle:{borderColor:V('--p2'),borderWidth:2},data:[{value:38,name:'小红书',itemStyle:{color:V('--pink')}},{value:26,name:'视频号',itemStyle:{color:V('--ok')}},{value:24,name:'抖音',itemStyle:{color:V('--cyan')}},{value:12,name:'微博',itemStyle:{color:V('--warn')}}]}]})}
+const CHAN_NAMES=['小红书','视频号','抖音','微博'];
+const CHAN_COLORS=['--pink','--ok','--cyan','--warn'];
+const chanData=[38,26,24,12];
+function renderChan(){chan.setOption({tooltip:{trigger:'item'},legend:{bottom:0,textStyle:{color:V('--sub'),fontSize:10},itemWidth:10,itemHeight:10},series:[{type:'pie',radius:['42%','66%'],center:['50%','42%'],label:{show:false},itemStyle:{borderColor:V('--p2'),borderWidth:2},data:chanData.map((v,i)=>({value:v,name:CHAN_NAMES[i],itemStyle:{color:V(CHAN_COLORS[i])}}))}]})}
 renderChan();
-// 分类热度
+// 分类热度（数据抽离为可变数组）
 const cat=echarts.init(document.getElementById('c-cat'));
-function renderCat(){cat.setOption({tooltip:{trigger:'axis'},grid:{left:70,right:30,top:10,bottom:24},xAxis:{type:'value',splitLine:{lineStyle:{color:V('--split')}},axisLabel:{color:V('--sub'),fontSize:10}},yAxis:{type:'category',data:['家居好物','职场效率','母婴育儿','数码科技','穿搭种草','美食探店'],axisLabel:{color:V('--sub'),fontSize:11}},series:[{type:'bar',data:[86,120,154,178,231,264],barWidth:14,itemStyle:{borderRadius:[0,4,4,0],color:{type:'linear',x:0,y:0,x2:1,y2:0,colorStops:[{offset:0,color:V('--acc-deep')},{offset:1,color:V('--pink')}]}}}]})}
+const CAT_NAMES=['家居好物','职场效率','母婴育儿','数码科技','穿搭种草','美食探店'];
+const catData=[86,120,154,178,231,264];
+function renderCat(){cat.setOption({tooltip:{trigger:'axis'},grid:{left:70,right:30,top:10,bottom:24},xAxis:{type:'value',splitLine:{lineStyle:{color:V('--split')}},axisLabel:{color:V('--sub'),fontSize:10}},yAxis:{type:'category',data:CAT_NAMES,axisLabel:{color:V('--sub'),fontSize:11}},series:[{type:'bar',data:catData,barWidth:14,itemStyle:{borderRadius:[0,4,4,0],color:{type:'linear',x:0,y:0,x2:1,y2:0,colorStops:[{offset:0,color:V('--acc-deep')},{offset:1,color:V('--pink')}]}}}]})}
 renderCat();
-// 达标率仪表
+// 达标率仪表（可变数值）
 const rate=echarts.init(document.getElementById('c-rate'));
-function renderRate(){rate.setOption({series:[{type:'gauge',startAngle:210,endAngle:-30,min:0,max:100,radius:'92%',center:['50%','58%'],progress:{show:true,width:10,itemStyle:{color:V('--ok')}},axisLine:{lineStyle:{width:10,color:[[1,V('--track')]]}},axisTick:{show:false},splitLine:{show:false},axisLabel:{show:false},pointer:{show:false},anchor:{show:false},detail:{valueAnimation:true,fontSize:26,color:V('--txt'),formatter:'{value}%',offsetCenter:[0,'18%']},title:{show:true,offsetCenter:[0,'52%'],fontSize:11,color:V('--sub')},data:[{value:72,name:'数据达标率(播放/点赞)'}]}]})}
+let rateVal=72;
+function renderRate(){rate.setOption({series:[{type:'gauge',startAngle:210,endAngle:-30,min:0,max:100,radius:'92%',center:['50%','58%'],progress:{show:true,width:10,itemStyle:{color:V('--ok')}},axisLine:{lineStyle:{width:10,color:[[1,V('--track')]]}},axisTick:{show:false},splitLine:{show:false},axisLabel:{show:false},pointer:{show:false},anchor:{show:false},detail:{valueAnimation:true,fontSize:26,color:V('--txt'),formatter:'{value}%',offsetCenter:[0,'18%']},title:{show:true,offsetCenter:[0,'52%'],fontSize:11,color:V('--sub')},data:[{value:rateVal,name:'数据达标率(播放/点赞)'}]}]})}
 renderRate();
 // 审核队列
 const queueData=[
@@ -129,7 +139,14 @@ const themeBtn=document.getElementById('themeBtn');
 function applyTheme(t){document.documentElement.dataset.theme=t;try{localStorage.setItem('zwb-theme',t)}catch(e){}themeBtn.textContent=t==='light'?'🌙':'☀️';retheme();}
 themeBtn.addEventListener('click',()=>applyTheme(document.documentElement.dataset.theme==='light'?'dark':'light'));
 themeBtn.textContent=document.documentElement.dataset.theme==='light'?'🌙':'☀️';
-setInterval(()=>{renderRw();renderKpis()},4200);
+setInterval(()=>{
+  convData.forEach((arr,i)=>{const rg=[[180,420],[140,320],[120,260]][i];arr.shift();arr.push(Math.round(rnd(rg[0],rg[1])))});
+  chanData.forEach((v,i)=>chanData[i]=Math.max(4,Math.round(v*rnd(.96,1.05))));
+  catData.forEach((v,i)=>catData[i]=Math.max(30,v+Math.round(rnd(-8,10))));
+  rateVal=+Math.max(60,Math.min(85,rateVal+rnd(-1.2,1.4))).toFixed(0);
+  renderConv();renderChan();renderCat();renderRate();
+  renderRw();renderKpis();
+},4200);
 window.addEventListener('resize',()=>[conv,chan,cat,rate].forEach(c=>c.resize()));
 </script>
 </body>
