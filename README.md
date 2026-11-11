@@ -5,6 +5,16 @@
 
 🌐 **在线入口**：https://wuxiumu.github.io/zcode-workbench/
 
+![Workbenches](https://img.shields.io/badge/workbenches-15-4f8cff) ![Backend](https://img.shields.io/badge/backend-none-22d3ee) ![Deploy](https://img.shields.io/badge/deploy-GitHub%20Pages-34d399) ![Charts](https://img.shields.io/badge/charts-ECharts%205-fbbf24) ![QA](https://img.shields.io/badge/self--check-tool%20built-8b98b8)
+
+## 效果速览 · 真实页面截图
+
+> 截图由无头浏览器自动抓取（[tools/screenshot.sh](tools/screenshot.sh)），不是设计稿 —— 下面每一张，点进表格链接都是活的页面。
+
+| 运维监控台 · 机器出事 3 秒就知道 | 增长分析台 · 钱从哪个渠道赚来一眼看穿 | 客户成功台 · 大客户要跑提前 30 天知道 |
+|---|---|---|
+| ![运维监控台](docs/screens/ops-center.png) | ![增长分析台](docs/screens/growth-analytics.png) | ![客户成功台](docs/screens/crm-workbench.png) |
+
 ## 工作台清单
 
 | # | 工作台 | 定位 | 直达 |
