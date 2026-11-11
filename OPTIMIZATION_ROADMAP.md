@@ -20,7 +20,7 @@
 
 ## B. 同行视角 · 专业性
 
-- [ ] [同行] 抽取全站设计变量到 `assets/theme.css`（颜色/间距/圆角统一 token），各工作台引用，消除重复定义
+- [x] [同行] 抽取全站设计变量到 `assets/theme.css`（颜色/间距/圆角统一 token），各工作台引用，消除重复定义（✅ 2026-11-12 完成：核心色 11 变量 × 亮暗两套收编为单一事实来源，15 个工作台 link 引用并剥离内联重复；每页专属强调色与氛围光保留页级；agent-observatory 的 --track 单页特例保留覆盖；顺带修复 boss-one-pager 未定义的 --acc2-line；间距/圆角 token 化为后续迭代）
 - [ ] [同行] 门户页加 ⌘K / Ctrl+K 命令面板：键盘快速搜索并跳转任意工作台，支持上下键与回车
 - [ ] [同行] 每个工作台图表支持「导出 PNG」与「导出 CSV」按钮（ECharts 自带 getDataURL，CSV 由 Mock 数据生成）
 - [ ] [同行] 可访问性巡检：交互元素补 aria-label、检查亮暗主题文字对比度、支持 prefers-reduced-motion 关闭动效

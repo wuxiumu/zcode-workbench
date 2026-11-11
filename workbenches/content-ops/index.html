@@ -10,9 +10,10 @@
 <script>window.echarts||document.write("<script src='https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js'><\/script>")</script>
 <script>window.echarts||(window.echarts={init:el=>{try{el.innerHTML='<div style="display:flex;height:100%;align-items:center;justify-content:center;color:#8494b8;font-size:12px">📉 图表库加载失败 · 文字数据面板不受影响</div>'}catch(e){}return{setOption(){},getOption(){return{}},resize(){}}}})</script>
 <script>try{document.documentElement.dataset.theme=localStorage.getItem('zwb-theme')||'dark'}catch(e){}</script>
+<link rel="stylesheet" href="../../assets/theme.css">
 <style>
-:root{--bg:#070b14;--p1:#0d1322;--p2:#0a0f1c;--line:#1c2740;--txt:#dfe7ff;--sub:#8494b8;--acc:#4f8cff;--ok:#34d399;--warn:#fbbf24;--bad:#f87171;--pink:#f472b6;--cyan:#22d3ee;--glow:#251234;--track:#182242;--split:#141d33;--acc-deep:#1d3a8f;--ok-soft:rgba(52,211,153,.12);--cyan-soft:rgba(34,211,238,.12);--warn-soft:rgba(251,191,36,.12);--warn-line:rgba(251,191,36,.3);--bad-soft:rgba(248,113,113,.12);--pink-soft:rgba(244,114,182,.12)}
-[data-theme="light"]{--bg:#f5f7fa;--p1:#ffffff;--p2:#f7f9fc;--line:#e3e8ef;--txt:#1f2733;--sub:#5a6675;--acc:#2f6cff;--ok:#0e9f6e;--warn:#d97706;--bad:#dc2626;--pink:#db2777;--cyan:#0891b2;--glow:#f0e3f7;--track:#e8edf5;--split:#e3e8ef;--acc-deep:#9db9f7;--ok-soft:rgba(14,159,110,.1);--cyan-soft:rgba(8,145,178,.1);--warn-soft:rgba(217,119,6,.1);--warn-line:rgba(217,119,6,.35);--bad-soft:rgba(220,38,38,.08);--pink-soft:rgba(219,39,119,.1)}
+:root{--acc:#4f8cff;--pink:#f472b6;--cyan:#22d3ee;--glow:#251234;--acc-deep:#1d3a8f;--ok-soft:rgba(52,211,153,.12);--cyan-soft:rgba(34,211,238,.12);--warn-soft:rgba(251,191,36,.12);--warn-line:rgba(251,191,36,.3);--bad-soft:rgba(248,113,113,.12);--pink-soft:rgba(244,114,182,.12);}
+[data-theme="light"]{--acc:#2f6cff;--pink:#db2777;--cyan:#0891b2;--glow:#f0e3f7;--acc-deep:#9db9f7;--ok-soft:rgba(14,159,110,.1);--cyan-soft:rgba(8,145,178,.1);--warn-soft:rgba(217,119,6,.1);--warn-line:rgba(217,119,6,.35);--bad-soft:rgba(220,38,38,.08);--pink-soft:rgba(219,39,119,.1);}
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:radial-gradient(900px 500px at 50% -10%,var(--glow) 0%,var(--bg) 62%);color:var(--txt);font-family:"PingFang SC","Microsoft YaHei",sans-serif;padding:22px;min-height:100vh}
 .top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:18px;padding-right:56px}
