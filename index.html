@@ -76,6 +76,26 @@
   .foot{margin-top:64px;padding-top:24px;border-top:1px solid var(--line);color:var(--sub);font-size:13px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
   .foot a{color:var(--acc);text-decoration:none}
   .mock{position:fixed;right:18px;bottom:16px;font-size:11px;color:var(--warn);background:var(--warn-soft);border:1px solid var(--warn-line);border-radius:99px;padding:4px 12px;letter-spacing:.1em}
+  /* ===== 30 秒自动导览（老板视角：一键看懂整个矩阵） ===== */
+  .tour-btn{display:inline-flex;align-items:center;gap:9px;margin-top:24px;font-size:14px;font-weight:700;color:#fff;background:linear-gradient(92deg,var(--acc),var(--acc2));border:none;border-radius:99px;padding:11px 22px;cursor:pointer;letter-spacing:.04em;box-shadow:0 10px 26px -10px rgba(79,140,255,.7);transition:transform .2s,box-shadow .2s;font-family:inherit}
+  .tour-btn:hover{transform:translateY(-2px);box-shadow:0 14px 32px -10px rgba(79,140,255,.9)}
+  .tour-btn:disabled{opacity:.6;cursor:default;transform:none}
+  .tour-btn .dot{width:8px;height:8px;border-radius:50%;background:#fff;animation:pulse 1.6s infinite}
+  .tour-overlay{position:fixed;inset:0;z-index:9000;background:rgba(5,9,20,.78);backdrop-filter:blur(2px);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .35s,visibility .35s}
+  .tour-overlay.on{opacity:1;visibility:visible;pointer-events:auto}
+  .tour-hud{position:fixed;left:50%;bottom:34px;transform:translate(-50%,20px);z-index:9002;width:min(640px,92vw);background:var(--panel);border:1px solid var(--acc);border-radius:16px;padding:16px 20px 14px;box-shadow:0 24px 60px rgba(0,0,0,.6);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .35s,transform .35s,visibility .35s}
+  .tour-hud.on{opacity:1;visibility:visible;pointer-events:auto;transform:translate(-50%,0)}
+  .tour-hud .step{font-size:11px;color:var(--acc2);letter-spacing:.12em;margin-bottom:7px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .tour-hud .say{font-size:16px;font-weight:700;line-height:1.65}
+  .tour-hud .bar{height:3px;border-radius:2px;background:var(--faint);margin-top:12px;overflow:hidden}
+  .tour-hud .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--acc),var(--acc2))}
+  .tour-stop{margin-top:12px;width:100%;font-size:12px;color:var(--sub);background:none;border:1px solid var(--line);border-radius:8px;padding:6px 0;cursor:pointer;font-family:inherit;transition:color .2s,border-color .2s}
+  .tour-stop:hover{color:var(--txt);border-color:var(--acc)}
+  .card.spot{z-index:9001;border-color:var(--acc);box-shadow:0 0 0 4px rgba(79,140,255,.35),0 24px 60px rgba(0,0,0,.8);transform:translateY(-4px)}
+  @media(prefers-reduced-motion:reduce){
+    .tour-btn .dot{animation:none}
+    .tour-overlay,.tour-hud,.card{transition:none}
+  }
   @media(max-width:900px){
     .searchrow{flex-direction:column;align-items:stretch}
     .search{max-width:none;width:100%}
@@ -91,6 +111,7 @@
   <span class="badge"><i></i>ZCODE LABS · FDE PORTFOLIO</span>
   <h1>十五张作战地图，<br><span class="grad">一个工程师的业务翻译能力。</span></h1>
   <p class="lead">你好，我是<b>五朽木</b>，一名 FDE（Forward Deployed Engineer）。这个站点是我把「客户的业务问题 → 可运行系统」的翻译过程公开演示的地方：每个工作台都是<b>真实可访问的单文件应用</b>，Mock 数据驱动，点开即用。</p>
+  <button class="tour-btn" id="tourBtn" type="button" aria-label="播放 30 秒自动导览，逐个介绍每个工作台是做什么的"><span class="dot" aria-hidden="true"></span>▶ 30 秒看懂整个矩阵 · 自动导览</button>
 
   <div class="strip" id="stats"></div>
 
@@ -111,6 +132,15 @@
   </div>
 </div>
 <div class="mock">MOCK DATA · 演示数据</div>
+
+<!-- 30 秒导览：遮罩 + 底部字幕条（aria-live 让读屏器同步播报当前一站） -->
+<div class="tour-overlay" id="tourOverlay"></div>
+<div class="tour-hud" id="tourHud" role="status" aria-live="polite">
+  <div class="step"><span id="tourStep"></span><span>Esc / 点空白处可随时退出</span></div>
+  <div class="say" id="tourSay"></div>
+  <div class="bar" aria-hidden="true"><i id="tourBarFill"></i></div>
+  <button class="tour-stop" id="tourStop" type="button">停止导览</button>
+</div>
 
 <script>
 // 主题切换（门户无图表，仅切变量 + 持久化；全部页面共用 zwb-theme 键）
@@ -191,6 +221,74 @@ const stats=[
 const box=document.getElementById("stats");
 function renderStats(){box.innerHTML=stats.map(s=>`<div class="stat"><div class="n">${s.n()}<em>${s.em}</em></div><div class="l">${s.l}</div></div>`).join("")}
 renderStats();setInterval(renderStats,2600);
+
+/* ===== 30 秒自动导览：每站 2 秒 × 15 站 ≈ 30 秒，逐卡高亮 + 大白话业务价值 ===== */
+const tourSays={
+  "01":"公司所有服务器健不健康，一屏看清 —— 机器出事几秒内就知道。",
+  "02":"今天赚了多少钱、钱从哪个渠道来，一眼看穿。",
+  "03":"哪些大客户快要流失，提前拉出名单去救。",
+  "04":"一篇素材从创建到发布卡在哪一步，清清楚楚。",
+  "05":"AI 每天花多少钱、跑得快不快、有没有出错。",
+  "06":"哪个仓库快缺货、哪家供应商拖了后腿。",
+  "07":"账上现金还能撑几周，什么时候该踩刹车。",
+  "08":"公司的数据资产在哪、归谁管、质量行不行。",
+  "09":"新模型到底比旧模型强多少，用数据说话。",
+  "10":"人员在扩张还是流失，招聘卡在哪一关。",
+  "11":"客户问题多久能解决，哪个客服忙不过来。",
+  "12":"广告钱花得值不值，哪些投放正在亏钱。",
+  "13":"现场几万台设备谁掉线了，马上能找到。",
+  "14":"违规内容拦住了多少，审核快不快、准不准。",
+  "15":"每个新功能有没有真效果，用实验来证明。",
+};
+const tourBtn=document.getElementById("tourBtn"),tourOverlay=document.getElementById("tourOverlay"),
+      tourHud=document.getElementById("tourHud"),tourStep=document.getElementById("tourStep"),
+      tourSay=document.getElementById("tourSay"),tourBar=document.getElementById("tourBarFill");
+const reducedMotion=matchMedia("(prefers-reduced-motion: reduce)").matches;
+let tourTimer=null,tourIdx=-1;
+
+function tourStop(){
+  clearTimeout(tourTimer);tourTimer=null;
+  if(tourIdx>=0)cards[tourIdx].classList.remove("spot");
+  tourIdx=-1;
+  tourOverlay.classList.remove("on");tourHud.classList.remove("on");
+  tourBtn.disabled=false;
+}
+function tourFinale(){ // 收尾字幕：把「看了什么」升华成「FDE 是干什么的」
+  if(tourIdx>=0)cards[tourIdx].classList.remove("spot");
+  tourIdx=-1;
+  tourStep.textContent="导览结束";
+  tourSay.textContent="十五张作战地图看完了 —— 这就是一个 FDE 把业务问题翻译成可运行系统的能力。点开任何一张卡片，看细节。";
+  tourBar.style.transition="none";tourBar.style.width="100%";
+  tourTimer=setTimeout(tourStop,reducedMotion?6000:3600);
+}
+function tourNext(){
+  if(tourIdx+1>=workbenches.length){tourFinale();return}
+  if(tourIdx>=0)cards[tourIdx].classList.remove("spot");
+  tourIdx++;
+  const w=workbenches[tourIdx];
+  cards[tourIdx].classList.add("spot");
+  cards[tourIdx].scrollIntoView({behavior:reducedMotion?"auto":"smooth",block:"center"});
+  tourStep.textContent=`第 ${tourIdx+1} / ${workbenches.length} 站 · ${w.no} ${w.name}`;
+  tourSay.textContent=tourSays[w.no]||w.desc;
+  tourBar.style.transition="none";tourBar.style.width="0";
+  requestAnimationFrame(()=>{ // 下一帧再恢复过渡，保证进度条从头开始
+    tourBar.style.transition=reducedMotion?"none":"width 2s linear";
+    tourBar.style.width="100%";
+  });
+  tourTimer=setTimeout(tourNext,2000);
+}
+function tourStart(){
+  kw.value="";activeTag="ALL"; // 复位筛选，确保 15 张卡片全部可见
+  chipEls.forEach(x=>x.classList.toggle("on",x.dataset.tag==="ALL"));
+  applyFilter();
+  tourBtn.disabled=true;
+  tourOverlay.classList.add("on");tourHud.classList.add("on");
+  tourIdx=-1;tourNext();
+}
+tourBtn.addEventListener("click",tourStart);
+document.getElementById("tourStop").addEventListener("click",tourStop);
+tourOverlay.addEventListener("click",tourStop);
+addEventListener("keydown",e=>{if(e.key==="Escape"&&tourOverlay.classList.contains("on"))tourStop()});
 </script>
 </body>
 </html>
