@@ -56,7 +56,7 @@ FDE 的价值不在于写代码，而在于**把客户的业务问题翻译成�
 
 ## 持续迭代
 
-路线与 backlog 见 [Issues](https://github.com/wuxiumu/zcode-workbench/issues)。
+路线与 backlog 见 [Issues](https://github.com/wuxiumu/zcode-workbench/issues)；版本线见 [CHANGELOG.md](CHANGELOG.md)。
 已规划的十五张作战地图全部交付上线，新工作台的动向与扩展方向请关注 Issues。
 
 ## 本地预览
