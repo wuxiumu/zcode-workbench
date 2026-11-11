@@ -78,7 +78,9 @@ td{padding:7px 8px;border-bottom:1px solid var(--split);font-variant-numeric:tab
 <div class="mock">MOCK DATA · 演示数据</div>
 
 <script>
-const V=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+// V() 带回退：theme.css 或内联变量任一缺失时也绝不给 ECharts 传空色值（空串+'55' 会触发 addColorStop 崩溃风暴）
+const FB={'--acc':'#4f8cff','--sky':'#38bdf8','--cyan':'#22d3ee','--lime':'#a3e635','--purple':'#a78bfa','--glow':'#101c3f','--acc-deep':'#1d3a8f','--ok':'#34d399','--warn':'#fbbf24','--bad':'#f87171','--sub':'#8b98b8','--line':'#1f2a44','--split':'rgba(255,255,255,.06)','--bg':'#0a0e1a','--p1':'#121829','--p2':'#0e1424','--track':'rgba(255,255,255,.08)'};
+const V=n=>{try{return getComputedStyle(document.documentElement).getPropertyValue(n).trim()||FB[n]||'#4f8cff'}catch(e){return FB[n]||'#4f8cff'}};
 const N=40, rnd=(a,b)=>a+Math.random()*(b-a);
 function walk(base,amp,lo,hi){let v=base;return()=>{v+=rnd(-amp,amp)*0.4;v=Math.max(lo,Math.min(hi,v));return +v.toFixed(1)}}
 const gen=f=>Array.from({length:N},f);
@@ -87,7 +89,7 @@ const series={
   netIn:walk(120,40,20,400), netOut:walk(64,25,10,220),
   io:walk(820,150,200,2400)
 };
-function axis(){return{x:{type:'category',data:Array.from({length:N},(_,i)=>i),axisLine:{lineStyle:{color:V('--line')}},axisLabel:{color:V('--sub'),fontSize:10}},y:{splitLine:{lineStyle:{color:V('--split')}},axisLabel:{color:V('--sub'),fontSize:10}},grid:{left:38,right:12,top:14,bottom:22}}}
+function axis(){return{xAxis:{type:'category',data:Array.from({length:N},(_,i)=>i),axisLine:{lineStyle:{color:V('--line')}},axisLabel:{color:V('--sub'),fontSize:10}},yAxis:{splitLine:{lineStyle:{color:V('--split')}},axisLabel:{color:V('--sub'),fontSize:10}},grid:{left:38,right:12,top:14,bottom:22}}}
 const mk=(id,opt)=>{const c=echarts.init(document.getElementById(id));c.setOption(opt);return c};
 const baseLine=(data,color,name)=>({...axis(),series:[{type:'line',data,name,smooth:true,showSymbol:false,lineStyle:{width:2,color},areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:color+'55'},{offset:1,color:color+'00'}]}}}],tooltip:{trigger:'axis'}});
 const cpuD=gen(()=>series.cpu()),memD=gen(()=>series.mem()),ioD=gen(()=>series.io()),netInD=gen(()=>series.netIn()),netOutD=gen(()=>series.netOut());

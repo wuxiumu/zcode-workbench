@@ -49,7 +49,7 @@
       rec.real = realInit(rec.dom, ...rec.initArgs);   // 与原生行为一致：init 失败就抛
       rec.q.forEach(function(item){                    // 按序重放排队的方法调用
         try{ rec.real[item[0]].apply(rec.real, item[1]); }
-        catch(e){ console.warn('[perf-guard] 重放 ' + item[0] + ' 失败：', e); }
+        catch(e){ console.warn('[perf-guard] 重放 ' + item[0] + ' 失败：', e && e.stack || e); }
       });
       rec.q.length = 0;
       try{ rec.dom.dispatchEvent(new CustomEvent('wb:chart-real', { bubbles:true })); }catch(e){}
@@ -72,10 +72,13 @@
         var rec = { dom:dom, initArgs:rest, q:[], real:null, proxy:null };
         rec.proxy = new Proxy({}, { get:function(t, k){
           if(k === '__wbLazy') return true;              // 身份标记（调试/测试用）
-          return function(){
+          if(rec.real){                                  // 已物化：属性/方法直读，不拆内部约定
+            var val = rec.real[k];
+            return typeof val === 'function' ? val.bind(rec.real) : val;
+          }
+          return function(){                             // 未物化：入队，物化时按序重放
             var a = Array.prototype.slice.call(arguments);
-            if(rec.real) return rec.real[k].apply(rec.real, a); // 已物化：直通
-            rec.q.push([k, a]);                                 // 未物化：入队，物化时按序重放
+            rec.q.push([k, a]);
           };
         }});
         pending.set(dom, rec);
