@@ -222,8 +222,24 @@ const stats=[
   {n:()=>"99.9",em:"%",l:"Pages 可用性(模拟)"},
 ];
 const box=document.getElementById("stats");
-function renderStats(){box.innerHTML=stats.map(s=>`<div class="stat"><div class="n">${s.n()}<em>${s.em}</em></div><div class="l">${s.l}</div></div>`).join("")}
-renderStats();setInterval(renderStats,2600);
+const reducedMotion=matchMedia("(prefers-reduced-motion: reduce)").matches;
+function renderStats(animate){
+  box.innerHTML=stats.map(s=>{
+    const raw=String(s.n()),val=parseFloat(raw),dec=(raw.split(".")[1]||"").length;
+    // 首次渲染数字从 0 滚动到目标值（easeOutCubic），后续刷新瞬时呈现
+    return `<div class="stat"><div class="n"><span class="v" data-target="${val}" data-dec="${dec}">${animate&&!reducedMotion?0:val}</span><em>${s.em}</em></div><div class="l">${s.l}</div></div>`;
+  }).join("");
+  if(!animate||reducedMotion)return;
+  box.querySelectorAll(".v").forEach(v=>{
+    const target=+v.dataset.target,dec=+v.dataset.dec,dur=900,t0=performance.now();
+    (function tick(now){
+      const p=Math.min((now-t0)/dur,1),eased=1-Math.pow(1-p,3);
+      v.textContent=(target*eased).toFixed(dec);
+      if(p<1)requestAnimationFrame(tick);
+    })(t0);
+  });
+}
+renderStats(true);setInterval(()=>renderStats(false),2600);
 
 /* ===== 30 秒自动导览：每站 2 秒 × 15 站 ≈ 30 秒，逐卡高亮 + 大白话业务价值 ===== */
 const tourSays={
@@ -246,7 +262,7 @@ const tourSays={
 const tourBtn=document.getElementById("tourBtn"),tourOverlay=document.getElementById("tourOverlay"),
       tourHud=document.getElementById("tourHud"),tourStep=document.getElementById("tourStep"),
       tourSay=document.getElementById("tourSay"),tourBar=document.getElementById("tourBarFill");
-const reducedMotion=matchMedia("(prefers-reduced-motion: reduce)").matches;
+// reducedMotion 已在统计条处声明（同一 script 块，全块复用）
 let tourTimer=null,tourIdx=-1;
 
 function tourStop(){
