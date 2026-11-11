@@ -221,5 +221,22 @@ tickClock();setInterval(tickClock,1000);
 setInterval(tick,3500);
 window.addEventListener('resize',()=>[onC,stC,typeC,fwC,tpC].forEach(c=>c.resize()));
 </script>
+
+<script>
+window.AI_ASSISTANT={
+  title:'IoT 设备监控台',subtitle:'DEVICE FLEET',
+  insights(){var p0=alerts.filter(function(a){return a.lv==='P0'});
+    return [
+      {tag:'在线率',lv:rateVal>=95?'ok':'warn',text:'当前在线率 '+rateVal+'%'+(rateVal>=95?'，达到 95% 目标。':'，低于 95% 目标，建议排查离线聚集区域。')},
+      {tag:'告警',lv:statuses[2][1]>45?'warn':'ok',text:'今日告警 '+statuses[2][1]+' 条，P0 '+p0.length+' 条'+(p0.length?('，最新：'+p0[0].d+'。'):'。')},
+      {tag:'固件',lv:fwPending>140?'warn':'ok',text:'固件待升级 '+fwPending+' 台（占比 '+(fwPending/total*100).toFixed(1)+'%）'+(fwPending>140?'，建议分批灰度推送 v2.4.1。':'，升级节奏可控。')},
+      {tag:'环境',lv:'info',text:'平均温度与功耗在安全区间，无过热风险。'}
+    ];},
+  advice(){return ['对离线超 7 天的设备下发远程诊断任务。','OTA 分批推送建议夜间执行，降低业务高峰影响。'];},
+  alerts(){var p0=alerts.filter(function(a){return a.lv==='P0'})[0];
+    return p0?{lv:'bad',text:'🔴 P0 告警：'+p0.d+' — '+p0.desc}:null;}
+};
+</script>
+<script src="../../assets/ai-assistant/ai-assistant.js" defer></script>
 </body>
 </html>

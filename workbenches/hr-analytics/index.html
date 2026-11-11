@@ -222,5 +222,23 @@ tickClock();setInterval(tickClock,1000);
 setInterval(tick,3500);
 window.addEventListener('resize',()=>[t12C,deptC,funC,gaugeC,roseC].forEach(c=>c.resize()));
 </script>
+
+<script>
+window.AI_ASSISTANT={
+  title:'HR 人力效能台',subtitle:'PEOPLE ANALYTICS',
+  insights(){var hc=hc12[hc12.length-1],cvr=(funnel[4][1]/funnel[0][1]*100).toFixed(1);
+    var over=att.map(function(a){var n=sizeOf(a[0]);return {d:a[0],r:+((a[1]+a[2]+a[3])/n*100).toFixed(1)}}).filter(function(x){return x.r>5});
+    return [
+      {tag:'规模',lv:'ok',text:'期末在职 '+hc.toLocaleString()+' 人，本月净增 '+(hires-leavers)+' 人（入职 '+hires+' / 离职 '+leavers+'）。'},
+      {tag:'招聘',lv:'info',text:'本季简历→入职转化率 '+cvr+'%，Offer 接受环节是主要流失口。'},
+      {tag:'离职率',lv:turnover>=15?'bad':turnover>=12?'warn':'ok',text:'年化离职率 '+turnover+'%'+(turnover>=15?'，已超 15% 警戒线！':turnover>=12?'，接近 15% 警戒线，建议做离职原因访谈。':'，处于健康区间。')},
+      {tag:'考勤',lv:over.length?'warn':'ok',text:over.length?(over.length+' 个部门考勤异常率超 5%（最高 '+over.sort(function(a,b){return b.r-a.r})[0].d+' '+over.sort(function(a,b){return b.r-a.r})[0].r+'%）。'):'各部门考勤异常率均低于 5%。'}
+    ];},
+  advice(){return ['对连续两月迟到 Top 部门做考勤制度宣讲。','Offer 阶段流失偏高，建议缩短审批链路到 48h 内。'];},
+  alerts(){var over=att.map(function(a){var n=sizeOf(a[0]);return {d:a[0],r:+((a[1]+a[2]+a[3])/n*100).toFixed(1)}}).filter(function(x){return x.r>5}).sort(function(a,b){return b.r-a.r})[0];
+    return over?{lv:'warn',text:'⚠️ 考勤异常：'+over.d+' 异常率 '+over.r+'%'}:null;}
+};
+</script>
+<script src="../../assets/ai-assistant/ai-assistant.js" defer></script>
 </body>
 </html>

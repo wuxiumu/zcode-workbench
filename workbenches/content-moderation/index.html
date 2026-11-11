@@ -237,5 +237,21 @@ tickClock();setInterval(tickClock,1000);
 setInterval(tick,3500);
 window.addEventListener('resize',()=>[hourC,catC,blC,timeC].forEach(c=>c.resize()));
 </script>
+
+<script>
+window.AI_ASSISTANT={
+  title:'内容审核台',subtitle:'TRUST & SAFETY',
+  insights(){var avg=block14.slice(7).reduce(function(a,b){return a+b},0)/7;
+    return [
+      {tag:'队列',lv:pending>1500?'warn':'ok',text:'待审队列 '+pending.toLocaleString()+' 条'+(pending>1500?'，积压偏高，建议加派夜班人审。':'，机审先行消化正常。')},
+      {tag:'拦截率',lv:blockRate>=4?'warn':'ok',text:'今日拦截率 '+blockRate+'%（近 7 天均值 '+avg.toFixed(2)+'%）'+(blockRate>=4?'，超过 4% 警戒线，关注新型违规手法。':'，处于正常波动区间。')},
+      {tag:'时效',lv:avgMin<=5?'ok':'warn',text:'平均审核时长 '+avgMin+' 分钟'+(avgMin<=5?'，达到 ≤5 分钟目标。':'，超 5 分钟目标，需加派审核员。')},
+      {tag:'申诉',lv:'info',text:'今日申诉成立率 '+apRate+'%，机审误判主要来自广告类。'}
+    ];},
+  advice(){return ['对「广告」类误判样本回流训练机审模型，降低误拦。','申诉成立率若持续 >35%，复核机审阈值召回/精确平衡。'];},
+  alerts(){return blockRate>=4?{lv:'warn',text:'⚠️ 拦截率 '+blockRate+'%，超过 4% 警戒线'}:Math.random()<.4?{lv:'info',text:'💡 新申诉 '+appeals[0].id+'（'+appeals[0].type+'）等待复核'}:null;}
+};
+</script>
+<script src="../../assets/ai-assistant/ai-assistant.js" defer></script>
 </body>
 </html>

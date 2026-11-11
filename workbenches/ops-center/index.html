@@ -145,5 +145,27 @@ renderSvc();renderNodes();pushFeed();pushFeed();renderKpis();
 setInterval(tick,2600);
 window.addEventListener('resize',()=>[cpuC,memC,netC,ioC].forEach(c=>c.resize()));
 </script>
+
+<script>
+window.AI_ASSISTANT={
+  title:'运维监控台',subtitle:'OPS CENTER',
+  insights(){var qps=svcs.reduce(function(a,s){return a+s.qps},0);
+    var worst=svcs.slice().sort(function(a,b){return b.lat-a.lat})[0];
+    var err=svcs.reduce(function(a,s){return a+s.err},0)/svcs.length;
+    var bad=svcs.filter(function(s){return s.err>0.4}).length;
+    return [
+      {tag:'流量',lv:'ok',text:'总 QPS '+qps.toLocaleString()+'，'+nodes.length+' 个节点全部在线，集群承载稳定。'},
+      {tag:'延迟',lv:worst.lat>150?'warn':'ok',text:'最高 P99 来自 '+worst.name+'（'+worst.lat+' ms）'+(worst.lat>150?'，超过 150ms 体验阈值，建议排查慢查询与连接池。':'，全服务延迟处于健康区间。')},
+      {tag:'错误率',lv:err>0.3?'bad':err>0.15?'warn':'ok',text:'平均错误率 '+err.toFixed(2)+'%'+(bad?('，'+bad+' 个服务错误率超 0.4%，需立即介入。'):'，服务面整体健康。')},
+      {tag:'容量',lv:'info',text:'CPU / 内存 / 磁盘均在安全水位，可支撑周末流量峰值。'}
+    ];},
+  advice(){var worst=svcs.slice().sort(function(a,b){return b.lat-a.lat})[0];
+    return ['优先对 '+worst.name+' 做全链路追踪，定位 P99 尖刺根因。','错误率 >0.3% 的服务建议灰度回滚最近一次发布。'];},
+  alerts(){var bad=svcs.filter(function(s){return s.err>0.4})[0];
+    if(bad)return {lv:'warn',text:'⚠️ '+bad.name+' 错误率 '+bad.err+'%，超过 0.4% 阈值'};
+    return Math.random()<.4?{lv:'info',text:'💡 每日备份任务已按计划完成'}:null;}
+};
+</script>
+<script src="../../assets/ai-assistant/ai-assistant.js" defer></script>
 </body>
 </html>

@@ -232,5 +232,25 @@ tickClock();setInterval(tickClock,1000);
 setInterval(tick,3500);
 window.addEventListener('resize',()=>[roasC,chanC,funC,cpcC,ctrC].forEach(c=>c.resize()));
 </script>
+
+<script>
+window.AI_ASSISTANT={
+  title:'营销投放台',subtitle:'ADS PERFORMANCE',
+  insights(){var lastRoas=roas[roas.length-1];
+    var sev=plans.filter(function(p){return p[4]<1}).sort(function(a,b){return a[4]-b[4]})[0];
+    var ctr=(clicks/imps*100).toFixed(2);
+    return [
+      {tag:'预算',lv:'info',text:'今日消耗 ¥'+spend.toLocaleString()+'，日预算进度 '+(spend/80000*100).toFixed(0)+'%。'},
+      {tag:'效率',lv:'ok',text:'CTR '+ctr+'%，CPC ¥'+(spend/clicks).toFixed(2)+'，流量成本处于行业合理区间。'},
+      {tag:'ROAS',lv:lastRoas>=2.5?'ok':'warn',text:'最新 ROAS '+lastRoas+(lastRoas>=2.5?'，达成 2.5 目标线。':'，低于 2.5 目标线，建议优化出价与素材。')},
+      {tag:'亏损',lv:sev?'bad':'ok',text:sev?('「'+sev[0]+'」ROAS 仅 '+sev[4]+'（消耗 ¥'+sev[2].toLocaleString()+'），建议立即暂停或换素材。'):'当前无严重亏损计划。'}
+    ];},
+  advice(){var sev=plans.filter(function(p){return p[4]<1}).sort(function(a,b){return a[4]-b[4]})[0];
+    return sev?['暂停「'+sev[0]+'」，预算释放给 Top CTR 素材「'+ctrs.slice().sort(function(a,b){return b[1]-a[1]})[0][0]+'」。','对 ROAS 1.0~1.5 的计划做定向收窄，观察 3 天再决策。']:['向 ROAS 达标渠道追加 10% 预算，放大正循环。'];},
+  alerts(){var sev=plans.filter(function(p){return p[4]<1}).sort(function(a,b){return a[4]-b[4]})[0];
+    return sev?{lv:'bad',text:'🔴 亏损预警：「'+sev[0]+'」ROAS 仅 '+sev[4]}:null;}
+};
+</script>
+<script src="../../assets/ai-assistant/ai-assistant.js" defer></script>
 </body>
 </html>

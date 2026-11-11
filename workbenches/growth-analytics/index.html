@@ -130,5 +130,25 @@ setInterval(()=>{
 },4000);
 window.addEventListener('resize',()=>[funnel,channel,trend,heat].forEach(c=>c.resize()));
 </script>
+
+<script>
+window.AI_ASSISTANT={
+  title:'增长分析台',subtitle:'GROWTH ANALYTICS',
+  insights(){var top=gdata.slice().sort(function(a,b){return b.amt-a.amt})[0];
+    var chan=chans.slice().sort(function(a,b){return b.value-a.value})[0];
+    var cvr=(fdata[4].value/fdata[0].value*100).toFixed(2);
+    return [
+      {tag:'GMV',lv:'ok',text:'今日 GMV ¥'+gmv.toLocaleString()+'，DAU '+dau.toLocaleString()+'，收入端维持双位数增长。'},
+      {tag:'转化',lv:cvr>=8?'ok':'warn',text:'访客→支付转化率 '+cvr+'%'+(cvr>=8?'，漏斗各层流失处于合理区间。':'，支付环节流失偏高，建议优化收银台链路。')},
+      {tag:'爆品',lv:'info',text:'Top1 爆品「'+top.n+'」销售额 ¥'+top.amt.toLocaleString()+'，建议追加库存与素材投放。'},
+      {tag:'渠道',lv:'info',text:'「'+chan.name+'」贡献 '+chan.value+'% GMV，为主要增长引擎。'}
+    ];},
+  advice(){var chan=chans.slice().sort(function(a,b){return a.value-b.value})[0];
+    return ['「'+chan.name+'」占比最低，可做小预算 A/B 测试验证增量空间。','对 Top3 爆品做限时凑单策略，拉升客单价。'];},
+  alerts(){var top=gdata.slice().sort(function(a,b){return b.amt-a.amt})[0];
+    return Math.random()<.5?{lv:'ok',text:'✅ 爆品「'+top.n+'」今日销售额 ¥'+top.amt.toLocaleString()}:null;}
+};
+</script>
+<script src="../../assets/ai-assistant/ai-assistant.js" defer></script>
 </body>
 </html>

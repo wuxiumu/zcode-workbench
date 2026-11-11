@@ -227,5 +227,25 @@ tickClock();setInterval(tickClock,1000);
 setInterval(tick,3500);
 window.addEventListener('resize',()=>[durC,hrC,slaC,catC,starC].forEach(c=>c.resize()));
 </script>
+
+<script>
+window.AI_ASSISTANT={
+  title:'客服工单台',subtitle:'SUPPORT DESK',
+  insights(){var backlog=(pending/(pending+resolved)*100).toFixed(1);
+    var p95Avg=p95.reduce(function(a,b){return a+b},0)/p95.length;
+    var sTotal=stars.reduce(function(a,s){return a+s[1]},0);
+    var good=((stars[0][1]+stars[1][1])/sTotal*100).toFixed(1);
+    var high=agents.filter(function(a){return a.h>=9}).length;
+    return [
+      {tag:'积压',lv:pending>110?'warn':'ok',text:'待处理 '+pending+' 单，积压率 '+backlog+'%'+(pending>110?'，建议临时增援晚班坐席。':'，队列消化正常。')},
+      {tag:'SLA',lv:sla>=95?'ok':'warn',text:'首次响应达标率 '+sla+'%'+(sla>=95?'，达到 95% 目标。':'，低于 95% 目标，优先保障高峰时段接入。')},
+      {tag:'时效',lv:p95Avg<=24?'ok':'warn',text:'解决时长 P95 均值 '+p95Avg.toFixed(1)+'h'+(p95Avg<=24?'，优于 24h 目标。':'，超 24h 目标，复杂工单建议升级处理。')},
+      {tag:'满意度',lv:'ok',text:'好评率 '+good+'%，CSAT '+csat+'%；高载坐席 '+high+' 人。'}
+    ];},
+  advice(){return ['把 Top1 问题分类做成自助 FAQ，预计削减 15% 工单量。','高载坐席（处理中 ≥9）及时分流，防止单点过载。'];},
+  alerts(){return pending>110?{lv:'warn',text:'⚠️ 待处理工单 '+pending+' 单，积压率 '+(pending/(pending+resolved)*100).toFixed(1)+'%'}:Math.random()<.4?{lv:'ok',text:'✅ 今日 SLA 达标率 '+sla+'%'}:null;}
+};
+</script>
+<script src="../../assets/ai-assistant/ai-assistant.js" defer></script>
 </body>
 </html>

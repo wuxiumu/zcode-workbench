@@ -130,5 +130,23 @@ setInterval(()=>{
 },3000);
 window.addEventListener('resize',()=>[tok,lat,cost].forEach(c=>c.resize()));
 </script>
+
+
+<script>
+window.AI_ASSISTANT={
+  title:'AI Agent 观测台',subtitle:'AGENT OBSERVATORY',
+  insights(){var p95=latData.P95,p95Avg=p95.reduce(function(a,b){return a+b},0)/p95.length;
+    var cost=costV[costV.length-1];
+    return [
+      {tag:'吞吐',lv:'ok',text:'input tok/min '+tokIn[tokIn.length-1].toLocaleString()+'，output '+tokOut[tokOut.length-1].toLocaleString()+'，流量平稳。'},
+      {tag:'延迟',lv:p95Avg>2000?'warn':'ok',text:'四模型 P95 均值 '+p95Avg.toFixed(0)+' ms'+(p95Avg>2000?'，超过 2s 体验线，建议开启流式与缓存。':'，处于健康区间。')},
+      {tag:'成本',lv:cost>240?'warn':'ok',text:'今日成本 $'+cost.toFixed(1)+(cost>240?'，逼近 $260 日预算上沿。':'，在预算内。')},
+      {tag:'结构',lv:'info',text:'kimi-k2 承接 '+modelData[0][2]+' 调用、成本 $'+modelData[0][3].slice(1)+'，为最优性价比主力。'}
+    ];},
+  advice(){return ['将 gpt-4o 的长文场景迁移至 kimi-k2，预计月省 $30+。','对 P99>3s 的调用开启结果缓存与超时降级。'];},
+  alerts(){return Math.random()<.5?{lv:'warn',text:'⚠️ gpt-4o P99 达 '+latData.P99[3].toLocaleString()+' ms，延迟偏高'}:null;}
+};
+</script>
+<script src="../../assets/ai-assistant/ai-assistant.js" defer></script>
 </body>
 </html>

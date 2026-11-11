@@ -149,5 +149,25 @@ setInterval(()=>{
 },4200);
 window.addEventListener('resize',()=>[conv,chan,cat,rate].forEach(c=>c.resize()));
 </script>
+
+<script>
+window.AI_ASSISTANT={
+  title:'内容运营台',subtitle:'CONTENT OPS',
+  insights(){var claim=convData[0][convData[0].length-1],pass=convData[2][convData[2].length-1];
+    var hot=catData.slice().sort(function(a,b){return b-a})[0],hi=catData.indexOf(hot);
+    var reward=rw.reduce(function(a,r){return a+r.amt},0)+860;
+    return [
+      {tag:'转化',lv:'info',text:'近 14 天「领取→通过」转化约 '+(pass/claim*100).toFixed(0)+'%，审核通过节奏平稳。'},
+      {tag:'达标率',lv:rateVal>=70?'ok':'warn',text:'数据达标率 '+rateVal+'%'+(rateVal>=70?'，内容质量整体合格。':'，低于 70% 基准，建议优化素材脚本。')},
+      {tag:'热点',lv:'info',text:'「'+CAT_NAMES[hi]+'」分类热度最高（'+hot+'），可加大该类素材供给。'},
+      {tag:'激励',lv:'ok',text:'今日奖励支出 ¥'+reward.toLocaleString()+'.00，发放 '+rw.length+'+ 笔，达人侧动性良好。'}
+    ];},
+  advice(){var hi=catData.indexOf(catData.slice().sort(function(a,b){return b-a})[0]);
+    return ['围绕「'+CAT_NAMES[hi]+'」策划专题选题，承接当前热度。','对连续驳回的素材作者推送合规手册，降低审核损耗。'];},
+  alerts(){var r=rw[Math.floor(Math.random()*rw.length)];
+    return {lv:'info',text:'💰 奖励发放：'+r.n+' +¥'+r.amt+'.00（'+r.ch+'）'};}
+};
+</script>
+<script src="../../assets/ai-assistant/ai-assistant.js" defer></script>
 </body>
 </html>

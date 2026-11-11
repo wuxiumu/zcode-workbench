@@ -217,5 +217,24 @@ tickClock();setInterval(tickClock,1000);
 setInterval(tick,3500);
 window.addEventListener('resize',()=>[linC,qC,stC,hotC].forEach(c=>c.resize()));
 </script>
+
+<script>
+window.AI_ASSISTANT={
+  title:'数据资产目录',subtitle:'DATA CATALOG',
+  insights(){var qAvg=+((qCmp[qCmp.length-1]+qTim[qTim.length-1]+qCon[qCon.length-1]+qAcc[qAcc.length-1])/4).toFixed(1);
+    var bad=owners.filter(function(o){return o.q<90}).sort(function(a,b){return a.q-b.q})[0];
+    return [
+      {tag:'规模',lv:'ok',text:'资产总表数 '+tables.toLocaleString()+' 张，核心资产 '+coreN+' 张，今日新增 '+newToday+' 张。'},
+      {tag:'质量',lv:qAvg>=90?'ok':'warn',text:'质量平均分 '+qAvg+' 分'+(qAvg>=90?'，达到 90 分治理目标。':'，低于 90 分目标，建议专项治理。')},
+      {tag:'责任人',lv:bad?'warn':'ok',text:bad?('「'+bad.t+'」（'+bad.o+'）质量分仅 '+bad.q+'，为最低分资产，需限期整改。'):'全部资产质量分 ≥90，Owner 责任制执行良好。'},
+      {tag:'血缘',lv:'info',text:'fact_order 为核心枢纽：上游 4 张 ODS 表、下游 7 张 DWS/ADS 表，变更需走影响分析。'}
+    ];},
+  advice(){var bad=owners.filter(function(o){return o.q<90}).sort(function(a,b){return a.q-b.q})[0];
+    return bad?['对「'+bad.t+'」建立每日质量校验规则，阻断脏数据入仓。','为 ODS 贴源层补齐 Schema 变更告警。']:['沉淀核心表的质量基线，推广到非核心资产。'];},
+  alerts(){var bad=owners.filter(function(o){return o.q<90}).sort(function(a,b){return a.q-b.q})[0];
+    return bad?{lv:'warn',text:'⚠️ 「'+bad.t+'」质量分 '+bad.q+'，低于 90 分治理线'}:null;}
+};
+</script>
+<script src="../../assets/ai-assistant/ai-assistant.js" defer></script>
 </body>
 </html>

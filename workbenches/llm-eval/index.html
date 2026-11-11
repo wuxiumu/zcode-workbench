@@ -229,5 +229,25 @@ tickClock();setInterval(tickClock,1000);
 setInterval(tick,3500);
 window.addEventListener('resize',()=>[radarC,passC,metC,t14C,voteC].forEach(c=>c.resize()));
 </script>
+
+<script>
+window.AI_ASSISTANT={
+  title:'LLM 评测台',subtitle:'MODEL EVAL LAB',
+  insights(){var pm=passMean();
+    var p0=badcases.filter(function(b){return b.sev==='P0'});
+    var best=0;for(var i=1;i<4;i++){var s=0,s2=0;for(var j=0;j<5;j++){s+=rdata[best][j];s2+=rdata[i][j]}if(s2>s)best=i}
+    var leader=voteV.indexOf(Math.max.apply(null,voteV));
+    return [
+      {tag:'通过率',lv:pm>=90?'ok':'warn',text:'回归集整体通过率 '+pm+'%'+(pm>=90?'，达到 90% 目标。':'，低于 90% 目标，建议针对失败用例做专项回归。')},
+      {tag:'Badcase',lv:p0.length?'bad':'ok',text:p0.length?('本周 P0 级 '+p0.length+' 条：'+p0[0].desc+'。'):'本周无 P0 级 Badcase。'},
+      {tag:'横评',lv:'info',text:'五维综合最优为 '+MODELS[best].n+'（均值 '+(rdata[best].reduce(function(a,b){return a+b},0)/5).toFixed(1)+'），中文写作维度 kimi-k2 领先。'},
+      {tag:'偏好',lv:'info',text:'人工盲测 '+MODELS[leader].n+' 得票最高（'+Math.max.apply(null,voteV).toLocaleString()+' 票）。'}
+    ];},
+  advice(){return ['把 P0 Badcase 固化为回归用例，防止同类问题复发。','对 gpt-4o 高成本调用场景做蒸馏小模型替代评估。'];},
+  alerts(){var p0=badcases.filter(function(b){return b.sev==='P0'})[0];
+    return p0?{lv:'bad',text:'🔴 P0 Badcase：'+p0.desc+'（'+p0.m+'）'}:null;}
+};
+</script>
+<script src="../../assets/ai-assistant/ai-assistant.js" defer></script>
 </body>
 </html>

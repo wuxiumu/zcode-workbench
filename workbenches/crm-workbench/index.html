@@ -145,5 +145,25 @@ themeBtn.addEventListener('click',()=>applyTheme(document.documentElement.datase
 themeBtn.textContent=document.documentElement.dataset.theme==='light'?'🌙':'☀️';
 window.addEventListener('resize',()=>[mrr,pipe,health,ind,nps,renew].forEach(c=>c.resize()));
 </script>
+
+<script>
+window.AI_ASSISTANT={
+  title:'客户成功台',subtitle:'CRM WORKBENCH',
+  insights(){var mrrNow=mrrV[mrrV.length-1];
+    var danger=riskData.filter(function(r){return r[4]==='危险'});
+    var dangerN=healthData[2];
+    return [
+      {tag:'MRR',lv:'ok',text:'MRR ¥'+(mrrNow/10000).toFixed(1)+'w，环比 +8.5%，订阅收入基本盘稳固。'},
+      {tag:'续约',lv:renewRate>=90?'ok':'warn',text:'续约率 '+renewRate.toFixed(1)+'%'+(renewRate>=90?'，高于 90% 基线。':'，已跌破 90% 基线，需启动挽回动作。')},
+      {tag:'流失风险',lv:danger.length?'bad':'ok',text:danger.length?('有 '+danger.length+' 家客户处于危险区（如「'+danger[0][0]+'」，'+danger[0][3]+'）'):'当前无危险级客户。'},
+      {tag:'NPS',lv:npsVal>=45?'ok':'warn',text:'NPS '+npsVal+' 分，'+(npsVal>=45?'高于行业均值 36。':'低于行业均值 36，建议回访低分客户。')}
+    ];},
+  advice(){var danger=riskData.filter(function(r){return r[4]==='危险'})[0];
+    return danger?['为「'+danger[0]+'」指派专属 CSM，48 小时内出挽回方案。','对健康度「关注」客户批量发送价值回顾报告。']:['对「健康」客户推广增购模块，拉升 NRR。'];},
+  alerts(){var danger=riskData.filter(function(r){return r[4]==='危险'})[0];
+    return danger?{lv:'bad',text:'🔴 流失预警：「'+danger[0]+'」风险分 '+danger[2]+'（'+danger[3]+'）'}:null;}
+};
+</script>
+<script src="../../assets/ai-assistant/ai-assistant.js" defer></script>
 </body>
 </html>

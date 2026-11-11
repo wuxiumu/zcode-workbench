@@ -211,5 +211,23 @@ tickClock();setInterval(tickClock,1000);
 setInterval(tick,3500);
 window.addEventListener('resize',()=>[turnC,funnelC,whC,trendC].forEach(c=>c.resize()));
 </script>
+
+<script>
+window.AI_ASSISTANT={
+  title:'供应链协同台',subtitle:'SUPPLY CHAIN HUB',
+  insights(){var em=alerts.filter(function(a){return a.lv==='紧急'});
+    var minS=sups.slice().sort(function(a,b){return a.score-b.score})[0];
+    return [
+      {tag:'缺料',lv:em.length?'bad':'ok',text:em.length?('有 '+em.length+' 项紧急缺料，最高缺口 '+em[0].mat+' '+em[0].gap+' '+em[0].unit+'，影响 '+em[0].po+' 张订单。'):'当前无紧急缺料，物料齐套正常。'},
+      {tag:'周转',lv:turnDays<=45?'ok':'warn',text:'库存周转 '+turnDays+' 天'+(turnDays<=45?'，优于 45 天目标。':'，超 45 天目标，建议清理慢动销 SKU。')},
+      {tag:'呆滞',lv:dead>300?'warn':'ok',text:'呆滞库存 ¥'+dead+' 万'+(dead>300?'，超过 ¥300 万警戒线。':'，处于可控区间。')},
+      {tag:'供应商',lv:minS.score>=90?'ok':'warn',text:'最低分为「'+minS.n+'」（'+minS.score+' 分），'+(minS.score>=90?'整体供应商质量良好。':'建议启动绩效辅导或备选准入。')}
+    ];},
+  advice(){return ['对紧急缺料物料启动备选供应商询价，缩短恢复周期。','呆滞 Top3 SKU 打包促销或折价清仓，回笼现金流。'];},
+  alerts(){var em=alerts.filter(function(a){return a.lv==='紧急'})[0];
+    return em?{lv:'bad',text:'🔴 缺料预警：'+em.mat+' 缺口 '+em.gap+' '+em.unit+'，影响 '+em.po+' 张订单'}:null;}
+};
+</script>
+<script src="../../assets/ai-assistant/ai-assistant.js" defer></script>
 </body>
 </html>

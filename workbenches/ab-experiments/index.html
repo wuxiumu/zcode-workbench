@@ -227,5 +227,25 @@ tickClock();setInterval(tickClock,1000);
 setInterval(tick,3500);
 window.addEventListener('resize',()=>[upC,smC,sigC,ccC,lyC].forEach(c=>c.resize()));
 </script>
+
+<script>
+window.AI_ASSISTANT={
+  title:'A/B 实验台',subtitle:'EXPERIMENT HUB',
+  insights(){var sig=runs.filter(function(r){return r.cf>=95}).length;
+    var neg=runs.filter(function(r){return r.up<0&&r.cf>=90});
+    var best=runs.slice().sort(function(a,b){return b.cf-a.cf})[0];
+    return [
+      {tag:'规模',lv:'ok',text:'在跑实验 '+running+' 个，本周上线 '+launched+' 个，分层冲突检测 0。'},
+      {tag:'显著',lv:sigVal>=60?'ok':'warn',text:'显著提升占比 '+sigVal+'%'+(sigVal>=60?'，达到 60% 目标。':'，低于 60% 目标，复盘不显著实验假设。')},
+      {tag:'明星',lv:'info',text:'「'+best.n+'」置信度 '+best.cf+'%、Uplift +'+best.up+'%，建议尽快推全。'},
+      {tag:'风险',lv:neg.length?'warn':'ok',text:neg.length?(neg.length+' 个实验显著负向（如「'+neg[0].n+'」'+neg[0].up+'%），及时止损下线。'):'当前无显著负向实验。'},
+      {tag:'容量',lv:layers[2][1]>70?'warn':'ok',text:'L3 增长层利用率 '+layers[2][1]+'%'+(layers[2][1]>70?'，接近饱和，建议扩容或合并同向实验。':'，容量健康。')}
+    ];},
+  advice(){var best=runs.slice().sort(function(a,b){return b.cf-a.cf})[0];return ['「'+best.n+'」推全后释放的流量优先给长周期留存实验。','对负向实验沉淀结论归档，避免重复试错。'];},
+  alerts(){var best=runs.slice().sort(function(a,b){return b.cf-a.cf})[0];
+    return best.cf>=95?{lv:'ok',text:'✅ 「'+best.n+'」置信度 '+best.cf+'% 达显著，可推全'}:null;}
+};
+</script>
+<script src="../../assets/ai-assistant/ai-assistant.js" defer></script>
 </body>
 </html>

@@ -202,5 +202,24 @@ tickClock();setInterval(tickClock,1000);
 setInterval(tick,3500);
 window.addEventListener('resize',()=>[m12C,cashC,npmC,arC,wfC].forEach(c=>c.resize()));
 </script>
+
+<script>
+window.AI_ASSISTANT={
+  title:'财务经营驾驶舱',subtitle:'FINANCE COCKPIT',
+  insights(){var cashNow=cash[0],arSum=arData.reduce(function(a,b){return a+b},0);
+    var ar90=(arData[3]/arSum*100).toFixed(1);
+    var rd=depts[0];
+    return [
+      {tag:'营收',lv:'ok',text:'本月营收 ¥'+rev.toLocaleString()+' 万，环比 +8.6%，毛利率 '+(gpRate*100).toFixed(1)+'%。'},
+      {tag:'净利率',lv:npRate>=.15?'ok':'warn',text:'净利率 '+(npRate*100).toFixed(1)+'%'+(npRate>=.15?'，达到 15% 目标线。':'，低于 15% 目标线，费用端需收缩。')},
+      {tag:'现金流',lv:cashNow>=SAFE?'ok':'bad',text:'当前现金 ¥'+cashNow.toLocaleString()+' 万，'+(cashNow>=SAFE?'高于 ¥2,500 万安全水位。':'已跌破 ¥2,500 万安全水位，请启动资金预案！')},
+      {tag:'应收',lv:arData[3]/arSum>0.12?'warn':'ok',text:'90+ 天账龄占比 '+ar90+'%'+(arData[3]/arSum>0.12?'，偏高，建议法务介入催收。':'，账龄结构健康。')},
+      {tag:'预算',lv:rd.used/rd.budget>0.9?'warn':'ok',text:'研发部预算已执行 '+(rd.used/rd.budget*100).toFixed(0)+'%，'+(rd.used/rd.budget>0.9?'月末前大概率超支。':'节奏正常。')}
+    ];},
+  advice(){return ['对 90+ 天应收逐户制定回款计划，纳入销售绩效。','净利率若连续两周低于 15%，冻结非核心岗位补录。'];},
+  alerts(){return cash[0]<SAFE?{lv:'bad',text:'🔴 现金流 ¥'+cash[0].toLocaleString()+' 万，已跌破安全水位'}:Math.random()<.4?{lv:'info',text:'💡 11 月账期结账进度 68%'}:null;}
+};
+</script>
+<script src="../../assets/ai-assistant/ai-assistant.js" defer></script>
 </body>
 </html>
