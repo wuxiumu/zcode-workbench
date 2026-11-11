@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>客服工单台 · Support Desk | ZCode Labs</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<style>
+:root{--bg:#070b14;--p1:#0d1322;--p2:#0a0f1c;--line:#1c2740;--txt:#dfe7ff;--sub:#8494b8;--acc:#4f8cff;--ok:#34d399;--warn:#fbbf24;--bad:#f87171}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:radial-gradient(900px 500px at 85% -10%,#122a3a 0%,var(--bg) 60%);color:var(--txt);font-family:"PingFang SC","Microsoft YaHei",sans-serif;padding:22px;min-height:100vh}
+.top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px}
+.top h1{font-size:20px;display:flex;align-items:center;gap:10px}
+.top h1 .dot{width:9px;height:9px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px var(--ok);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.top h1 span{color:var(--sub);font-size:13px;font-weight:400}
+.clock{font-variant-numeric:tabular-nums;color:var(--sub);font-size:13px}
+.pill{font-size:12px;color:var(--sub);background:var(--p1);border:1px solid var(--line);border-radius:99px;padding:6px 14px}
+.pill b{color:var(--ok)}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px}
+.kpi{background:linear-gradient(160deg,var(--p1),var(--p2));border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.kpi .l{font-size:12px;color:var(--sub)}.kpi .v{font-size:24px;font-weight:800;margin-top:6px;font-variant-numeric:tabular-nums}
+.kpi .v small{font-size:12px;color:var(--sub);font-weight:400}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.panel{background:linear-gradient(160deg,var(--p1),var(--p2));border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.panel h3{font-size:13px;color:var(--sub);font-weight:600;margin-bottom:8px;letter-spacing:.06em}
+.panel h3 .chip{float:right;font-size:11px;letter-spacing:0;color:var(--sub)}
+.chart{height:220px}.chart-lg{height:300px}.wide{grid-column:1/-1}
+.tscroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{color:var(--sub);font-weight:500;text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);letter-spacing:.05em;white-space:nowrap}
+td{padding:7px 8px;border-bottom:1px solid rgba(28,39,64,.5);font-variant-numeric:tabular-nums;white-space:nowrap}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:99px;font-size:11px}
+.badge i{width:5px;height:5px;border-radius:50%}
+.st-ok{color:var(--ok);background:rgba(52,211,153,.1)}.st-ok i{background:var(--ok)}
+.st-warn{color:var(--warn);background:rgba(251,191,36,.1)}.st-warn i{background:var(--warn)}
+.st-bad{color:var(--bad);background:rgba(248,113,113,.1)}.st-bad i{background:var(--bad)}
+.trend{font-size:11px}.trend.up{color:var(--ok)}.trend.dn{color:var(--bad)}
+.mock{position:fixed;right:16px;bottom:14px;font-size:11px;color:var(--warn);background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.3);border-radius:99px;padding:3px 12px;letter-spacing:.1em}
+.back{position:fixed;left:16px;bottom:14px;font-size:12px}.back a{color:var(--acc);text-decoration:none}
+@media(max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="top">
+  <h1><span class="dot"></span>客服工单台 <span>SUPPORT DESK · support-suite v1 · 工单 × SLA × 坐席</span></h1>
+  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+    <span class="clock" id="clock"></span>
+    <span class="pill">数据更新：<b>实时模拟</b> · 每 3.5 秒刷新</span>
+  </div>
+</div>
+
+<div class="kpis" id="kpis"></div>
+<div class="grid">
+  <div class="panel wide"><h3>近 14 天解决时长趋势（P50 / P95 · 单位：小时）</h3><div class="chart" id="c-dur"></div></div>
+  <div class="panel"><h3>24 小时工单量分时分布 · 今日<span class="chip" id="hrChip"></span></h3><div class="chart-lg" id="c-hr"></div></div>
+  <div class="panel"><h3>SLA 首次响应达标率 · 目标 ≥ 95%</h3><div class="chart-lg" id="c-sla"></div></div>
+  <div class="panel"><h3>问题分类分布 · 今日新增<span class="chip" id="catChip"></span></h3><div class="chart-lg" id="c-cat"></div></div>
+  <div class="panel"><h3>满意度评分分布 · 近 7 天（1-5 星）<span class="chip" id="starChip"></span></h3><div class="chart-lg" id="c-star"></div></div>
+  <div class="panel wide"><h3>坐席负载 Top8 · 当前值班<span class="chip" id="agChip"></span></h3><div class="tscroll"><table id="agents"></table></div></div>
+</div>
+
+<div class="back"><a href="../../">← 返回工作台矩阵</a></div>
+<div class="mock">MOCK DATA · 演示数据</div>
+
+<script>
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const irnd=(a,b)=>Math.round(rnd(a,b));
+const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
+const last=a=>a[a.length-1];
+const d14=Array.from({length:14},(_,i)=>{const d=new Date(Date.now()-(13-i)*864e5);return (d.getMonth()+1)+'/'+d.getDate()});
+
+// KPI 基础量
+let todayNew=382,pending=86,resolved=340,csat=92.4;
+
+// 24 小时分时工单量（今日）
+let hrData=[12,8,5,3,4,6,14,28,45,68,82,76,64,58,72,85,70,52,38,30,26,22,18,14];
+const HRS=Array.from({length:24},(_,i)=>i+'时');
+
+// 近 14 天解决时长 P50 / P95（小时）
+let p50=d14.map(()=>+rnd(3,4.6).toFixed(1)),p95=d14.map(()=>+rnd(16,26).toFixed(1));
+
+// 问题分类（今日新增）：账号 / 支付 / 物流 / 售后 / 其他
+let cats=[['账号问题',107,'#4f8cff'],['支付',92,'#a78bfa'],['物流',84,'#22d3ee'],['售后',69,'#fbbf24'],['其他',30,'#8494b8']];
+
+// 满意度评分分布（近 7 天，1-5 星）
+let stars=[['5 ★',1862,'#34d399'],['4 ★',648,'#4f8cff'],['3 ★',216,'#fbbf24'],['2 ★',84,'#fb923c'],['1 ★',52,'#f87171']];
+
+// 坐席负载（当前值班 Top8）：处理中 / 今日已结 / 平均首次响应（分）
+let agents=[
+  {n:'林晓雯',h:12,r:64,t:1.4},
+  {n:'王浩然',h:10,r:58,t:1.7},
+  {n:'陈思远',h:9,r:52,t:1.2},
+  {n:'赵梦琪',h:7,r:47,t:2.1},
+  {n:'刘子涵',h:6,r:41,t:1.9},
+  {n:'孙悦',h:5,r:38,t:2.4},
+  {n:'周天宇',h:4,r:33,t:2.8},
+  {n:'吴佳宁',h:3,r:29,t:3.2}];
+
+// KPI · 工单总览
+function renderKpis(){
+  todayNew=clamp(todayNew+irnd(-4,6),340,430);
+  resolved=clamp(resolved+irnd(-3,5),300,410);
+  pending=clamp(pending+irnd(-5,5),50,130);
+  csat=+clamp(csat+rnd(-.3,.3),88,97).toFixed(1);
+  const ok=csat>=90,solve=resolved/(resolved+pending)*100;
+  const k=[
+    ['今日新增工单',todayNew.toLocaleString(),' 单','up','较昨日同期 +6.4%'],
+    ['待处理工单',pending,' 单',pending>110?'dn':'up',`积压率 ${(pending/(pending+resolved)*100).toFixed(1)}%`],
+    ['今日已解决',resolved.toLocaleString(),' 单','up',`解决率 ${solve.toFixed(1)}%`],
+    ['CSAT 满意度',csat,' %',ok?'up':'dn',ok?'目标 90% · 达标':'低于目标 90% 需关注']];
+  document.getElementById('kpis').innerHTML=k.map(x=>`<div class="kpi"><div class="l">${x[0]}</div><div class="v">${x[1]}<small>${x[2]}</small></div><div class="trend ${x[3]}">${x[4]}</div></div>`).join('');
+}
+
+// 近 14 天解决时长双折线（P50 / P95，含 P95 目标线 24h）
+const durC=echarts.init(document.getElementById('c-dur'));
+function renderDur(){
+  durC.setOption({tooltip:{trigger:'axis',valueFormatter:v=>v+' h'},legend:{data:['P50','P95'],textStyle:{color:'#8494b8',fontSize:10},top:0,itemWidth:10,itemHeight:10},
+    grid:{left:34,right:14,top:30,bottom:24},
+    xAxis:{type:'category',data:d14,axisLabel:{color:'#8494b8',fontSize:9,interval:3}},
+    yAxis:{type:'value',min:0,max:30,nameTextStyle:{color:'#8494b8',fontSize:10},splitLine:{lineStyle:{color:'#141d33'}},axisLabel:{color:'#8494b8',fontSize:10,formatter:'{value}h'}},
+    series:[
+      {name:'P50',type:'line',data:p50,smooth:true,showSymbol:false,lineStyle:{width:2,color:'#34d399'},itemStyle:{color:'#34d399'},areaStyle:{color:'rgba(52,211,153,.10)'},
+        markLine:{silent:true,symbol:'none',lineStyle:{type:'dashed',color:'rgba(251,191,36,.7)'},
+          data:[{yAxis:24,label:{formatter:'P95 目标 24h',position:'insideEndTop',color:'#fbbf24',fontSize:9}}]}},
+      {name:'P95',type:'line',data:p95,smooth:true,showSymbol:false,lineStyle:{width:2,color:'#fbbf24'},itemStyle:{color:'#fbbf24'}}]});
+}
+
+// 24 小时分时柱状图
+const hrC=echarts.init(document.getElementById('c-hr'));
+function renderHr(){
+  hrData=hrData.map(v=>clamp(v+irnd(-3,4),0,150));
+  const maxV=Math.max(...hrData),peak=hrData.indexOf(maxV);
+  document.getElementById('hrChip').textContent=`峰值 ${peak}:00 · ${maxV} 单`;
+  hrC.setOption({tooltip:{trigger:'axis',axisPointer:{type:'shadow'},formatter:ps=>`今日 ${ps[0].name}　<b>${ps[0].value}</b> 单`},
+    grid:{left:36,right:12,top:26,bottom:24},
+    xAxis:{type:'category',data:HRS,axisLabel:{color:'#8494b8',fontSize:9,interval:2}},
+    yAxis:{type:'value',splitLine:{lineStyle:{color:'#141d33'}},axisLabel:{color:'#8494b8',fontSize:10}},
+    series:[{type:'bar',data:hrData.map(v=>({value:v,itemStyle:{borderRadius:[3,3,0,0],color:v===maxV?'#22d3ee':'#4f8cff'}})),barWidth:'62%',
+      markPoint:{symbolSize:40,label:{fontSize:9,color:'#dfe7ff'},itemStyle:{color:'#a78bfa'},data:[{type:'max',name:'峰值'}]}}]});
+}
+
+// SLA 首次响应达标率 gauge（目标 ≥ 95%，<85% 红区）
+const slaC=echarts.init(document.getElementById('c-sla'));
+let sla=95.8;
+function renderSla(){
+  sla=+clamp(sla+rnd(-.4,.4),90,99).toFixed(1);
+  slaC.setOption({series:[{type:'gauge',startAngle:210,endAngle:-30,min:0,max:100,splitNumber:5,center:['50%','56%'],radius:'95%',
+    axisLine:{lineStyle:{width:12,color:[[.85,'#f87171'],[.95,'#fbbf24'],[1,'#34d399']]}},
+    pointer:{length:'58%',width:4,itemStyle:{color:'#dfe7ff'}},
+    axisTick:{distance:-12,length:4,lineStyle:{color:'#0a0f1c',width:1}},
+    splitLine:{distance:-14,length:12,lineStyle:{color:'#0a0f1c',width:2}},
+    axisLabel:{distance:14,color:'#8494b8',fontSize:9,formatter:'{value}%'},
+    detail:{valueAnimation:true,formatter:'{value}%',color:sla>=95?'#34d399':'#fbbf24',fontSize:24,fontWeight:700,offsetCenter:[0,'58%']},
+    title:{offsetCenter:[0,'92%'],color:'#8494b8',fontSize:11},
+    data:[{value:sla,name:'首次响应 SLA 达标率 · 目标 95%'}]}]});
+}
+
+// 问题分类分布（环形饼图）
+const catC=echarts.init(document.getElementById('c-cat'));
+function renderCat(){
+  cats=cats.map(([n,v,c])=>[n,Math.max(10,v+irnd(-3,4)),c]);
+  const total=cats.reduce((a,b)=>a+b[1],0),top=[...cats].sort((a,b)=>b[1]-a[1])[0];
+  document.getElementById('catChip').textContent=`今日 ${total} 单 · Top1 ${top[0]}`;
+  catC.setOption({tooltip:{formatter:f=>`${f.name}　<b>${f.value}</b> 单（${f.percent}%）`},
+    legend:{bottom:0,textStyle:{color:'#8494b8',fontSize:10},itemWidth:10,itemHeight:10},
+    series:[{type:'pie',radius:['40%','68%'],center:['50%','46%'],
+      itemStyle:{borderColor:'#0a0f1c',borderWidth:2,borderRadius:4},
+      label:{color:'#8494b8',fontSize:10,formatter:'{b}\n{d}%'},
+      labelLine:{lineStyle:{color:'#1c2740'}},
+      data:cats.map(x=>({name:x[0],value:x[1],itemStyle:{color:x[2]}}))}]});
+}
+
+// 满意度评分分布（1-5 星横向条形）
+const starC=echarts.init(document.getElementById('c-star'));
+function renderStar(){
+  stars=stars.map(([n,v,c])=>[n,Math.max(20,v+irnd(-6,8)),c]);
+  const total=stars.reduce((a,b)=>a+b[1],0),good=(stars[0][1]+stars[1][1])/total*100;
+  document.getElementById('starChip').textContent=`共 ${total.toLocaleString()} 条评价 · 好评率 ${good.toFixed(1)}%`;
+  starC.setOption({tooltip:{trigger:'axis',axisPointer:{type:'shadow'},formatter:ps=>`${ps[0].name}　<b>${ps[0].value.toLocaleString()}</b> 条（${(ps[0].value/total*100).toFixed(1)}%）`},
+    grid:{left:52,right:60,top:12,bottom:12},
+    xAxis:{type:'value',show:false,max:v=>Math.round(v.max*1.18)},
+    yAxis:{type:'category',inverse:true,data:stars.map(s=>s[0]),axisLabel:{color:'#8494b8',fontSize:11},axisLine:{show:false},axisTick:{show:false}},
+    series:[{type:'bar',barWidth:14,data:stars.map(s=>({value:s[1],itemStyle:{borderRadius:[0,3,3,0],color:s[2]}})),
+      label:{show:true,position:'right',fontSize:10,color:'#8494b8',formatter:p=>`${(p.value/total*100).toFixed(1)}%`}}]});
+}
+
+// 坐席负载 Top8（负载徽标：处理中 ≥9 高载 / ≥5 中载 / 其余正常）
+const LOAD=v=>v>=9?['st-bad','高载']:v>=5?['st-warn','中载']:['st-ok','正常'];
+function renderAgents(){
+  agents=agents.map(a=>({n:a.n,h:clamp(a.h+irnd(-2,2),0,18),r:clamp(a.r+irnd(-4,6),10,80),t:+clamp(a.t+rnd(-.2,.2),.6,4).toFixed(1)}));
+  const rows=[...agents].sort((a,b)=>b.h-a.h);
+  const bad=rows.filter(a=>a.h>=9).length;
+  document.getElementById('agChip').textContent=`值班 8 人 · 高载 ${bad} 人`;
+  document.getElementById('agents').innerHTML='<tr><th>坐席</th><th>处理中</th><th>今日已结</th><th>平均首次响应</th><th>负载</th></tr>'+
+    rows.map(a=>{const lv=LOAD(a.h);return `<tr><td>${a.n}</td><td>${a.h}</td><td>${a.r}</td><td>${a.t} 分</td><td><span class="badge ${lv[0]}"><i></i>${lv[1]}</span></td></tr>`}).join('');
+}
+
+// 时钟
+const tickClock=()=>{document.getElementById('clock').textContent=new Date().toLocaleString('zh-CN',{hour12:false})};
+
+// 模拟实时
+function tick(){
+  p50.shift();p50.push(+rnd(3,4.6).toFixed(1));
+  p95.shift();p95.push(+rnd(16,26).toFixed(1));
+  renderKpis();renderDur();renderHr();renderSla();renderCat();renderStar();renderAgents();
+}
+renderKpis();renderDur();renderHr();renderSla();renderCat();renderStar();renderAgents();
+tickClock();setInterval(tickClock,1000);
+setInterval(tick,3500);
+window.addEventListener('resize',()=>[durC,hrC,slaC,catC,starC].forEach(c=>c.resize()));
+</script>
+</body>
+</html>

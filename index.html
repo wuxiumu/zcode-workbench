@@ -48,7 +48,7 @@
 <body>
 <div class="wrap">
   <span class="badge"><i></i>ZCODE LABS · FDE PORTFOLIO</span>
-  <h1>十张作战地图，<br><span class="grad">一个工程师的业务翻译能力。</span></h1>
+  <h1>十一张作战地图，<br><span class="grad">一个工程师的业务翻译能力。</span></h1>
   <p class="lead">你好，我是<b>五朽木</b>，一名 FDE（Forward Deployed Engineer）。这个站点是我把「客户的业务问题 → 可运行系统」的翻译过程公开演示的地方：每个工作台都是<b>真实可访问的单文件应用</b>，Mock 数据驱动，点开即用。</p>
 
   <div class="strip" id="stats"></div>
@@ -75,6 +75,7 @@ const workbenches=[
   {no:"08",tag:"DATA",name:"数据资产目录",en:"DATA CATALOG",desc:"表血缘图谱、质量分四维趋势、Owner 责任制与访问热度 —— 数据资产的治理驾驶舱。",href:"workbenches/data-catalog/",live:"live"},
   {no:"09",tag:"AI EVAL",name:"LLM 评测台",en:"MODEL EVAL LAB",desc:"四模型横评雷达、回归通过率趋势、人工偏好投票与 Badcase 流水 —— 大模型迭代的质检中枢。",href:"workbenches/llm-eval/",live:"live"},
   {no:"10",tag:"HR",name:"HR 人力效能台",en:"PEOPLE ANALYTICS",desc:"入离职趋势、招聘漏斗、离职率仪表、绩效玫瑰图与考勤异常榜 —— 人力效能的一屏作战室。",href:"workbenches/hr-analytics/",live:"live"},
+  {no:"11",tag:"SUPPORT",name:"客服工单台",en:"SUPPORT DESK",desc:"工单分时热流、SLA 达标仪表、坐席负载榜与满意度分布 —— 客服团队的指挥调度屏。",href:"workbenches/support-desk/",live:"live"},
 ];
 const grid=document.getElementById("grid");
 workbenches.forEach(w=>{
@@ -89,7 +90,7 @@ function rnd(base,amp){return base+Math.round((Math.random()-.5)*amp)}
 const stats=[
   {n:()=>rnd(12480,60),em:"+",l:"本周工作台 PV"},
   {n:()=>"99.9",em:"%",l:"Pages 可用性(模拟)"},
-  {n:()=>rnd(10,0),em:"",l:"在线工作台"},
+  {n:()=>rnd(11,0),em:"",l:"在线工作台"},
   {n:()=>rnd(38,4),em:"ms",l:"全球访问延迟(模拟)"},
 ];
 const box=document.getElementById("stats");
