@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>系统自检 · 15 个工作台健康巡检</title>
+<meta name="description" content="FDE 工作台矩阵的回归冒烟工具：逐个加载 15 个工作台，汇总加载报错与渲染状态。">
+<script>try{document.documentElement.dataset.theme=localStorage.getItem('zwb-theme')||'dark'}catch(e){}</script>
+<style>
+  :root{
+    --bg:#0a0e1a; --panel:#121829; --panel2:#0e1424; --line:#1f2a44;
+    --txt:#e6ecff; --sub:#8b98b8; --acc:#4f8cff; --acc2:#22d3ee; --ok:#34d399; --warn:#fbbf24; --bad:#f87171;
+    --glow:#16204a;
+  }
+  [data-theme="light"]{
+    --bg:#f5f7fa; --panel:#ffffff; --panel2:#f7f9fc; --line:#e3e8ef;
+    --txt:#1f2733; --sub:#5a6675; --acc:#2f6cff; --acc2:#0891b2; --ok:#0e9f6e; --warn:#b45309; --bad:#dc2626;
+    --glow:#dce7fb;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:radial-gradient(1200px 600px at 80% -10%,var(--glow) 0%,var(--bg) 55%);color:var(--txt);font-family:"PingFang SC","Microsoft YaHei",-apple-system,sans-serif;min-height:100vh}
+  .theme-btn{position:fixed;right:18px;top:16px;z-index:99;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--panel);color:var(--txt);font-size:17px;cursor:pointer;transition:transform .2s,border-color .2s}
+  .theme-btn:hover{transform:scale(1.1);border-color:var(--acc)}
+  .wrap{max-width:900px;margin:0 auto;padding:56px 24px 80px}
+  .badge{display:inline-flex;align-items:center;gap:8px;font-size:12px;color:var(--acc2);border:1px solid var(--acc2-line,rgba(34,211,238,.35));border-radius:99px;padding:4px 14px;letter-spacing:.12em}
+  h1{font-size:clamp(26px,4.5vw,40px);margin:18px 0 12px;font-weight:800}
+  .lead{color:var(--sub);font-size:15px;line-height:1.8;max-width:640px}
+  .lead b{color:var(--txt)}
+
+  .summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:28px 0 18px}
+  .stat{background:linear-gradient(160deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+  .stat .n{font-size:26px;font-weight:800;font-variant-numeric:tabular-nums}
+  .stat .l{font-size:12px;color:var(--sub);margin-top:4px;letter-spacing:.06em}
+  .stat.s-ok .n{color:var(--ok)} .stat.s-warn .n{color:var(--warn)} .stat.s-bad .n{color:var(--bad)}
+
+  .toolbar{display:flex;align-items:center;gap:14px;margin:0 0 14px;flex-wrap:wrap}
+  .btn{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:700;color:#fff;background:linear-gradient(92deg,var(--acc),var(--acc2));border:none;border-radius:99px;padding:10px 20px;cursor:pointer;font-family:inherit;transition:transform .2s}
+  .btn:hover{transform:translateY(-2px)}
+  .btn:disabled{opacity:.55;cursor:default;transform:none}
+  .hint{font-size:12px;color:var(--sub)}
+
+  table{width:100%;border-collapse:collapse;background:linear-gradient(160deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  thead th{font-size:12px;color:var(--sub);letter-spacing:.08em;text-align:left;padding:12px 16px;border-bottom:1px solid var(--line);font-weight:600}
+  tbody td{padding:12px 16px;border-bottom:1px solid var(--line);font-size:13px;font-variant-numeric:tabular-nums}
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr:hover{background:rgba(79,140,255,.06)}
+  td .name{font-weight:600}
+  td .en{font-size:11px;color:var(--sub);letter-spacing:.08em;margin-left:8px}
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;border-radius:99px;padding:3px 10px;border:1px solid}
+  .pill i{width:7px;height:7px;border-radius:50%;font-style:normal}
+  .p-pass{color:var(--ok);border-color:var(--ok)} .p-pass i{background:var(--ok)}
+  .p-warn{color:var(--warn);border-color:var(--warn)} .p-warn i{background:var(--warn)}
+  .p-fail{color:var(--bad);border-color:var(--bad)} .p-fail i{background:var(--bad)}
+  .p-pend{color:var(--sub);border-color:var(--line)} .p-pend i{background:var(--sub)}
+  .detail{color:var(--sub);font-size:12px}
+  a{color:var(--acc);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .foot{margin-top:36px;padding-top:18px;border-top:1px solid var(--line);color:var(--sub);font-size:12px}
+
+  /* 自检用的隐藏 iframe 停车场（display:none 仍会完整加载并触发 onerror/onload） */
+  #dock{position:absolute;width:0;height:0;overflow:hidden}
+  @media(max-width:720px){.summary{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<button class="theme-btn" id="themeBtn" title="切换亮 / 暗主题" aria-label="切换亮 / 暗主题"></button>
+<div class="wrap">
+  <span class="badge">QA TOOL · 回归冒烟</span>
+  <h1>系统自检 · 十五个工作台健康巡检</h1>
+  <p class="lead">这是给我们自己用的<b>质检工具</b>：把 15 个工作台逐个真实加载一遍，检查有没有<b>脚本报错、结构缺失、图表没画出来</b>，红绿灯一眼看完。改完代码跑一遍，就是一次完整回归。</p>
+
+  <div class="summary">
+    <div class="stat s-ok"><div class="n" id="nPass">–</div><div class="l">通过</div></div>
+    <div class="stat s-warn"><div class="n" id="nWarn">–</div><div class="l">警告</div></div>
+    <div class="stat s-bad"><div class="n" id="nFail">–</div><div class="l">失败</div></div>
+    <div class="stat"><div class="n" id="nTime">–</div><div class="l">总耗时</div></div>
+  </div>
+
+  <div class="toolbar">
+    <button class="btn" id="runBtn" type="button">▶ 重新自检</button>
+    <span class="hint" id="hint">正在准备…</span>
+  </div>
+
+  <table>
+    <thead><tr><th style="width:70px">编号</th><th>工作台</th><th style="width:110px">状态</th><th>检查详情</th></tr></thead>
+    <tbody id="rows"></tbody>
+  </table>
+
+  <div class="foot">
+    检查项：页面加载 · 运行时报错 · 结构完整性（头部/KPI/网格/主题按钮）· 图表 canvas 渲染 · 共享组件接入（perf-guard / export-tools / AI 解读）
+    · <a href="index.html">← 回首页</a>
+  </div>
+</div>
+<div id="dock" aria-hidden="true"></div>
+
+<script>
+// 主题切换（与全站共用 zwb-theme 键）
+const themeBtn=document.getElementById("themeBtn");
+function applyTheme(t){document.documentElement.dataset.theme=t;try{localStorage.setItem("zwb-theme",t)}catch(e){}themeBtn.textContent=t==="light"?"🌙":"☀️";}
+themeBtn.addEventListener("click",()=>applyTheme(document.documentElement.dataset.theme==="light"?"dark":"light"));
+themeBtn.textContent=document.documentElement.dataset.theme==="light"?"🌙":"☀️";
+
+/* ===== 自检逻辑 ===== */
+const TARGETS=[
+  ["01","运维监控台","ops-center"],["02","增长分析台","growth-analytics"],["03","客户成功台","crm-workbench"],
+  ["04","内容运营台","content-ops"],["05","AI Agent 观测台","agent-observatory"],["06","供应链协同台","supply-chain-hub"],
+  ["07","财务经营驾驶舱","finance-cockpit"],["08","数据资产目录","data-catalog"],["09","LLM 评测台","llm-eval"],
+  ["10","HR 人力效能台","hr-analytics"],["11","客服工单台","support-desk"],["12","营销投放台","ads-performance"],
+  ["13","IoT 设备监控台","iot-fleet"],["14","内容审核台","content-moderation"],["15","A/B 实验台","ab-experiments"],
+];
+const rowsBox=document.getElementById("rows"),runBtn=document.getElementById("runBtn"),
+      hint=document.getElementById("hint"),dock=document.getElementById("dock");
+
+// 预置 15 行「待检」
+const rowEls=TARGETS.map(([no,name,dir])=>{
+  const tr=document.createElement("tr");
+  tr.innerHTML=`<td>${no}</td><td><span class="name">${name}</span><span class="en">${dir}</span></td>`+
+    `<td><span class="pill p-pend"><i></i>待检</span></td><td class="detail">–</td>`;
+  rowsBox.appendChild(tr);
+  return tr;
+});
+function setRow(i,cls,label,detail){
+  const tr=rowEls[i];
+  tr.children[2].innerHTML=`<span class="pill ${cls}"><i></i>${label}</span>`;
+  tr.children[3].textContent=detail;
+}
+
+/* 注入错误钩子 + <base>：srcdoc 页面的相对路径借 base 归位，报错进 __errs */
+function injectHooks(html,dirUrl){
+  const hook=`<base href="${dirUrl}">`+
+    `<script>window.__errs=[];window.onerror=function(m,s,l){window.__errs.push(String(m)+" @line "+(l||0));return false;};<\/script>`;
+  return /<head[^>]*>/i.test(html)
+    ? html.replace(/<head[^>]*>/i,m=>m+hook)
+    : hook+html;
+}
+async function checkOne2([no,name,dir],i){
+  const dirUrl=new URL(`workbenches/${dir}/`,location.href).href;
+  try{
+    const res=await fetch(dirUrl,{cache:"no-store"});
+    if(!res.ok){setRow(i,"p-fail","失败",`HTTP ${res.status}`);return "fail"}
+    const html=injectHooks(await res.text(),dirUrl);
+    const out=await loadDoc2(html,dirUrl,15000);
+    setRow(i,out.cls,out.label,out.detail);
+    return out.verdict;
+  }catch(e){
+    setRow(i,"p-warn","警告","fetch 失败——请通过 http 服务访问（如 python3 -m http.server 8080）");
+    return "warn";
+  }
+}
+function loadDoc2(srcHtml,dirUrl,ms){
+  return new Promise(resolve=>{
+    const f=document.createElement("iframe");
+    f.srcdoc=srcHtml; f.style.cssText="width:1024px;height:768px;border:0";
+    const t0=performance.now();
+    const finish=r=>{clearTimeout(timer);try{f.remove()}catch(e){}resolve(r)};
+    const timer=setTimeout(()=>finish({cls:"p-fail",label:"失败",detail:"加载超时（>15s）",verdict:"fail"}),ms);
+    f.onload=()=>{
+      const ms2=Math.round(performance.now()-t0);
+      setTimeout(()=>{ // 留一拍给内联脚本执行与首帧渲染
+        let d;
+        try{ d=f.contentDocument; }catch(e){ finish({cls:"p-fail",label:"失败",detail:"无法访问 frame 文档",verdict:"fail"}); return; }
+        if(!d||!d.body){ finish({cls:"p-fail",label:"失败",detail:"文档为空",verdict:"fail"}); return; }
+        const win=f.contentWindow;
+        const errs=(win&&win.__errs)||[];
+        const q=s=>{try{return d.querySelectorAll(s).length}catch(e){return -1}};
+        const struct=[["头部 .top",".top"],["KPI 区 .kpis",".kpis"],["网格 .grid",".grid"],["主题按钮",".theme-btn"]]
+          .filter(([label,sel])=>q(sel)===0).map(([label])=>label);
+        const canvas=q("canvas");
+        const wired=["perf-guard","export-tools","ai-assistant"].filter(k=>!Array.from(d.querySelectorAll("script[src]")).some(s=>(s.getAttribute("src")||"").includes(k)));
+        let cls="p-pass",label="通过",verdict="pass";
+        const bits=[];
+        if(struct.length||errs.length||wired.length){cls="p-fail";label="失败";verdict="fail"}
+        else if(canvas===0){cls="p-warn";label="警告";verdict="warn"}
+        if(struct.length)bits.push(`结构缺失：${struct.join("、")}`);
+        if(errs.length)bits.push(`运行时报错 ${errs.length} 条（${errs[0]}${errs.length>1?" 等":""}）`);
+        if(wired.length)bits.push(`组件未接入：${wired.join("、")}`);
+        if(canvas===0&&!struct.length)bits.push("无 canvas——图表未渲染（CDN 不可达时为正常兜底）");
+        if(!bits.length)bits.push(`结构完整 · 图表 ${canvas} 块 · 报错 0 · ${ms2}ms`);
+        finish({cls,label,detail:bits.join("；"),verdict});
+      },350);
+    };
+    dock.appendChild(f);
+  });
+}
+
+async function runAll(){
+  runBtn.disabled=true;
+  const t0=performance.now();
+  rowEls.forEach((tr,i)=>setRow(i,"p-pend","待检","–"));
+  let pass=0,warn=0,fail=0;
+  for(let i=0;i<TARGETS.length;i++){ // 逐台串行：控制内存与 CDN 压力
+    hint.textContent=`自检中… 第 ${i+1} / ${TARGETS.length} 台`;
+    const v=await checkOne2(TARGETS[i],i);
+    v==="pass"?pass++:v==="warn"?warn++:fail++;
+  }
+  document.getElementById("nPass").textContent=pass;
+  document.getElementById("nWarn").textContent=warn;
+  document.getElementById("nFail").textContent=fail;
+  document.getElementById("nTime").textContent=((performance.now()-t0)/1000).toFixed(1)+"s";
+  hint.textContent= fail===0 ? (warn===0?"全部通过 ✓":"完成（有警告，多为 CDN 环境问题）") : `发现 ${fail} 个失败，见红行`;
+  runBtn.disabled=false;
+}
+runBtn.addEventListener("click",runAll);
+runAll();
+</script>
+</body>
+</html>
