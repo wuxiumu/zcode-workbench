@@ -5,11 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>数据资产目录 · Data Catalog | ZCode Labs</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<script>try{document.documentElement.dataset.theme=localStorage.getItem('zwb-theme')||'dark'}catch(e){}</script>
 <style>
-:root{--bg:#070b14;--p1:#0d1322;--p2:#0a0f1c;--line:#1c2740;--txt:#dfe7ff;--sub:#8494b8;--acc:#4f8cff;--ok:#34d399;--warn:#fbbf24;--bad:#f87171}
+:root{--bg:#070b14;--p1:#0d1322;--p2:#0a0f1c;--line:#1c2740;--txt:#dfe7ff;--sub:#8494b8;--acc:#4f8cff;--ok:#34d399;--warn:#fbbf24;--bad:#f87171;--purple:#a78bfa;--cyan:#22d3ee;--gold:#facc15;--glow:#0d332e;--track:#182242;--split:#141d33;--acc-deep:#1d3a8f;--acc-soft:rgba(79,140,255,.1);--ok-soft:rgba(52,211,153,.1);--warn-soft:rgba(251,191,36,.1);--warn-line:rgba(251,191,36,.3);--bad-soft:rgba(248,113,113,.1)}
+[data-theme="light"]{--bg:#f5f7fa;--p1:#ffffff;--p2:#f7f9fc;--line:#e3e8ef;--txt:#1f2733;--sub:#5a6675;--acc:#2f6cff;--ok:#0e9f6e;--warn:#d97706;--bad:#dc2626;--purple:#7c3aed;--cyan:#0891b2;--gold:#ca8a04;--glow:#dcf0ea;--track:#e8edf5;--split:#e3e8ef;--acc-deep:#9db9f7;--acc-soft:rgba(47,108,255,.09);--ok-soft:rgba(14,159,110,.1);--warn-soft:rgba(217,119,6,.1);--warn-line:rgba(217,119,6,.35);--bad-soft:rgba(220,38,38,.08)}
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:radial-gradient(900px 500px at 85% -10%,#0d332e 0%,var(--bg) 60%);color:var(--txt);font-family:"PingFang SC","Microsoft YaHei",sans-serif;padding:22px;min-height:100vh}
-.top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px}
+body{background:radial-gradient(900px 500px at 85% -10%,var(--glow) 0%,var(--bg) 60%);color:var(--txt);font-family:"PingFang SC","Microsoft YaHei",sans-serif;padding:22px;min-height:100vh}
+.top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px;padding-right:56px}
 .top h1{font-size:20px;display:flex;align-items:center;gap:10px}
 .top h1 .dot{width:9px;height:9px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px var(--ok);animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
@@ -29,19 +31,22 @@ body{background:radial-gradient(900px 500px at 85% -10%,#0d332e 0%,var(--bg) 60%
 .tscroll{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:12px}
 th{color:var(--sub);font-weight:500;text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);letter-spacing:.05em;white-space:nowrap}
-td{padding:7px 8px;border-bottom:1px solid rgba(28,39,64,.5);font-variant-numeric:tabular-nums;white-space:nowrap}
+td{padding:7px 8px;border-bottom:1px solid var(--split);font-variant-numeric:tabular-nums;white-space:nowrap}
 .badge{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:99px;font-size:11px}
 .badge i{width:5px;height:5px;border-radius:50%}
-.st-ok{color:var(--ok);background:rgba(52,211,153,.1)}.st-ok i{background:var(--ok)}
-.st-warn{color:var(--warn);background:rgba(251,191,36,.1)}.st-warn i{background:var(--warn)}
-.st-bad{color:var(--bad);background:rgba(248,113,113,.1)}.st-bad i{background:var(--bad)}
+.st-ok{color:var(--ok);background:var(--ok-soft)}.st-ok i{background:var(--ok)}
+.st-warn{color:var(--warn);background:var(--warn-soft)}.st-warn i{background:var(--warn)}
+.st-bad{color:var(--bad);background:var(--bad-soft)}.st-bad i{background:var(--bad)}
 .trend{font-size:11px}.trend.up{color:var(--ok)}.trend.dn{color:var(--bad)}
-.mock{position:fixed;right:16px;bottom:14px;font-size:11px;color:var(--warn);background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.3);border-radius:99px;padding:3px 12px;letter-spacing:.1em}
+.theme-btn{position:fixed;right:16px;top:12px;z-index:9999;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--p1);color:var(--txt);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .2s,border-color .2s}
+.theme-btn:hover{transform:scale(1.1);border-color:var(--acc)}
+.mock{position:fixed;right:16px;bottom:14px;font-size:11px;color:var(--warn);background:var(--warn-soft);border:1px solid var(--warn-line);border-radius:99px;padding:3px 12px;letter-spacing:.1em}
 .back{position:fixed;left:16px;bottom:14px;font-size:12px}.back a{color:var(--acc);text-decoration:none}
 @media(max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
+<button class="theme-btn" id="themeBtn" title="切换亮 / 暗主题"></button>
 <div class="top">
   <h1><span class="dot"></span>数据资产目录 <span>DATA CATALOG · lakehouse-prod</span></h1>
   <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
@@ -63,6 +68,7 @@ td{padding:7px 8px;border-bottom:1px solid rgba(28,39,64,.5);font-variant-numeri
 <div class="mock">MOCK DATA · 演示数据</div>
 
 <script>
+const V=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const rnd=(a,b)=>a+Math.random()*(b-a);
 const irnd=(a,b)=>Math.round(rnd(a,b));
 const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
@@ -91,11 +97,8 @@ function renderKpis(){
 
 // 表血缘关系图（layout:none 坐标自动适配容器，节点按分层着色）
 const linC=echarts.init(document.getElementById('c-lineage'));
-const CATS=[
-  {name:'ODS',itemStyle:{color:'#a78bfa'}},
-  {name:'DWD',itemStyle:{color:'#4f8cff'}},
-  {name:'DWS',itemStyle:{color:'#22d3ee'}},
-  {name:'ADS',itemStyle:{color:'#34d399'}}];
+const CATS=[{name:'ODS'},{name:'DWD'},{name:'DWS'},{name:'ADS'}];
+const CATKEY=['--purple','--acc','--cyan','--ok'];
 const nodes=[
   {name:'ods_order_info',x:60,y:30,cat:0,q:93.1,s:20},
   {name:'ods_payment_flow',x:60,y:110,cat:0,q:91.8,s:20},
@@ -115,14 +118,16 @@ const edges=[
   ['dws_user_order_1d','ads_user_retention']];
 function renderLineage(){
   nodes.forEach(n=>{n.q=+clamp(n.q+rnd(-.2,.2),80,99.9).toFixed(1)});
+  const catCols=CATKEY.map(k=>V(k));
   linC.setOption({
     tooltip:{formatter:p=>p.dataType==='node'?`${p.name}<br/>分层 ${CATS[p.data.cat].name} · 质量分 <b>${p.data.q}</b>`:''},
-    legend:{data:CATS.map(c=>c.name),textStyle:{color:'#8494b8',fontSize:10},top:0,icon:'circle',itemWidth:8,itemHeight:8},
-    series:[{type:'graph',layout:'none',roam:true,zoom:1,categories:CATS,
-      itemStyle:{opacity:.92,borderColor:'#0a0f1c',borderWidth:2},
-      lineStyle:{color:'#22335c',width:1.5,curveness:.12},
+    legend:{data:CATS.map(c=>c.name),textStyle:{color:V('--sub'),fontSize:10},top:0,icon:'circle',itemWidth:8,itemHeight:8},
+    series:[{type:'graph',layout:'none',roam:true,zoom:1,
+      categories:CATS.map((c,i)=>({name:c.name,itemStyle:{color:catCols[i]}})),
+      itemStyle:{opacity:.92,borderColor:V('--p2'),borderWidth:2},
+      lineStyle:{color:V('--line'),width:1.5,curveness:.12},
       emphasis:{focus:'adjacency',lineStyle:{width:2.5}},
-      label:{show:true,position:'bottom',color:'#8494b8',fontSize:9},
+      label:{show:true,position:'bottom',color:V('--sub'),fontSize:9},
       edgeSymbol:['none','arrow'],edgeSymbolSize:7,
       data:nodes.map(n=>({name:n.name,x:n.x,y:n.y,category:n.cat,symbolSize:n.s,q:n.q})),
       links:edges.map(e=>({source:e[0],target:e[1]}))}]});
@@ -130,27 +135,24 @@ function renderLineage(){
 
 // 数据质量分趋势（四维）
 const qC=echarts.init(document.getElementById('c-quality'));
+const QKEY=[['完整性','--acc'],['及时性','--cyan'],['一致性','--warn'],['准确性','--ok']];
 function renderQuality(){
-  qC.setOption({tooltip:{trigger:'axis'},legend:{textStyle:{color:'#8494b8',fontSize:10},top:0,itemWidth:10,itemHeight:10},
+  qC.setOption({tooltip:{trigger:'axis'},legend:{textStyle:{color:V('--sub'),fontSize:10},top:0,itemWidth:10,itemHeight:10},
     grid:{left:34,right:12,top:30,bottom:24},
-    xAxis:{type:'category',data:qDays,axisLabel:{color:'#8494b8',fontSize:9,interval:6}},
-    yAxis:{min:80,max:100,type:'value',splitLine:{lineStyle:{color:'#141d33'}},axisLabel:{color:'#8494b8',fontSize:10}},
-    series:[
-      {name:'完整性',type:'line',data:qCmp,smooth:true,showSymbol:false,lineStyle:{width:1.8,color:'#4f8cff'}},
-      {name:'及时性',type:'line',data:qTim,smooth:true,showSymbol:false,lineStyle:{width:1.8,color:'#22d3ee'}},
-      {name:'一致性',type:'line',data:qCon,smooth:true,showSymbol:false,lineStyle:{width:1.8,color:'#fbbf24'}},
-      {name:'准确性',type:'line',data:qAcc,smooth:true,showSymbol:false,lineStyle:{width:1.8,color:'#34d399'}}]});
+    xAxis:{type:'category',data:qDays,axisLabel:{color:V('--sub'),fontSize:9,interval:6}},
+    yAxis:{min:80,max:100,type:'value',splitLine:{lineStyle:{color:V('--split')}},axisLabel:{color:V('--sub'),fontSize:10}},
+    series:[[qCmp],[qTim],[qCon],[qAcc]].map((arr,i)=>({name:QKEY[i][0],type:'line',data:arr,smooth:true,showSymbol:false,lineStyle:{width:1.8,color:V(QKEY[i][1])}}))});
 }
 
 // 存储分层分布（玫瑰图）
 const stC=echarts.init(document.getElementById('c-storage'));
-const STORE=[['ODS 贴源层',482,'#a78bfa'],['DWD 明细层',294,'#4f8cff'],['DWS 汇总层',168,'#22d3ee'],['ADS 应用层',96,'#34d399'],['DIM 维表层',156,'#fbbf24'],['TMP 临时层',61,'#8494b8']];
-let stData=STORE.map(s=>s[1]);
+const STORE=[['ODS 贴源层','--purple'],['DWD 明细层','--acc'],['DWS 汇总层','--cyan'],['ADS 应用层','--ok'],['DIM 维表层','--gold'],['TMP 临时层','--sub']];
+let stData=STORE.map(()=>40+Math.floor(Math.random()*400));
 function renderStorage(){
   stData=stData.map(v=>Math.max(20,v+irnd(-5,6)));
-  stC.setOption({tooltip:{trigger:'item',formatter:'{b}: {c} TB ({d}%)'},legend:{bottom:0,textStyle:{color:'#8494b8',fontSize:9},itemWidth:9,itemHeight:9},
-    series:[{type:'pie',roseType:'radius',radius:['14%','62%'],center:['50%','42%'],itemStyle:{borderColor:'#0a0f1c',borderWidth:2},label:{show:false},
-      data:STORE.map((s,i)=>({name:s[0],value:stData[i],itemStyle:{color:s[2]}}))}]});
+  stC.setOption({tooltip:{trigger:'item',formatter:'{b}: {c} TB ({d}%)'},legend:{bottom:0,textStyle:{color:V('--sub'),fontSize:9},itemWidth:9,itemHeight:9},
+    series:[{type:'pie',roseType:'radius',radius:['14%','62%'],center:['50%','42%'],itemStyle:{borderColor:V('--p2'),borderWidth:2},label:{show:false},
+      data:STORE.map((s,i)=>({name:s[0],value:stData[i],itemStyle:{color:V(s[1])}}))}]});
 }
 
 // 表访问热度 Top10（横向柱状图）
@@ -162,10 +164,10 @@ function renderHot(){
   const pairs=HOT.map((n,i)=>[n,hotV[i]]).sort((a,b)=>b[1]-a[1]);
   hotC.setOption({tooltip:{trigger:'axis',axisPointer:{type:'shadow'},formatter:ps=>`${ps[0].name}　<b>${ps[0].value.toLocaleString()}</b> 次/日`},
     grid:{left:128,right:44,top:10,bottom:22},
-    xAxis:{type:'value',splitLine:{lineStyle:{color:'#141d33'}},axisLabel:{color:'#8494b8',fontSize:9}},
-    yAxis:{type:'category',inverse:true,data:pairs.map(p=>p[0]),axisLabel:{color:'#8494b8',fontSize:9},axisLine:{lineStyle:{color:'#22304f'}},axisTick:{show:false}},
-    series:[{type:'bar',data:pairs.map(p=>p[1]),barWidth:10,label:{show:true,position:'right',fontSize:9,color:'#8494b8'},
-      itemStyle:{borderRadius:[0,3,3,0],color:{type:'linear',x:0,y:0,x2:1,y2:0,colorStops:[{offset:0,color:'#1d3a8f'},{offset:1,color:'#4f8cff'}]}}}]});
+    xAxis:{type:'value',splitLine:{lineStyle:{color:V('--split')}},axisLabel:{color:V('--sub'),fontSize:9}},
+    yAxis:{type:'category',inverse:true,data:pairs.map(p=>p[0]),axisLabel:{color:V('--sub'),fontSize:9},axisLine:{lineStyle:{color:V('--line')}},axisTick:{show:false}},
+    series:[{type:'bar',data:pairs.map(p=>p[1]),barWidth:10,label:{show:true,position:'right',fontSize:9,color:V('--sub')},
+      itemStyle:{borderRadius:[0,3,3,0],color:{type:'linear',x:0,y:0,x2:1,y2:0,colorStops:[{offset:0,color:V('--acc-deep')},{offset:1,color:V('--acc')}]}}}]});
 }
 
 // 资产 Owner 责任制列表
@@ -190,6 +192,13 @@ function renderOwners(){
 
 // 时钟
 const tickClock=()=>{document.getElementById('clock').textContent=new Date().toLocaleString('zh-CN',{hour12:false})};
+
+// 主题切换：图表按当前 CSS 变量重建
+function retheme(){renderQuality();renderStorage();renderHot();renderLineage();}
+const themeBtn=document.getElementById('themeBtn');
+function applyTheme(t){document.documentElement.dataset.theme=t;try{localStorage.setItem('zwb-theme',t)}catch(e){}themeBtn.textContent=t==='light'?'🌙':'☀️';retheme();}
+themeBtn.addEventListener('click',()=>applyTheme(document.documentElement.dataset.theme==='light'?'dark':'light'));
+themeBtn.textContent=document.documentElement.dataset.theme==='light'?'🌙':'☀️';
 
 // 模拟实时
 function tick(){

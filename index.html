@@ -4,15 +4,32 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ZCode Labs · FDE 工作台矩阵</title>
+<script>try{document.documentElement.dataset.theme=localStorage.getItem('zwb-theme')||'dark'}catch(e){}</script>
 <style>
   :root{
     --bg:#0a0e1a; --panel:#121829; --panel2:#0e1424; --line:#1f2a44;
     --txt:#e6ecff; --sub:#8b98b8; --acc:#4f8cff; --acc2:#22d3ee; --ok:#34d399; --warn:#fbbf24;
+    --glow:#16204a; --faint:rgba(139,152,184,.14);
+    --acc2-soft:rgba(34,211,238,.06); --acc2-line:rgba(34,211,238,.35);
+    --warn-soft:rgba(251,191,36,.08); --warn-line:rgba(251,191,36,.3);
+    --acc2-bright:#7dd3fc; --chip-on-bg:rgba(79,140,255,.2);
+    --hover-shadow:0 18px 40px -18px rgba(0,0,0,.7);
+  }
+  [data-theme="light"]{
+    --bg:#f5f7fa; --panel:#ffffff; --panel2:#f7f9fc; --line:#e3e8ef;
+    --txt:#1f2733; --sub:#5a6675; --acc:#2f6cff; --acc2:#0891b2; --ok:#0e9f6e; --warn:#d97706;
+    --glow:#dce7fb; --faint:rgba(31,39,51,.1);
+    --acc2-soft:rgba(8,145,178,.07); --acc2-line:rgba(8,145,178,.4);
+    --warn-soft:rgba(217,119,6,.1); --warn-line:rgba(217,119,6,.35);
+    --acc2-bright:#0369a1; --chip-on-bg:rgba(47,108,255,.85);
+    --hover-shadow:0 18px 40px -18px rgba(31,39,51,.35);
   }
   *{margin:0;padding:0;box-sizing:border-box}
-  body{background:radial-gradient(1200px 600px at 80% -10%,#16204a 0%,var(--bg) 55%);color:var(--txt);font-family:"PingFang SC","Microsoft YaHei",-apple-system,sans-serif;min-height:100vh}
+  body{background:radial-gradient(1200px 600px at 80% -10%,var(--glow) 0%,var(--bg) 55%);color:var(--txt);font-family:"PingFang SC","Microsoft YaHei",-apple-system,sans-serif;min-height:100vh}
+  .theme-btn{position:fixed;right:18px;top:16px;z-index:9999;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--panel);color:var(--txt);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .2s,border-color .2s}
+  .theme-btn:hover{transform:scale(1.1);border-color:var(--acc)}
   .wrap{max-width:1160px;margin:0 auto;padding:56px 28px 80px}
-  .badge{display:inline-flex;align-items:center;gap:8px;font-size:12px;color:var(--acc2);border:1px solid rgba(34,211,238,.35);border-radius:99px;padding:4px 14px;letter-spacing:.12em;background:rgba(34,211,238,.06)}
+  .badge{display:inline-flex;align-items:center;gap:8px;font-size:12px;color:var(--acc2);border:1px solid var(--acc2-line);border-radius:99px;padding:4px 14px;letter-spacing:.12em;background:var(--acc2-soft)}
   .badge i{width:6px;height:6px;border-radius:50%;background:var(--acc2);box-shadow:0 0 8px var(--acc2);animation:pulse 2s infinite}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
   h1{font-size:clamp(30px,5vw,52px);line-height:1.15;margin:22px 0 14px;font-weight:800;letter-spacing:.01em}
@@ -35,18 +52,18 @@
   .chips{display:flex;flex-wrap:wrap;gap:8px}
   .chip{font-size:12px;color:var(--sub);background:linear-gradient(160deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:99px;padding:5px 13px;cursor:pointer;transition:color .2s,border-color .2s,transform .2s;user-select:none;font-family:inherit}
   .chip:hover{color:var(--txt);border-color:rgba(79,140,255,.5);transform:translateY(-1px)}
-  .chip.on{color:#fff;background:rgba(79,140,255,.2);border-color:var(--acc)}
+  .chip.on{color:#fff;background:var(--chip-on-bg);border-color:var(--acc)}
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:18px}
   .empty{padding:40px;text-align:center;color:var(--sub);border:1px dashed var(--line);border-radius:14px;font-size:14px}
   .card{position:relative;display:block;text-decoration:none;color:inherit;background:linear-gradient(165deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:16px;padding:24px;transition:transform .25s,border-color .25s,box-shadow .25s;overflow:hidden}
   .card::after{content:"";position:absolute;inset:0;background:radial-gradient(400px 160px at var(--mx,50%) -20%,rgba(79,140,255,.14),transparent 70%);opacity:0;transition:opacity .25s;pointer-events:none}
-  .card:hover{transform:translateY(-4px);border-color:rgba(79,140,255,.5);box-shadow:0 18px 40px -18px rgba(0,0,0,.7)}
+  .card:hover{transform:translateY(-4px);border-color:rgba(79,140,255,.5);box-shadow:var(--hover-shadow)}
   .card:hover::after{opacity:1}
   .card:active{transform:translateY(-2px) scale(.99)}
-  .card .no{position:absolute;right:18px;top:14px;font-size:40px;font-weight:800;color:rgba(139,152,184,.14);font-variant-numeric:tabular-nums;transition:color .25s}
+  .card .no{position:absolute;right:18px;top:14px;font-size:40px;font-weight:800;color:var(--faint);font-variant-numeric:tabular-nums;transition:color .25s}
   .card:hover .no{color:rgba(79,140,255,.24)}
-  .card .tag{display:inline-block;font-size:11px;color:var(--acc2);border:1px solid rgba(34,211,238,.3);border-radius:6px;padding:2px 8px;letter-spacing:.08em;margin-bottom:12px;transition:color .25s,border-color .25s}
-  .card:hover .tag{color:#7dd3fc;border-color:rgba(34,211,238,.6)}
+  .card .tag{display:inline-block;font-size:11px;color:var(--acc2);border:1px solid var(--acc2-line);border-radius:6px;padding:2px 8px;letter-spacing:.08em;margin-bottom:12px;transition:color .25s,border-color .25s}
+  .card:hover .tag{color:var(--acc2-bright);border-color:var(--acc2-line)}
   .card h3{font-size:18px;margin-bottom:6px}
   .card .en{font-size:12px;color:var(--sub);letter-spacing:.1em;margin-bottom:12px}
   .card p{font-size:13px;color:var(--sub);line-height:1.7;min-height:44px}
@@ -58,7 +75,7 @@
   .card:hover .upd{color:var(--txt);border-color:rgba(79,140,255,.5)}
   .foot{margin-top:64px;padding-top:24px;border-top:1px solid var(--line);color:var(--sub);font-size:13px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
   .foot a{color:var(--acc);text-decoration:none}
-  .mock{position:fixed;right:18px;bottom:16px;font-size:11px;color:var(--warn);background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.3);border-radius:99px;padding:4px 12px;letter-spacing:.1em}
+  .mock{position:fixed;right:18px;bottom:16px;font-size:11px;color:var(--warn);background:var(--warn-soft);border:1px solid var(--warn-line);border-radius:99px;padding:4px 12px;letter-spacing:.1em}
   @media(max-width:900px){
     .searchrow{flex-direction:column;align-items:stretch}
     .search{max-width:none;width:100%}
@@ -69,6 +86,7 @@
 </style>
 </head>
 <body>
+<button class="theme-btn" id="themeBtn" title="切换亮 / 暗主题"></button>
 <div class="wrap">
   <span class="badge"><i></i>ZCODE LABS · FDE PORTFOLIO</span>
   <h1>十五张作战地图，<br><span class="grad">一个工程师的业务翻译能力。</span></h1>
@@ -95,6 +113,11 @@
 <div class="mock">MOCK DATA · 演示数据</div>
 
 <script>
+// 主题切换（门户无图表，仅切变量 + 持久化；全部页面共用 zwb-theme 键）
+const themeBtn=document.getElementById("themeBtn");
+function applyTheme(t){document.documentElement.dataset.theme=t;try{localStorage.setItem("zwb-theme",t)}catch(e){}themeBtn.textContent=t==="light"?"🌙":"☀️";}
+themeBtn.addEventListener("click",()=>applyTheme(document.documentElement.dataset.theme==="light"?"dark":"light"));
+themeBtn.textContent=document.documentElement.dataset.theme==="light"?"🌙":"☀️";
 const workbenches=[
   {no:"01",tag:"OPERATIONS",cn:"运维",upd:"09-12",name:"运维监控台",en:"OPS CENTER",desc:"服务器 CPU / 内存 / 网络实时曲线，服务健康状态矩阵与告警事件流 —— SRE 值班一屏尽览。",href:"workbenches/ops-center/",live:"live"},
   {no:"02",tag:"GROWTH",cn:"增长",upd:"09-18",name:"增长分析台",en:"GROWTH ANALYTICS",desc:"GMV 转化漏斗、DAU 趋势、渠道归因与爆品排行榜 —— 增长团队的每日作战地图。",href:"workbenches/growth-analytics/",live:"live"},
