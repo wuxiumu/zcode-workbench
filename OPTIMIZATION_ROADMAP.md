@@ -25,7 +25,7 @@
 - [x] [同行] 每个工作台图表支持「导出 PNG」与「导出 CSV」按钮（ECharts 自带 getDataURL，CSV 由 Mock 数据生成）（✅ 2026-11-12 完成：新建共享组件 assets/export-tools.js，按 _echarts_instance_ 自动发现全部图表实例并注入悬浮按钮（父容器 hover 显示），15 工作台一行接入；PNG 2 倍像素比+当前主题背景，CSV 由 getOption 泛化提取（直角坐标/饼图/对象值/散点对 4 形态，5 组单测），带 BOM 防 Excel 乱码；stub 兜底模式静默退出）
 - [x] [同行] 可访问性巡检：交互元素补 aria-label、检查亮暗主题文字对比度、支持 prefers-reduced-motion 关闭动效（✅ 2026-11-12 完成：新增可复用审计工具 tools/a11y_audit.py（结构类检查 + WCAG 对比度：文字 4.5:1 / 图形 1.4.11 3:1）；修复 17 页 theme-btn 无可访问名；theme.css 全局补 prefers-reduced-motion 规则；亮色 --warn #d97706→#b45309 使对比度 2.97→4.49:1；终审 17 页 0 问题 0 建议）
 - [x] [同行] 性能优化：图表用 IntersectionObserver 懒初始化，页面不可见时停止实时刷新定时器（document.visibilityState）（✅ 2026-11-12 完成：新建 assets/perf-guard.js 同步加载于 ECharts 加载器后——setInterval 包装使后台标签页跳过刷新回调；echarts.init 代理懒初始化（rootMargin 250px，调用排队、物化按序重放、派发 wb:chart-real 供 export-tools 补挂按钮）；全链路 fail-open（无 IO/stub/detached/异常均退回原生）；6 组 Node mock 行为单测全过；顺带修 export-tools 支持"后物化"图表补挂按钮）
-- [ ] [同行] 移动端响应式完善：≤768px 下卡片单列、图表高度自适应、筛选栏可横向滚动
+- [x] [同行] 移动端响应式完善：≤768px 下卡片单列、图表高度自适应、筛选栏可横向滚动（✅ 2026-11-12 完成：摸底确认 15 页已有 900/1000px 断点（KPI 双列+网格单列），theme.css 补共享 ≤768px 基线——头部允许换行、一句话价值副标题独占一行、.grid/.panel min-width:0 防内容撑破网格；类名全站同名故一处生效）
 - [ ] [同行] 新增 `self-check.html` 自检页：iframe 逐个加载 15 个工作台，捕获加载报错并汇总红绿表格，作为回归冒烟工具
 
 ## C. 展示物料 · 图文与动效
