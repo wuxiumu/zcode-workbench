@@ -22,13 +22,14 @@
 | 11 | 客服工单台 Support Desk | 工单分时 · SLA 达标 · 坐席负载 · 满意度分布 | [打开](https://wuxiumu.github.io/zcode-workbench/workbenches/support-desk/) |
 | 12 | 营销投放台 Ads Performance | 渠道消耗 · ROAS 趋势 · 转化漏斗 · 亏损预警 | [打开](https://wuxiumu.github.io/zcode-workbench/workbenches/ads-performance/) |
 | 13 | IoT 设备监控台 Device Fleet | 在线率趋势 · 状态分布 · 告警流水 · 固件分布 | [打开](https://wuxiumu.github.io/zcode-workbench/workbenches/iot-fleet/) |
+| 14 | 内容审核台 Trust & Safety | 机审人审堆叠 · 违规分布 · 审核时效 · 申诉处理 | [打开](https://wuxiumu.github.io/zcode-workbench/workbenches/content-moderation/) |
 
 ## 为什么做这个矩阵
 
 FDE 的价值不在于写代码，而在于**把客户的业务问题翻译成可运行的系统**。这个仓库用最小成本演示这条链路：
 
 - **每个工作台都真实可访问** —— 不是截图，不是 PPT，是跑起来的页面；
-- **每个工作台都讲一个业务故事** —— 运维 / 增长 / 客户 / 内容 / AI / 供应链 / 财务 / 数据 / 评测 / 人力 / 客服 / 投放 / IoT，覆盖一家数字化公司最常见的十三张作战地图；
+- **每个工作台都讲一个业务故事** —— 运维 / 增长 / 客户 / 内容 / AI / 供应链 / 财务 / 数据 / 评测 / 人力 / 客服 / 投放 / IoT / 审核，覆盖一家数字化公司最常见的十四张作战地图；
 - **每个工作台都是单文件** —— `workbenches/<name>/index.html`，复制粘贴即可嵌入任何系统，替换 Mock 数据源即为生产就绪。
 
 ## 技术形态
@@ -40,7 +41,7 @@ FDE 的价值不在于写代码，而在于**把客户的业务问题翻译成�
 ## 持续迭代
 
 路线与 backlog 见 [Issues](https://github.com/wuxiumu/zcode-workbench/issues)。
-已规划的十三张作战地图全部交付上线，新工作台的动向与扩展方向请关注 Issues。
+已规划的十四张作战地图全部交付上线，新工作台的动向与扩展方向请关注 Issues。
 
 ## 本地预览
 
