@@ -5,13 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AI Agent 观测台 · Agent Observatory | ZCode Labs</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<script>try{document.documentElement.dataset.theme=localStorage.getItem('zwb-theme')||'dark'}catch(e){}</script>
 <style>
-:root{--bg:#070b14;--p1:#0d1322;--p2:#0a0f1c;--line:#1c2740;--txt:#dfe7ff;--sub:#8494b8;--acc:#4f8cff;--ok:#34d399;--warn:#fbbf24;--bad:#f87171;--cy:#22d3ee}
+:root{--bg:#070b14;--p1:#0d1322;--p2:#0a0f1c;--line:#1c2740;--txt:#dfe7ff;--sub:#8494b8;--acc:#4f8cff;--ok:#34d399;--warn:#fbbf24;--bad:#f87171;--cy:#22d3ee;--purple:#a78bfa;--pink:#f472b6;--glow:#0a2a2a;--track:#131c33;--split:#141d33;--acc-soft:rgba(79,140,255,.12);--cy-soft:rgba(34,211,238,.12);--purple-soft:rgba(167,139,250,.12);--pink-soft:rgba(244,114,182,.12);--ok-soft:rgba(52,211,153,.08);--ok-line:rgba(52,211,153,.35);--warn-soft:rgba(251,191,36,.08);--warn-line:rgba(251,191,36,.3)}
+[data-theme="light"]{--bg:#f5f7fa;--p1:#ffffff;--p2:#f7f9fc;--line:#e3e8ef;--txt:#1f2733;--sub:#5a6675;--acc:#2f6cff;--ok:#0e9f6e;--warn:#d97706;--bad:#dc2626;--cy:#0891b2;--purple:#7c3aed;--pink:#db2777;--glow:#dcf0ee;--track:#e8edf5;--split:#e3e8ef;--acc-soft:rgba(47,108,255,.09);--cy-soft:rgba(8,145,178,.1);--purple-soft:rgba(124,58,237,.1);--pink-soft:rgba(219,39,119,.1);--ok-soft:rgba(14,159,110,.08);--ok-line:rgba(14,159,110,.4);--warn-soft:rgba(217,119,6,.1);--warn-line:rgba(217,119,6,.35)}
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:radial-gradient(900px 500px at 20% -10%,#0a2a2a 0%,var(--bg) 60%);color:var(--txt);font-family:"PingFang SC","Microsoft YaHei",sans-serif;padding:22px;min-height:100vh}
-.top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:18px}
+body{background:radial-gradient(900px 500px at 20% -10%,var(--glow) 0%,var(--bg) 60%);color:var(--txt);font-family:"PingFang SC","Microsoft YaHei",sans-serif;padding:22px;min-height:100vh}
+.top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:18px;padding-right:56px}
 .top h1{font-size:20px}.top h1 span{color:var(--sub);font-size:13px;font-weight:400}
-.live{font-size:11px;color:var(--ok);border:1px solid rgba(52,211,153,.35);background:rgba(52,211,153,.08);border-radius:99px;padding:4px 12px;display:inline-flex;gap:6px;align-items:center}
+.live{font-size:11px;color:var(--ok);border:1px solid var(--ok-line);background:var(--ok-soft);border-radius:99px;padding:4px 12px;display:inline-flex;gap:6px;align-items:center}
 .live i{width:6px;height:6px;border-radius:50%;background:var(--ok);animation:p 1.6s infinite}
 @keyframes p{0%,100%{opacity:1}50%{opacity:.3}}
 .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px}
@@ -25,20 +27,23 @@ body{background:radial-gradient(900px 500px at 20% -10%,#0a2a2a 0%,var(--bg) 60%
 .chart{height:200px}.wide{grid-column:1/-1}
 table{width:100%;border-collapse:collapse;font-size:12px}
 th{color:var(--sub);font-weight:500;text-align:left;padding:7px 8px;border-bottom:1px solid var(--line)}
-td{padding:7px 8px;border-bottom:1px solid rgba(28,39,64,.5);font-variant-numeric:tabular-nums}
+td{padding:7px 8px;border-bottom:1px solid var(--split);font-variant-numeric:tabular-nums}
 .model{font-size:11px;padding:2px 8px;border-radius:6px;display:inline-block}
-.m1{color:#4f8cff;background:rgba(79,140,255,.12)}.m2{color:#22d3ee;background:rgba(34,211,238,.12)}.m3{color:#a78bfa;background:rgba(167,139,250,.12)}.m4{color:#f472b6;background:rgba(244,114,182,.12)}
-.trace-row{display:flex;align-items:center;gap:8px;padding:7px 4px;border-bottom:1px solid rgba(28,39,64,.5);font-size:12px}
+.m1{color:var(--acc);background:var(--acc-soft)}.m2{color:var(--cy);background:var(--cy-soft)}.m3{color:var(--purple);background:var(--purple-soft)}.m4{color:var(--pink);background:var(--pink-soft)}
+.trace-row{display:flex;align-items:center;gap:8px;padding:7px 4px;border-bottom:1px solid var(--split);font-size:12px}
 .trace-row .name{width:170px;color:var(--sub);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.trace-row .bar-wrap{flex:1;height:10px;position:relative;background:#131c33;border-radius:5px}
+.trace-row .bar-wrap{flex:1;height:10px;position:relative;background:var(--track);border-radius:5px}
 .trace-row .bar{position:absolute;height:10px;border-radius:5px}
 .trace-row .dur{width:80px;text-align:right;color:var(--txt);font-variant-numeric:tabular-nums}
-.mock{position:fixed;right:16px;bottom:14px;font-size:11px;color:var(--warn);background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.3);border-radius:99px;padding:3px 12px}
+.theme-btn{position:fixed;right:16px;top:12px;z-index:9999;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--p1);color:var(--txt);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .2s,border-color .2s}
+.theme-btn:hover{transform:scale(1.1);border-color:var(--acc)}
+.mock{position:fixed;right:16px;bottom:14px;font-size:11px;color:var(--warn);background:var(--warn-soft);border:1px solid var(--warn-line);border-radius:99px;padding:3px 12px}
 .back{position:fixed;left:16px;bottom:14px;font-size:12px}.back a{color:var(--acc);text-decoration:none}
 @media(max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
+<button class="theme-btn" id="themeBtn" title="切换亮 / 暗主题"></button>
 <div class="top">
   <h1>AI Agent 观测台 <span>AGENT OBSERVATORY · LLM 应用生产可观测</span></h1>
   <span class="live"><i></i>TRACE STREAMING</span>
@@ -57,22 +62,26 @@ td{padding:7px 8px;border-bottom:1px solid rgba(28,39,64,.5);font-variant-numeri
 <div class="mock">MOCK DATA · 演示数据</div>
 
 <script>
+const V=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const rnd=(a,b)=>a+Math.random()*(b-a);
 const N=50;
 // Token 吞吐
 const tok=echarts.init(document.getElementById('c-tok'));
 let tokIn=Array.from({length:N},()=>Math.round(rnd(3000,9000))),tokOut=Array.from({length:N},()=>Math.round(rnd(1500,5000)));
-function renderTok(){tok.setOption({tooltip:{trigger:'axis'},legend:{textStyle:{color:'#8494b8',fontSize:10},top:0},grid:{left:50,right:12,top:30,bottom:22},xAxis:{type:'category',show:false},yAxis:{type:'value',splitLine:{lineStyle:{color:'#141d33'}},axisLabel:{color:'#8494b8',fontSize:10}},series:[{name:'input tok/min',type:'line',data:tokIn,smooth:true,showSymbol:false,stack:'a',areaStyle:{color:'#4f8cff44'},lineStyle:{color:'#4f8cff',width:1.5}},{name:'output tok/min',type:'line',data:tokOut,smooth:true,showSymbol:false,stack:'a',areaStyle:{color:'#22d3ee44'},lineStyle:{color:'#22d3ee',width:1.5}}]})}
+function renderTok(){tok.setOption({tooltip:{trigger:'axis'},legend:{textStyle:{color:V('--sub'),fontSize:10},top:0},grid:{left:50,right:12,top:30,bottom:22},xAxis:{type:'category',show:false},yAxis:{type:'value',splitLine:{lineStyle:{color:V('--split')}},axisLabel:{color:V('--sub'),fontSize:10}},series:[{name:'input tok/min',type:'line',data:tokIn,smooth:true,showSymbol:false,stack:'a',areaStyle:{color:V('--acc')+'44'},lineStyle:{color:V('--acc'),width:1.5}},{name:'output tok/min',type:'line',data:tokOut,smooth:true,showSymbol:false,stack:'a',areaStyle:{color:V('--cy')+'44'},lineStyle:{color:V('--cy'),width:1.5}}]})}
 renderTok();
 // 延迟
 const lat=echarts.init(document.getElementById('c-lat'));
 const cats=['kimi-k2','deepseek-v3','qwen-max','gpt-4o'];
-lat.setOption({tooltip:{trigger:'axis'},legend:{textStyle:{color:'#8494b8',fontSize:10},top:0},grid:{left:44,right:12,top:30,bottom:24},xAxis:{type:'category',data:cats,axisLabel:{color:'#8494b8',fontSize:10}},yAxis:{type:'value',splitLine:{lineStyle:{color:'#141d33'}},axisLabel:{color:'#8494b8',fontSize:10}},series:[{name:'P50',type:'bar',data:[820,640,980,1250],barWidth:12,itemStyle:{color:'#34d399',borderRadius:[3,3,0,0]}},{name:'P95',type:'bar',data:[1850,1420,2240,2680],barWidth:12,itemStyle:{color:'#4f8cff',borderRadius:[3,3,0,0]}},{name:'P99',type:'bar',data:[3100,2480,3600,4150],barWidth:12,itemStyle:{color:'#f472b6',borderRadius:[3,3,0,0]}}]});
+const latData={P50:[820,640,980,1250],P95:[1850,1420,2240,2680],P99:[3100,2480,3600,4150]};
+function renderLat(){lat.setOption({tooltip:{trigger:'axis'},legend:{textStyle:{color:V('--sub'),fontSize:10},top:0},grid:{left:44,right:12,top:30,bottom:24},xAxis:{type:'category',data:cats,axisLabel:{color:V('--sub'),fontSize:10}},yAxis:{type:'value',splitLine:{lineStyle:{color:V('--split')}},axisLabel:{color:V('--sub'),fontSize:10}},series:[{name:'P50',type:'bar',data:latData.P50,barWidth:12,itemStyle:{color:V('--ok'),borderRadius:[3,3,0,0]}},{name:'P95',type:'bar',data:latData.P95,barWidth:12,itemStyle:{color:V('--acc'),borderRadius:[3,3,0,0]}},{name:'P99',type:'bar',data:latData.P99,barWidth:12,itemStyle:{color:V('--pink'),borderRadius:[3,3,0,0]}}]})}
+renderLat();
 // 成本
 const cost=echarts.init(document.getElementById('c-cost'));
 const D7=['11-05','11-06','11-07','11-08','11-09','11-10','11-11'];
 let costV=D7.map(()=>+rnd(120,260).toFixed(1));
-cost.setOption({tooltip:{trigger:'axis'},grid:{left:44,right:12,top:16,bottom:24},xAxis:{type:'category',data:D7,axisLabel:{color:'#8494b8',fontSize:10}},yAxis:{type:'value',splitLine:{lineStyle:{color:'#141d33'}},axisLabel:{color:'#8494b8',fontSize:10}},series:[{type:'line',data:costV,smooth:true,symbol:'circle',symbolSize:6,lineStyle:{width:2,color:'#fbbf24'},areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'#fbbf2455'},{offset:1,color:'#fbbf2400'}]}},label:{show:true,color:'#fbbf24',fontSize:10,formatter:'${c}'}}]});
+function renderCost(){cost.setOption({tooltip:{trigger:'axis'},grid:{left:44,right:12,top:16,bottom:24},xAxis:{type:'category',data:D7,axisLabel:{color:V('--sub'),fontSize:10}},yAxis:{type:'value',splitLine:{lineStyle:{color:V('--split')}},axisLabel:{color:V('--sub'),fontSize:10}},series:[{type:'line',data:costV,smooth:true,symbol:'circle',symbolSize:6,lineStyle:{width:2,color:V('--warn')},areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:V('--warn')+'55'},{offset:1,color:V('--warn')+'00'}]}},label:{show:true,color:V('--warn'),fontSize:10,formatter:'${c}'}}]})}
+renderCost();
 // 模型表
 const modelData=[
   ['kimi-k2','m1','38.2%','$96.4'],
@@ -81,12 +90,12 @@ const modelData=[
   ['gpt-4o','m4','12.5%','$43.9'],
 ];
 document.getElementById('models').innerHTML='<tr><th>模型</th><th>调用占比</th><th>成本(7d)</th></tr>'+modelData.map(m=>`<tr><td><span class="model ${m[1]}">${m[0]}</span></td><td>${m[2]}</td><td>${m[3]}</td></tr>`).join('');
-// Trace 瀑布
+// Trace 瀑布（inline 色值用 CSS 变量，主题切换自动生效）
 const traces=[
-  ['customer-support #8841','意图识别',0,120,'#4f8cff'],['customer-support #8841','检索知识库',120,540,'#22d3ee'],['customer-support #8841','kimi-k2 生成',540,2100,'#34d399'],['customer-support #8841','敏感词校验',2100,120,'#a78bfa'],
-  ['data-analyst #1024','SQL 生成',0,860,'#4f8cff'],['data-analyst #1024','duckdb 执行',860,1240,'#fbbf24'],['data-analyst #1024','图表渲染',1240,300,'#22d3ee'],
-  ['code-review #5527','代码检索',0,620,'#4f8cff'],['code-review #5527','deepseek-v3 审查',620,1980,'#f472b6'],
-  ['crm-agent #330','客户画像加载',0,240,'#4f8cff'],['crm-agent #330','工具调用 ×3',240,960,'#34d399'],['crm-agent #330','qwen-max 总结',960,1320,'#a78bfa'],
+  ['customer-support #8841','意图识别',0,120,'var(--acc)'],['customer-support #8841','检索知识库',120,540,'var(--cy)'],['customer-support #8841','kimi-k2 生成',540,2100,'var(--ok)'],['customer-support #8841','敏感词校验',2100,120,'var(--purple)'],
+  ['data-analyst #1024','SQL 生成',0,860,'var(--acc)'],['data-analyst #1024','duckdb 执行',860,1240,'var(--warn)'],['data-analyst #1024','图表渲染',1240,300,'var(--cy)'],
+  ['code-review #5527','代码检索',0,620,'var(--acc)'],['code-review #5527','deepseek-v3 审查',620,1980,'var(--pink)'],
+  ['crm-agent #330','客户画像加载',0,240,'var(--acc)'],['crm-agent #330','工具调用 ×3',240,960,'var(--ok)'],['crm-agent #330','qwen-max 总结',960,1320,'var(--purple)'],
 ];
 const tmax=Math.max(...traces.map(t=>t[2]+t[3]));
 document.getElementById('traces').innerHTML=traces.map(t=>`<div class="trace-row"><span class="name">${t[0]} · ${t[1]}</span><div class="bar-wrap"><div class="bar" style="left:${t[2]/tmax*100}%;width:${t[3]/tmax*100}%;background:${t[4]}"></div></div><span class="dur">${t[3]}ms</span></div>`).join('');
@@ -100,6 +109,12 @@ function renderKpis(){
   ].map(x=>`<div class="kpi"><div class="l">${x[0]}</div><div class="v">${x[1]}<small>${x[2]}</small></div><div class="d ${x[3]}">${x[4]}</div></div>`).join('');
 }
 renderKpis();
+// 主题切换：图表按当前 CSS 变量重建
+function retheme(){renderTok();renderLat();renderCost();}
+const themeBtn=document.getElementById('themeBtn');
+function applyTheme(t){document.documentElement.dataset.theme=t;try{localStorage.setItem('zwb-theme',t)}catch(e){}themeBtn.textContent=t==='light'?'🌙':'☀️';retheme();}
+themeBtn.addEventListener('click',()=>applyTheme(document.documentElement.dataset.theme==='light'?'dark':'light'));
+themeBtn.textContent=document.documentElement.dataset.theme==='light'?'🌙':'☀️';
 // 实时
 setInterval(()=>{
   tokIn.shift();tokIn.push(Math.round(rnd(3000,9000)));

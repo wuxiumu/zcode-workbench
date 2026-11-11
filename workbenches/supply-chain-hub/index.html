@@ -5,11 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>供应链协同台 · Supply Chain Hub | ZCode Labs</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<script>try{document.documentElement.dataset.theme=localStorage.getItem('zwb-theme')||'dark'}catch(e){}</script>
 <style>
-:root{--bg:#070b14;--p1:#0d1322;--p2:#0a0f1c;--line:#1c2740;--txt:#dfe7ff;--sub:#8494b8;--acc:#4f8cff;--ok:#34d399;--warn:#fbbf24;--bad:#f87171}
+:root{--bg:#070b14;--p1:#0d1322;--p2:#0a0f1c;--line:#1c2740;--txt:#dfe7ff;--sub:#8494b8;--acc:#4f8cff;--ok:#34d399;--warn:#fbbf24;--bad:#f87171;--sky:#38bdf8;--cyan:#22d3ee;--lime:#a3e635;--gold:#facc15;--glow:#0d2733;--track:#182242;--split:#141d33;--acc-deep:#1d3a8f;--acc-soft:rgba(79,140,255,.1);--ok-soft:rgba(52,211,153,.1);--warn-soft:rgba(251,191,36,.1);--warn-line:rgba(251,191,36,.3);--bad-soft:rgba(248,113,113,.1)}
+[data-theme="light"]{--bg:#f5f7fa;--p1:#ffffff;--p2:#f7f9fc;--line:#e3e8ef;--txt:#1f2733;--sub:#5a6675;--acc:#2f6cff;--ok:#0e9f6e;--warn:#d97706;--bad:#dc2626;--sky:#0284c7;--cyan:#0891b2;--lime:#65a30d;--gold:#ca8a04;--glow:#dceef4;--track:#e8edf5;--split:#e3e8ef;--acc-deep:#9db9f7;--acc-soft:rgba(47,108,255,.09);--ok-soft:rgba(14,159,110,.1);--warn-soft:rgba(217,119,6,.1);--warn-line:rgba(217,119,6,.35);--bad-soft:rgba(220,38,38,.08)}
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:radial-gradient(900px 500px at 85% -10%,#0d2733 0%,var(--bg) 60%);color:var(--txt);font-family:"PingFang SC","Microsoft YaHei",sans-serif;padding:22px;min-height:100vh}
-.top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px}
+body{background:radial-gradient(900px 500px at 85% -10%,var(--glow) 0%,var(--bg) 60%);color:var(--txt);font-family:"PingFang SC","Microsoft YaHei",sans-serif;padding:22px;min-height:100vh}
+.top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px;padding-right:56px}
 .top h1{font-size:20px;display:flex;align-items:center;gap:10px}
 .top h1 .dot{width:9px;height:9px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px var(--ok);animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
@@ -29,24 +31,27 @@ body{background:radial-gradient(900px 500px at 85% -10%,#0d2733 0%,var(--bg) 60%
 .tscroll{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:12px}
 th{color:var(--sub);font-weight:500;text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);letter-spacing:.05em;white-space:nowrap}
-td{padding:7px 8px;border-bottom:1px solid rgba(28,39,64,.5);font-variant-numeric:tabular-nums;white-space:nowrap}
+td{padding:7px 8px;border-bottom:1px solid var(--split);font-variant-numeric:tabular-nums;white-space:nowrap}
 .badge{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:99px;font-size:11px}
 .badge i{width:5px;height:5px;border-radius:50%}
-.st-ok{color:var(--ok);background:rgba(52,211,153,.1)}.st-ok i{background:var(--ok)}
-.st-warn{color:var(--warn);background:rgba(251,191,36,.1)}.st-warn i{background:var(--warn)}
-.st-bad{color:var(--bad);background:rgba(248,113,113,.1)}.st-bad i{background:var(--bad)}
-.st-info{color:var(--acc);background:rgba(79,140,255,.1)}.st-info i{background:var(--acc)}
-.rank{display:inline-flex;width:20px;height:20px;border-radius:6px;align-items:center;justify-content:center;font-size:11px;background:#182242;color:var(--sub)}
+.st-ok{color:var(--ok);background:var(--ok-soft)}.st-ok i{background:var(--ok)}
+.st-warn{color:var(--warn);background:var(--warn-soft)}.st-warn i{background:var(--warn)}
+.st-bad{color:var(--bad);background:var(--bad-soft)}.st-bad i{background:var(--bad)}
+.st-info{color:var(--acc);background:var(--acc-soft)}.st-info i{background:var(--acc)}
+.rank{display:inline-flex;width:20px;height:20px;border-radius:6px;align-items:center;justify-content:center;font-size:11px;background:var(--track);color:var(--sub)}
 .r1{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#1a1206;font-weight:700}
 .r2{background:linear-gradient(135deg,#e2e8f0,#94a3b8);color:#1a1206;font-weight:700}
 .r3{background:linear-gradient(135deg,#f59e0b99,#b4530999);color:#fff;font-weight:700}
 .trend{font-size:11px}.trend.up{color:var(--ok)}.trend.dn{color:var(--bad)}
-.mock{position:fixed;right:16px;bottom:14px;font-size:11px;color:var(--warn);background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.3);border-radius:99px;padding:3px 12px;letter-spacing:.1em}
+.theme-btn{position:fixed;right:16px;top:12px;z-index:9999;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--p1);color:var(--txt);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .2s,border-color .2s}
+.theme-btn:hover{transform:scale(1.1);border-color:var(--acc)}
+.mock{position:fixed;right:16px;bottom:14px;font-size:11px;color:var(--warn);background:var(--warn-soft);border:1px solid var(--warn-line);border-radius:99px;padding:3px 12px;letter-spacing:.1em}
 .back{position:fixed;left:16px;bottom:14px;font-size:12px}.back a{color:var(--acc);text-decoration:none}
 @media(max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
+<button class="theme-btn" id="themeBtn" title="切换亮 / 暗主题"></button>
 <div class="top">
   <h1><span class="dot"></span>供应链协同台 <span>SUPPLY CHAIN HUB · sc-hub-prod</span></h1>
   <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
@@ -69,6 +74,7 @@ td{padding:7px 8px;border-bottom:1px solid rgba(28,39,64,.5);font-variant-numeri
 <div class="mock">MOCK DATA · 演示数据</div>
 
 <script>
+const V=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const rnd=(a,b)=>a+Math.random()*(b-a);
 const irnd=(a,b)=>Math.round(rnd(a,b));
 const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
@@ -94,26 +100,25 @@ let turnDays=42.6;
 function renderTurn(){
   turnDays=+clamp(turnDays+rnd(-.5,.5),36,52).toFixed(1);
   turnC.setOption({series:[{type:'gauge',startAngle:210,endAngle:-30,min:0,max:90,splitNumber:6,center:['50%','56%'],radius:'95%',
-    axisLine:{lineStyle:{width:12,color:[[.5,'#34d399'],[.78,'#fbbf24'],[1,'#f87171']]}},
-    pointer:{length:'58%',width:4,itemStyle:{color:'#dfe7ff'}},
-    axisTick:{distance:-12,length:4,lineStyle:{color:'#0a0f1c',width:1}},
-    splitLine:{distance:-14,length:12,lineStyle:{color:'#0a0f1c',width:2}},
-    axisLabel:{distance:14,color:'#8494b8',fontSize:9},
-    detail:{valueAnimation:true,formatter:'{value} 天',color:'#dfe7ff',fontSize:22,fontWeight:700,offsetCenter:[0,'58%']},
-    title:{offsetCenter:[0,'92%'],color:'#8494b8',fontSize:11},
+    axisLine:{lineStyle:{width:12,color:[[.5,V('--ok')],[.78,V('--warn')],[1,V('--bad')]]}},
+    pointer:{length:'58%',width:4,itemStyle:{color:V('--txt')}},
+    axisTick:{distance:-12,length:4,lineStyle:{color:V('--p2'),width:1}},
+    splitLine:{distance:-14,length:12,lineStyle:{color:V('--p2'),width:2}},
+    axisLabel:{distance:14,color:V('--sub'),fontSize:9},
+    detail:{valueAnimation:true,formatter:'{value} 天',color:V('--txt'),fontSize:22,fontWeight:700,offsetCenter:[0,'58%']},
+    title:{offsetCenter:[0,'92%'],color:V('--sub'),fontSize:11},
     data:[{value:turnDays,name:'平均周转天数 · 目标 ≤ 45'}]}]});
 }
 
 // 采购履约漏斗
 const funnelC=echarts.init(document.getElementById('c-funnel'));
-const FCOLORS=['#4f8cff','#38bdf8','#22d3ee','#34d399','#a3e635','#facc15'];
 let fdata=[
   {value:1240,name:'采购需求'},{value:986,name:'询价比价'},{value:742,name:'PO 下达'},
   {value:618,name:'供应商发货'},{value:534,name:'到货质检'},{value:489,name:'入库上架'}];
 function renderFunnel(){
   funnelC.setOption({tooltip:{trigger:'item',formatter:'{b}: {c} 单'},series:[{type:'funnel',left:'6%',right:'6%',top:8,bottom:8,sort:'descending',gap:3,
-    label:{color:'#dfe7ff',fontSize:11,formatter:'{b}  {c}'},itemStyle:{borderWidth:0},
-    data:fdata.map((d,i)=>({...d,itemStyle:{color:FCOLORS[i]}}))}]});
+    label:{color:V('--txt'),fontSize:11,formatter:'{b}  {c}'},itemStyle:{borderWidth:0},
+    data:fdata.map((d,i)=>({...d,itemStyle:{color:[V('--acc'),V('--sky'),V('--cyan'),V('--ok'),V('--lime'),V('--gold')][i]}}))}]});
 }
 
 // 各仓库存分布
@@ -123,13 +128,14 @@ let whAmt=whs.map(()=>irnd(180,860)),whDay=whs.map(()=>+rnd(30,62).toFixed(1));
 function renderWh(){
   whAmt=whAmt.map(v=>+clamp(v+rnd(-12,12),120,920).toFixed(0));
   whDay=whDay.map(v=>+clamp(v+rnd(-1.2,1.2),28,70).toFixed(1));
-  whC.setOption({tooltip:{trigger:'axis'},legend:{textStyle:{color:'#8494b8',fontSize:10},top:0},
+  whC.setOption({tooltip:{trigger:'axis'},legend:{textStyle:{color:V('--sub'),fontSize:10},top:0},
     grid:{left:44,right:44,top:34,bottom:26},
-    xAxis:{type:'category',data:whs,axisLabel:{color:'#8494b8',fontSize:10}},
-    yAxis:[{name:'万元',type:'value',splitLine:{lineStyle:{color:'#141d33'}},axisLabel:{color:'#8494b8',fontSize:10}},
-           {name:'天',type:'value',max:80,splitLine:{show:false},axisLabel:{color:'#8494b8',fontSize:10}}],
-    series:[{name:'库存金额',type:'bar',data:whAmt,barWidth:14,itemStyle:{borderRadius:[4,4,0,0],color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'#4f8cff'},{offset:1,color:'#1d3a8f'}]}}},
-            {name:'周转天数',type:'line',yAxisIndex:1,data:whDay,smooth:true,showSymbol:false,lineStyle:{width:2,color:'#fbbf24'}}]});
+    xAxis:{type:'category',data:whs,axisLabel:{color:V('--sub'),fontSize:10}},
+    yAxis:[{name:'万元',type:'value',splitLine:{lineStyle:{color:V('--split')}},axisLabel:{color:V('--sub'),fontSize:10}},
+           {name:'天',type:'value',max:80,splitLine:{show:false},axisLabel:{color:V('--sub'),fontSize:10}}],
+    series:[
+      {name:'库存金额',type:'bar',data:whAmt,barWidth:14,itemStyle:{borderRadius:[4,4,0,0],color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:V('--acc')},{offset:1,color:V('--acc-deep')}]}}},
+      {name:'周转天数',type:'line',yAxisIndex:1,data:whDay,smooth:true,showSymbol:false,lineStyle:{width:2,color:V('--warn')}}]});
 }
 
 // 供应商绩效 Top5
@@ -169,19 +175,26 @@ function renderAlerts(){
 const trendC=echarts.init(document.getElementById('c-trend'));
 let vOrd=days.map(()=>irnd(320,560)),vHr=days.map(()=>+rnd(38,58).toFixed(1)),vOtd=days.map(()=>+rnd(86,97).toFixed(1));
 function renderTrend(){
-  trendC.setOption({tooltip:{trigger:'axis'},legend:{textStyle:{color:'#8494b8',fontSize:11},top:0},
+  trendC.setOption({tooltip:{trigger:'axis'},legend:{textStyle:{color:V('--sub'),fontSize:11},top:0},
     grid:{left:44,right:46,top:34,bottom:26},
-    xAxis:{type:'category',data:days,axisLabel:{color:'#8494b8',fontSize:10}},
-    yAxis:[{name:'单 / 小时',type:'value',nameTextStyle:{color:'#8494b8',fontSize:10},splitLine:{lineStyle:{color:'#141d33'}},axisLabel:{color:'#8494b8',fontSize:10}},
-           {name:'%',type:'value',max:100,nameTextStyle:{color:'#8494b8',fontSize:10},splitLine:{show:false},axisLabel:{color:'#8494b8',fontSize:10,formatter:'{value}%'}}],
+    xAxis:{type:'category',data:days,axisLabel:{color:V('--sub'),fontSize:10}},
+    yAxis:[{name:'单 / 小时',type:'value',nameTextStyle:{color:V('--sub'),fontSize:10},splitLine:{lineStyle:{color:V('--split')}},axisLabel:{color:V('--sub'),fontSize:10}},
+           {name:'%',type:'value',max:100,nameTextStyle:{color:V('--sub'),fontSize:10},splitLine:{show:false},axisLabel:{color:V('--sub'),fontSize:10,formatter:'{value}%'}}],
     series:[
-      {name:'履约订单',type:'bar',data:vOrd,barWidth:8,itemStyle:{borderRadius:[3,3,0,0],color:'rgba(79,140,255,.55)'}},
-      {name:'平均履约时长',type:'line',data:vHr,smooth:true,showSymbol:false,lineStyle:{width:2,color:'#22d3ee'},areaStyle:{color:'#22d3ee22'}},
-      {name:'准时交付率',type:'line',yAxisIndex:1,data:vOtd,smooth:true,showSymbol:false,lineStyle:{width:2,color:'#34d399',type:'dashed'}}]});
+      {name:'履约订单',type:'bar',data:vOrd,barWidth:8,itemStyle:{borderRadius:[3,3,0,0],color:V('--acc')+'8c'}},
+      {name:'平均履约时长',type:'line',data:vHr,smooth:true,showSymbol:false,lineStyle:{width:2,color:V('--cyan')},areaStyle:{color:V('--cyan')+'22'}},
+      {name:'准时交付率',type:'line',yAxisIndex:1,data:vOtd,smooth:true,showSymbol:false,lineStyle:{width:2,color:V('--ok'),type:'dashed'}}]});
 }
 
 // 时钟
 const tickClock=()=>{document.getElementById('clock').textContent=new Date().toLocaleString('zh-CN',{hour12:false})};
+
+// 主题切换：图表按当前 CSS 变量重建
+function retheme(){renderTurn();renderFunnel();renderWh();renderTrend();}
+const themeBtn=document.getElementById('themeBtn');
+function applyTheme(t){document.documentElement.dataset.theme=t;try{localStorage.setItem('zwb-theme',t)}catch(e){}themeBtn.textContent=t==='light'?'🌙':'☀️';retheme();}
+themeBtn.addEventListener('click',()=>applyTheme(document.documentElement.dataset.theme==='light'?'dark':'light'));
+themeBtn.textContent=document.documentElement.dataset.theme==='light'?'🌙':'☀️';
 
 // 模拟实时
 function tick(){

@@ -5,11 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>内容运营台 · Content Ops | ZCode Labs</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<script>try{document.documentElement.dataset.theme=localStorage.getItem('zwb-theme')||'dark'}catch(e){}</script>
 <style>
-:root{--bg:#070b14;--p1:#0d1322;--p2:#0a0f1c;--line:#1c2740;--txt:#dfe7ff;--sub:#8494b8;--acc:#4f8cff;--ok:#34d399;--warn:#fbbf24;--bad:#f87171;--pink:#f472b6}
+:root{--bg:#070b14;--p1:#0d1322;--p2:#0a0f1c;--line:#1c2740;--txt:#dfe7ff;--sub:#8494b8;--acc:#4f8cff;--ok:#34d399;--warn:#fbbf24;--bad:#f87171;--pink:#f472b6;--cyan:#22d3ee;--glow:#251234;--track:#182242;--split:#141d33;--acc-deep:#1d3a8f;--ok-soft:rgba(52,211,153,.12);--cyan-soft:rgba(34,211,238,.12);--warn-soft:rgba(251,191,36,.12);--warn-line:rgba(251,191,36,.3);--bad-soft:rgba(248,113,113,.12);--pink-soft:rgba(244,114,182,.12)}
+[data-theme="light"]{--bg:#f5f7fa;--p1:#ffffff;--p2:#f7f9fc;--line:#e3e8ef;--txt:#1f2733;--sub:#5a6675;--acc:#2f6cff;--ok:#0e9f6e;--warn:#d97706;--bad:#dc2626;--pink:#db2777;--cyan:#0891b2;--glow:#f0e3f7;--track:#e8edf5;--split:#e3e8ef;--acc-deep:#9db9f7;--ok-soft:rgba(14,159,110,.1);--cyan-soft:rgba(8,145,178,.1);--warn-soft:rgba(217,119,6,.1);--warn-line:rgba(217,119,6,.35);--bad-soft:rgba(220,38,38,.08);--pink-soft:rgba(219,39,119,.1)}
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:radial-gradient(900px 500px at 50% -10%,#251234 0%,var(--bg) 62%);color:var(--txt);font-family:"PingFang SC","Microsoft YaHei",sans-serif;padding:22px;min-height:100vh}
-.top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:18px}
+body{background:radial-gradient(900px 500px at 50% -10%,var(--glow) 0%,var(--bg) 62%);color:var(--txt);font-family:"PingFang SC","Microsoft YaHei",sans-serif;padding:22px;min-height:100vh}
+.top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:18px;padding-right:56px}
 .top h1{font-size:20px}.top h1 span{color:var(--sub);font-size:13px;font-weight:400}
 .top a{color:var(--acc);font-size:12px;text-decoration:none;border:1px solid var(--line);border-radius:99px;padding:6px 14px;background:var(--p1)}
 .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px}
@@ -22,28 +24,31 @@ body{background:radial-gradient(900px 500px at 50% -10%,#251234 0%,var(--bg) 62%
 .chart{height:200px}.wide{grid-column:1/-1}
 table{width:100%;border-collapse:collapse;font-size:12px}
 th{color:var(--sub);font-weight:500;text-align:left;padding:7px 8px;border-bottom:1px solid var(--line)}
-td{padding:7px 8px;border-bottom:1px solid rgba(28,39,64,.5)}
+td{padding:7px 8px;border-bottom:1px solid var(--split)}
 .badge{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:99px;font-size:11px}
 .badge i{width:5px;height:5px;border-radius:50%}
-.st-ok{color:var(--ok);background:rgba(52,211,153,.1)}.st-ok i{background:var(--ok)}
-.st-wait{color:var(--warn);background:rgba(251,191,36,.1)}.st-wait i{background:var(--warn)}
-.st-bad{color:var(--bad);background:rgba(248,113,113,.1)}.st-bad i{background:var(--bad)}
+.st-ok{color:var(--ok);background:var(--ok-soft)}.st-ok i{background:var(--ok)}
+.st-wait{color:var(--warn);background:var(--warn-soft)}.st-wait i{background:var(--warn)}
+.st-bad{color:var(--bad);background:var(--bad-soft)}.st-bad i{background:var(--bad)}
 .chip{font-size:11px;padding:2px 8px;border-radius:6px;margin-right:4px;display:inline-block}
-.c-xhs{color:#f472b6;background:rgba(244,114,182,.12)}
-.c-sph{color:#34d399;background:rgba(52,211,153,.12)}
-.c-dy{color:#22d3ee;background:rgba(34,211,238,.12)}
-.c-wb{color:#fbbf24;background:rgba(251,191,36,.12)}
+.c-xhs{color:var(--pink);background:var(--pink-soft)}
+.c-sph{color:var(--ok);background:var(--ok-soft)}
+.c-dy{color:var(--cyan);background:var(--cyan-soft)}
+.c-wb{color:var(--warn);background:var(--warn-soft)}
 .flow{display:flex;align-items:center;gap:0;margin-top:6px}
 .step{flex:1;text-align:center;padding:10px 4px;border-radius:10px;background:var(--p2);border:1px solid var(--line)}
 .step .n{font-size:20px;font-weight:800}
 .step .l{font-size:11px;color:var(--sub);margin-top:2px}
 .arrow{color:var(--sub);padding:0 6px;font-size:14px}
-.mock{position:fixed;right:16px;bottom:14px;font-size:11px;color:var(--warn);background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.3);border-radius:99px;padding:3px 12px}
+.theme-btn{position:fixed;right:16px;top:12px;z-index:9999;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--p1);color:var(--txt);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .2s,border-color .2s}
+.theme-btn:hover{transform:scale(1.1);border-color:var(--acc)}
+.mock{position:fixed;right:16px;bottom:14px;font-size:11px;color:var(--warn);background:var(--warn-soft);border:1px solid var(--warn-line);border-radius:99px;padding:3px 12px}
 .back{position:fixed;left:16px;bottom:14px;font-size:12px}.back a{color:var(--acc);text-decoration:none}
 @media(max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
+<button class="theme-btn" id="themeBtn" title="切换亮 / 暗主题"></button>
 <div class="top">
   <h1>内容运营台 <span>CONTENT OPS · 素材任务一体化（联动 zcode-tast-cms）</span></h1>
   <a href="https://github.com/wuxiumu/zcode-tast-cms" target="_blank">↗ 姊妹系统 zcode-tast-cms</a>
@@ -67,6 +72,7 @@ td{padding:7px 8px;border-bottom:1px solid rgba(28,39,64,.5)}
 <div class="mock">MOCK DATA · 演示数据</div>
 
 <script>
+const V=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const rnd=(a,b)=>a+Math.random()*(b-a);
 const M=['小红书','视频号','抖音','微博'];
 const chips={小红书:'c-xhs',视频号:'c-sph',抖音:'c-dy',微博:'c-wb'};
@@ -77,16 +83,21 @@ renderFlow();
 // 转化趋势
 const conv=echarts.init(document.getElementById('c-conv'));
 const days=Array.from({length:14},(_,i)=>{const d=new Date(Date.now()-(13-i)*864e5);return (d.getMonth()+1)+'/'+d.getDate()});
-conv.setOption({tooltip:{trigger:'axis'},legend:{textStyle:{color:'#8494b8',fontSize:10},top:0},grid:{left:36,right:12,top:30,bottom:24},xAxis:{type:'category',data:days,axisLabel:{color:'#8494b8',fontSize:9}},yAxis:{type:'value',splitLine:{lineStyle:{color:'#141d33'}},axisLabel:{color:'#8494b8',fontSize:10}},series:[{name:'领取',type:'line',smooth:true,data:days.map(()=>Math.round(rnd(180,420))),showSymbol:false,lineStyle:{width:2,color:'#4f8cff'}},{name:'发布',type:'line',smooth:true,data:days.map(()=>Math.round(rnd(140,320))),showSymbol:false,lineStyle:{width:2,color:'#22d3ee'}},{name:'通过',type:'line',smooth:true,data:days.map(()=>Math.round(rnd(120,260))),showSymbol:false,lineStyle:{width:2,color:'#34d399'}}]});
+const convData=[days.map(()=>Math.round(rnd(180,420))),days.map(()=>Math.round(rnd(140,320))),days.map(()=>Math.round(rnd(120,260)))];
+function renderConv(){conv.setOption({tooltip:{trigger:'axis'},legend:{textStyle:{color:V('--sub'),fontSize:10},top:0},grid:{left:36,right:12,top:30,bottom:24},xAxis:{type:'category',data:days,axisLabel:{color:V('--sub'),fontSize:9}},yAxis:{type:'value',splitLine:{lineStyle:{color:V('--split')}},axisLabel:{color:V('--sub'),fontSize:10}},series:[{name:'领取',type:'line',smooth:true,data:convData[0],showSymbol:false,lineStyle:{width:2,color:V('--acc')}},{name:'发布',type:'line',smooth:true,data:convData[1],showSymbol:false,lineStyle:{width:2,color:V('--cyan')}},{name:'通过',type:'line',smooth:true,data:convData[2],showSymbol:false,lineStyle:{width:2,color:V('--ok')}}]})}
+renderConv();
 // 渠道
 const chan=echarts.init(document.getElementById('c-chan'));
-chan.setOption({tooltip:{trigger:'item'},legend:{bottom:0,textStyle:{color:'#8494b8',fontSize:10},itemWidth:10,itemHeight:10},series:[{type:'pie',radius:['42%','66%'],center:['50%','42%'],label:{show:false},itemStyle:{borderColor:'#0a0f1c',borderWidth:2},data:[{value:38,name:'小红书',itemStyle:{color:'#f472b6'}},{value:26,name:'视频号',itemStyle:{color:'#34d399'}},{value:24,name:'抖音',itemStyle:{color:'#22d3ee'}},{value:12,name:'微博',itemStyle:{color:'#fbbf24'}}]}]});
+function renderChan(){chan.setOption({tooltip:{trigger:'item'},legend:{bottom:0,textStyle:{color:V('--sub'),fontSize:10},itemWidth:10,itemHeight:10},series:[{type:'pie',radius:['42%','66%'],center:['50%','42%'],label:{show:false},itemStyle:{borderColor:V('--p2'),borderWidth:2},data:[{value:38,name:'小红书',itemStyle:{color:V('--pink')}},{value:26,name:'视频号',itemStyle:{color:V('--ok')}},{value:24,name:'抖音',itemStyle:{color:V('--cyan')}},{value:12,name:'微博',itemStyle:{color:V('--warn')}}]}]})}
+renderChan();
 // 分类热度
 const cat=echarts.init(document.getElementById('c-cat'));
-cat.setOption({tooltip:{trigger:'axis'},grid:{left:70,right:30,top:10,bottom:24},xAxis:{type:'value',splitLine:{lineStyle:{color:'#141d33'}},axisLabel:{color:'#8494b8',fontSize:10}},yAxis:{type:'category',data:['家居好物','职场效率','母婴育儿','数码科技','穿搭种草','美食探店'],axisLabel:{color:'#8494b8',fontSize:11}},series:[{type:'bar',data:[86,120,154,178,231,264],barWidth:14,itemStyle:{borderRadius:[0,4,4,0],color:{type:'linear',x:0,y:0,x2:1,y2:0,colorStops:[{offset:0,color:'#1d3a8f'},{offset:1,color:'#f472b6'}]}}}]});
+function renderCat(){cat.setOption({tooltip:{trigger:'axis'},grid:{left:70,right:30,top:10,bottom:24},xAxis:{type:'value',splitLine:{lineStyle:{color:V('--split')}},axisLabel:{color:V('--sub'),fontSize:10}},yAxis:{type:'category',data:['家居好物','职场效率','母婴育儿','数码科技','穿搭种草','美食探店'],axisLabel:{color:V('--sub'),fontSize:11}},series:[{type:'bar',data:[86,120,154,178,231,264],barWidth:14,itemStyle:{borderRadius:[0,4,4,0],color:{type:'linear',x:0,y:0,x2:1,y2:0,colorStops:[{offset:0,color:V('--acc-deep')},{offset:1,color:V('--pink')}]}}}]})}
+renderCat();
 // 达标率仪表
 const rate=echarts.init(document.getElementById('c-rate'));
-rate.setOption({series:[{type:'gauge',startAngle:210,endAngle:-30,min:0,max:100,radius:'92%',center:['50%','58%'],progress:{show:true,width:10,itemStyle:{color:'#34d399'}},axisLine:{lineStyle:{width:10,color:[[1,'#182242']]}},axisTick:{show:false},splitLine:{show:false},axisLabel:{show:false},pointer:{show:false},anchor:{show:false},detail:{valueAnimation:true,fontSize:26,color:'#dfe7ff',formatter:'{value}%',offsetCenter:[0,'18%']},title:{show:true,offsetCenter:[0,'52%'],fontSize:11,color:'#8494b8'},data:[{value:72,name:'数据达标率(播放/点赞)'}]}]});
+function renderRate(){rate.setOption({series:[{type:'gauge',startAngle:210,endAngle:-30,min:0,max:100,radius:'92%',center:['50%','58%'],progress:{show:true,width:10,itemStyle:{color:V('--ok')}},axisLine:{lineStyle:{width:10,color:[[1,V('--track')]]}},axisTick:{show:false},splitLine:{show:false},axisLabel:{show:false},pointer:{show:false},anchor:{show:false},detail:{valueAnimation:true,fontSize:26,color:V('--txt'),formatter:'{value}%',offsetCenter:[0,'18%']},title:{show:true,offsetCenter:[0,'52%'],fontSize:11,color:V('--sub')},data:[{value:72,name:'数据达标率(播放/点赞)'}]}]})}
+renderRate();
 // 审核队列
 const queueData=[
   ['秋日风衣穿搭合集','小红书 · 穿搭种草','待审核','st-wait'],
@@ -112,6 +123,12 @@ function renderKpis(){
   document.getElementById('kpis').innerHTML=k.map(x=>`<div class="kpi"><div class="l">${x[0]}</div><div class="v">${x[1]}</div><div class="d ${x[2]}">${x[3]}</div></div>`).join('');
 }
 renderKpis();
+// 主题切换：图表按当前 CSS 变量重建
+function retheme(){renderConv();renderChan();renderCat();renderRate();}
+const themeBtn=document.getElementById('themeBtn');
+function applyTheme(t){document.documentElement.dataset.theme=t;try{localStorage.setItem('zwb-theme',t)}catch(e){}themeBtn.textContent=t==='light'?'🌙':'☀️';retheme();}
+themeBtn.addEventListener('click',()=>applyTheme(document.documentElement.dataset.theme==='light'?'dark':'light'));
+themeBtn.textContent=document.documentElement.dataset.theme==='light'?'🌙':'☀️';
 setInterval(()=>{renderRw();renderKpis()},4200);
 window.addEventListener('resize',()=>[conv,chan,cat,rate].forEach(c=>c.resize()));
 </script>
