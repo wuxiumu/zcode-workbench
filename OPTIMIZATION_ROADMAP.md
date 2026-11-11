@@ -31,7 +31,7 @@
 ## C. 展示物料 · 图文与动效
 
 - [x] [物料] README 顶部补 badges（Pages 在线 / 工作台数量 / 纯前端 / License）+ 精选 3 张工作台截图（用 Playwright 截图脚本 `tools/screenshot.js`，若环境无浏览器则改为手绘 SVG 示意图）（✅ 2026-11-12 完成：发现本机 Playwright Chromium headless shell 缓存可原生 --screenshot，免装 npm 包；新增 tools/screenshot.sh（自动定位浏览器/15 台全量或指定截图/服务自管）；docs/screens/ 三张真实截图进 README「效果速览」；**过程中揪出并修复 ops-center 图表从未渲染的预存 P0**（非法轴键 x/y），真实截图首次验证全站渲染）
-- [ ] [物料] 用 Playwright 录制门户页 30 秒导览 GIF 存到 `docs/showcase.gif` 并嵌入 README（环境不可用则制作 CSS 动画演示页替代）
+- [x] [物料] 用 Playwright 录制门户页 30 秒导览 GIF 存到 `docs/showcase.gif` 并嵌入 README（环境不可用则制作 CSS 动画演示页替代）（✅ 2026-11-12 完成：无 Playwright npm，改用缓存 Chromium headless shell——门户导览新增 ?tour=auto 自动播放与 ?tour=N 同步定格深链（兼具分享价值），1280x2400 全页帧避开滚动竞态，tools/make_showcase_gif.py 检测聚光灯位置裁窗+PingFang/Hiragino 自绘字幕条+贪心换行，PIL 合成 17 帧 1MB GIF 嵌入 README）
 - [ ] [物料] 新增 `docs/architecture.svg` 架构图：纯前端单文件 + Mock 生成器 + Pages 部署链路 + AI 解读组件接入方式，嵌入 README
 - [ ] [物料] 新增 `CHANGELOG.md`：按 git 历史回溯整理版本线（01→11b），以后每轮优化追加一条
 - [ ] [物料] 每个工作台 `<head>` 补 OG meta（title/description），分享到聊天工具时出现规范卡片

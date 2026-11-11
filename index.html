@@ -114,6 +114,8 @@
     .tour-btn .dot{animation:none}
     .tour-overlay,.tour-hud,.card{transition:none}
   }
+  /* ?tour=N 定格模式：过渡归零，截帧即终态 */
+  html.tour-hold *{transition-duration:0s !important}
   @media(max-width:900px){
     .searchrow{flex-direction:column;align-items:stretch}
     .search{max-width:none;width:100%}
@@ -312,7 +314,7 @@ function tourNext(){
   tourIdx++;
   const w=workbenches[tourIdx];
   cards[tourIdx].classList.add("spot");
-  cards[tourIdx].scrollIntoView({behavior:reducedMotion?"auto":"smooth",block:"center"});
+  cards[tourIdx].scrollIntoView({behavior:(reducedMotion||TOUR_PARAM==="auto")?"auto":"smooth",block:"center"}); // auto 模式瞬时滚动：录帧稳定
   tourStep.textContent=`第 ${tourIdx+1} / ${workbenches.length} 站 · ${w.no} ${w.name}`;
   tourSay.textContent=tourSays[w.no]||w.desc;
   tourBar.style.transition="none";tourBar.style.width="0";
@@ -334,6 +336,16 @@ tourBtn.addEventListener("click",tourStart);
 document.getElementById("tourStop").addEventListener("click",tourStop);
 tourOverlay.addEventListener("click",tourStop);
 addEventListener("keydown",e=>{if(e.key==="Escape"&&tourOverlay.classList.contains("on"))tourStop()});
+/* 深链控制：?tour=auto 打开即播（分享/录屏用）；?tour=N 定格第 N 站不推进（录帧/调试用） */
+const TOUR_PARAM=(()=>{try{return new URLSearchParams(location.search).get("tour")||""}catch(e){return""}})();
+if(TOUR_PARAM==="auto")setTimeout(tourStart,400);
+else if(/^[1-9]\d*$/.test(TOUR_PARAM)){
+  // 定格模式同步执行：状态在脚本解析时即锁定，截图时机无关紧要
+  document.documentElement.classList.add("tour-hold"); // 关闭过渡，截帧即终态
+  tourStart();clearTimeout(tourTimer);
+  const extra=Math.min(+TOUR_PARAM,workbenches.length+1)-1; // tour=N → 停在第 N 站；超过 15 → 收尾字幕
+  for(let k=0;k<extra;k++){tourNext();clearTimeout(tourTimer)}
+}
 
 /* ===== ⌘K / Ctrl+K 命令面板：方向键选择，回车直达 ===== */
 const palOv=document.getElementById("palOv"),pal=document.getElementById("pal"),
