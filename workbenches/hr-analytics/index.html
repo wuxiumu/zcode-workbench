@@ -5,11 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HR 人力效能台 · People Analytics | ZCode Labs</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<script>try{document.documentElement.dataset.theme=localStorage.getItem('zwb-theme')||'dark'}catch(e){}</script>
 <style>
-:root{--bg:#070b14;--p1:#0d1322;--p2:#0a0f1c;--line:#1c2740;--txt:#dfe7ff;--sub:#8494b8;--acc:#4f8cff;--ok:#34d399;--warn:#fbbf24;--bad:#f87171}
+:root{--bg:#070b14;--p1:#0d1322;--p2:#0a0f1c;--line:#1c2740;--txt:#dfe7ff;--sub:#8494b8;--acc:#4f8cff;--ok:#34d399;--warn:#fbbf24;--bad:#f87171;--sky:#38bdf8;--cyan:#22d3ee;--purple:#a78bfa;--glow:#12333a;--track:#182242;--split:#141d33;--acc-deep:#1d3a8f;--ok-soft:rgba(52,211,153,.1);--warn-soft:rgba(251,191,36,.1);--warn-line:rgba(251,191,36,.3);--bad-soft:rgba(248,113,113,.1)}
+[data-theme="light"]{--bg:#f5f7fa;--p1:#ffffff;--p2:#f7f9fc;--line:#e3e8ef;--txt:#1f2733;--sub:#5a6675;--acc:#2f6cff;--ok:#0e9f6e;--warn:#d97706;--bad:#dc2626;--sky:#0284c7;--cyan:#0891b2;--purple:#7c3aed;--glow:#dff0ee;--track:#e8edf5;--split:#e3e8ef;--acc-deep:#9db9f7;--ok-soft:rgba(14,159,110,.1);--warn-soft:rgba(217,119,6,.1);--warn-line:rgba(217,119,6,.35);--bad-soft:rgba(220,38,38,.08)}
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:radial-gradient(900px 500px at 85% -10%,#12333a 0%,var(--bg) 60%);color:var(--txt);font-family:"PingFang SC","Microsoft YaHei",sans-serif;padding:22px;min-height:100vh}
-.top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px}
+body{background:radial-gradient(900px 500px at 85% -10%,var(--glow) 0%,var(--bg) 60%);color:var(--txt);font-family:"PingFang SC","Microsoft YaHei",sans-serif;padding:22px;min-height:100vh}
+.top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px;padding-right:56px}
 .top h1{font-size:20px;display:flex;align-items:center;gap:10px}
 .top h1 .dot{width:9px;height:9px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px var(--ok);animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
@@ -29,19 +31,22 @@ body{background:radial-gradient(900px 500px at 85% -10%,#12333a 0%,var(--bg) 60%
 .tscroll{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:12px}
 th{color:var(--sub);font-weight:500;text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);letter-spacing:.05em;white-space:nowrap}
-td{padding:7px 8px;border-bottom:1px solid rgba(28,39,64,.5);font-variant-numeric:tabular-nums;white-space:nowrap}
+td{padding:7px 8px;border-bottom:1px solid var(--split);font-variant-numeric:tabular-nums;white-space:nowrap}
 .badge{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:99px;font-size:11px}
 .badge i{width:5px;height:5px;border-radius:50%}
-.st-ok{color:var(--ok);background:rgba(52,211,153,.1)}.st-ok i{background:var(--ok)}
-.st-warn{color:var(--warn);background:rgba(251,191,36,.1)}.st-warn i{background:var(--warn)}
-.st-bad{color:var(--bad);background:rgba(248,113,113,.1)}.st-bad i{background:var(--bad)}
+.st-ok{color:var(--ok);background:var(--ok-soft)}.st-ok i{background:var(--ok)}
+.st-warn{color:var(--warn);background:var(--warn-soft)}.st-warn i{background:var(--warn)}
+.st-bad{color:var(--bad);background:var(--bad-soft)}.st-bad i{background:var(--bad)}
 .trend{font-size:11px}.trend.up{color:var(--ok)}.trend.dn{color:var(--bad)}
-.mock{position:fixed;right:16px;bottom:14px;font-size:11px;color:var(--warn);background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.3);border-radius:99px;padding:3px 12px;letter-spacing:.1em}
+.theme-btn{position:fixed;right:16px;top:12px;z-index:9999;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--p1);color:var(--txt);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .2s,border-color .2s}
+.theme-btn:hover{transform:scale(1.1);border-color:var(--acc)}
+.mock{position:fixed;right:16px;bottom:14px;font-size:11px;color:var(--warn);background:var(--warn-soft);border:1px solid var(--warn-line);border-radius:99px;padding:3px 12px;letter-spacing:.1em}
 .back{position:fixed;left:16px;bottom:14px;font-size:12px}.back a{color:var(--acc);text-decoration:none}
 @media(max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
+<button class="theme-btn" id="themeBtn" title="切换亮 / 暗主题"></button>
 <div class="top">
   <h1><span class="dot"></span>HR 人力效能台 <span>PEOPLE ANALYTICS · hr-suite v1 · 组织 × 招聘 × 考勤</span></h1>
   <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
@@ -64,6 +69,7 @@ td{padding:7px 8px;border-bottom:1px solid rgba(28,39,64,.5);font-variant-numeri
 <div class="mock">MOCK DATA · 演示数据</div>
 
 <script>
+const V=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const rnd=(a,b)=>a+Math.random()*(b-a);
 const irnd=(a,b)=>Math.round(rnd(a,b));
 const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
@@ -82,12 +88,12 @@ let hires=46,leavers=17,revPP=86.4,turnover=14.2;
 let DEPTS=[['研发中心',486],['销售部',312],['客户成功部',148],['产品部',142],['职能支撑',128],['市场部',96],['设计部',88],['人力行政',42]];
 const sizeOf=n=>{const f=DEPTS.find(x=>x[0]===n);return f?f[1]:100};
 
-// 招聘漏斗（本季）
+// 招聘漏斗（本季）· 颜色存 CSS 变量名，渲染时取当前主题色
 let funnel=[['简历投递',3268],['初筛通过',1845],['面试',923],['Offer 发放',214],['实际入职',146]];
-const FUNNELC=['#4f8cff','#38bdf8','#22d3ee','#a78bfa','#34d399'];
+const FUNNELC=['--acc','--sky','--cyan','--purple','--ok'];
 
-// 绩效等级 S/A/B/C/D（玫瑰图）
-let grades=[['S',101,'#4f8cff'],['A',302,'#34d399'],['B',664,'#fbbf24'],['C',318,'#a78bfa'],['D',57,'#f87171']];
+// 绩效等级 S/A/B/C/D（玫瑰图）· 颜色存 CSS 变量名
+let grades=[['S',101,'--acc'],['A',302,'--ok'],['B',664,'--warn'],['C',318,'--purple'],['D',57,'--bad']];
 
 // 考勤异常流水（本月）：[部门, 迟到, 早退, 缺卡]
 let att=[['销售部',10,3,7],['研发中心',12,2,6],['市场部',3,1,1],['客户成功部',3,1,2],['产品部',2,1,1],['设计部',1,0,1],['职能支撑',2,0,1]];
@@ -110,16 +116,16 @@ function renderKpis(){
 // 近 12 个月入离职趋势（双折线 + 期末在职柱）
 const t12C=echarts.init(document.getElementById('c-trend'));
 function renderTrend(){
-  t12C.setOption({tooltip:{trigger:'axis'},legend:{data:['期末在职','入职','离职'],textStyle:{color:'#8494b8',fontSize:10},top:0,itemWidth:10,itemHeight:10},
+  t12C.setOption({tooltip:{trigger:'axis'},legend:{data:['期末在职','入职','离职'],textStyle:{color:V('--sub'),fontSize:10},top:0,itemWidth:10,itemHeight:10},
     grid:{left:38,right:44,top:30,bottom:24},
-    xAxis:{type:'category',data:d12,axisLabel:{color:'#8494b8',fontSize:9}},
+    xAxis:{type:'category',data:d12,axisLabel:{color:V('--sub'),fontSize:9}},
     yAxis:[
-      {name:'入离职',type:'value',min:0,nameTextStyle:{color:'#8494b8',fontSize:10},splitLine:{lineStyle:{color:'#141d33'}},axisLabel:{color:'#8494b8',fontSize:10}},
-      {name:'在职',type:'value',min:v=>Math.round(v.min*.98),max:v=>Math.round(v.max*1.02),position:'right',nameTextStyle:{color:'#8494b8',fontSize:10},splitLine:{show:false},axisLabel:{color:'#8494b8',fontSize:10}}],
+      {name:'入离职',type:'value',min:0,nameTextStyle:{color:V('--sub'),fontSize:10},splitLine:{lineStyle:{color:V('--split')}},axisLabel:{color:V('--sub'),fontSize:10}},
+      {name:'在职',type:'value',min:v=>Math.round(v.min*.98),max:v=>Math.round(v.max*1.02),position:'right',nameTextStyle:{color:V('--sub'),fontSize:10},splitLine:{show:false},axisLabel:{color:V('--sub'),fontSize:10}}],
     series:[
-      {name:'期末在职',type:'bar',yAxisIndex:1,data:hc12,barWidth:14,itemStyle:{borderRadius:[3,3,0,0],color:'rgba(34,211,238,.30)'}},
-      {name:'入职',type:'line',data:in12,smooth:true,showSymbol:false,lineStyle:{width:2,color:'#34d399'},itemStyle:{color:'#34d399'},areaStyle:{color:'rgba(52,211,153,.10)'}},
-      {name:'离职',type:'line',data:out12,smooth:true,showSymbol:false,lineStyle:{width:2,color:'#f87171'},itemStyle:{color:'#f87171'}}]});
+      {name:'期末在职',type:'bar',yAxisIndex:1,data:hc12,barWidth:14,itemStyle:{borderRadius:[3,3,0,0],color:V('--cyan')+'4d'}},
+      {name:'入职',type:'line',data:in12,smooth:true,showSymbol:false,lineStyle:{width:2,color:V('--ok')},itemStyle:{color:V('--ok')},areaStyle:{color:V('--ok')+'1a'}},
+      {name:'离职',type:'line',data:out12,smooth:true,showSymbol:false,lineStyle:{width:2,color:V('--bad')},itemStyle:{color:V('--bad')}}]});
 }
 
 // 各部门人员分布（横向柱状图）
@@ -132,9 +138,9 @@ function renderDept(){
   deptC.setOption({tooltip:{trigger:'axis',axisPointer:{type:'shadow'},formatter:ps=>`${ps[0].name}　<b>${ps[0].value}</b> 人（${(ps[0].value/total*100).toFixed(1)}%）`},
     grid:{left:78,right:56,top:10,bottom:10},
     xAxis:{type:'value',show:false,max:v=>Math.round(v.max*1.15)},
-    yAxis:{type:'category',inverse:true,data:sorted.map(x=>x[0]),axisLabel:{color:'#8494b8',fontSize:10},axisLine:{show:false},axisTick:{show:false}},
-    series:[{type:'bar',barWidth:12,data:sorted.map((x,i)=>({value:x[1],itemStyle:{borderRadius:[0,3,3,0],color:i===0?'#22d3ee':'#4f8cff'}})),
-      label:{show:true,position:'right',fontSize:10,color:'#8494b8',formatter:p=>`${p.value} 人`}}]});
+    yAxis:{type:'category',inverse:true,data:sorted.map(x=>x[0]),axisLabel:{color:V('--sub'),fontSize:10},axisLine:{show:false},axisTick:{show:false}},
+    series:[{type:'bar',barWidth:12,data:sorted.map((x,i)=>({value:x[1],itemStyle:{borderRadius:[0,3,3,0],color:i===0?V('--cyan'):V('--acc')}})),
+      label:{show:true,position:'right',fontSize:10,color:V('--sub'),formatter:p=>`${p.value} 人`}}]});
 }
 
 // 招聘漏斗（简历 → 初筛 → 面试 → Offer → 入职）
@@ -145,9 +151,9 @@ function renderFunnel(){
   document.getElementById('funChip').textContent=`简历→入职 转化率 ${cvr}%`;
   funC.setOption({tooltip:{formatter:f=>`${f.name}　<b>${f.value.toLocaleString()}</b> 人 · 全程转化 ${(f.value/funnel[0][1]*100).toFixed(1)}%`},
     series:[{type:'funnel',left:'14%',right:'14%',top:16,bottom:4,minSize:'24%',sort:'descending',gap:4,
-      label:{show:true,position:'inside',fontSize:10,color:'#dfe7ff',formatter:p=>`${p.name} ${p.value}`},
-      itemStyle:{borderColor:'#1c2740',borderWidth:1},
-      data:funnel.map((x,i)=>({name:x[0],value:x[1],itemStyle:{color:FUNNELC[i]}}))}]});
+      label:{show:true,position:'inside',fontSize:10,color:V('--txt'),formatter:p=>`${p.name} ${p.value}`},
+      itemStyle:{borderColor:V('--line'),borderWidth:1},
+      data:funnel.map((x,i)=>({name:x[0],value:x[1],itemStyle:{color:V(FUNNELC[i])}}))}]});
 }
 
 // 离职率 gauge（警戒线 15%，黄区 12~15%，红区 ≥15%）
@@ -155,13 +161,13 @@ const gaugeC=echarts.init(document.getElementById('c-gauge'));
 function renderGauge(){
   turnover=+clamp(turnover+rnd(-.25,.25),11,17).toFixed(1);
   gaugeC.setOption({series:[{type:'gauge',startAngle:210,endAngle:-30,min:0,max:20,splitNumber:4,center:['50%','56%'],radius:'95%',
-    axisLine:{lineStyle:{width:12,color:[[.6,'#34d399'],[.75,'#fbbf24'],[1,'#f87171']]}},
-    pointer:{length:'58%',width:4,itemStyle:{color:'#dfe7ff'}},
-    axisTick:{distance:-12,length:4,lineStyle:{color:'#0a0f1c',width:1}},
-    splitLine:{distance:-14,length:12,lineStyle:{color:'#0a0f1c',width:2}},
-    axisLabel:{distance:14,color:'#8494b8',fontSize:9,formatter:'{value}%'},
-    detail:{valueAnimation:true,formatter:'{value}%',color:turnover>=15?'#f87171':(turnover>=12?'#fbbf24':'#34d399'),fontSize:24,fontWeight:700,offsetCenter:[0,'58%']},
-    title:{offsetCenter:[0,'92%'],color:'#8494b8',fontSize:11},
+    axisLine:{lineStyle:{width:12,color:[[.6,V('--ok')],[.75,V('--warn')],[1,V('--bad')]]}},
+    pointer:{length:'58%',width:4,itemStyle:{color:V('--txt')}},
+    axisTick:{distance:-12,length:4,lineStyle:{color:V('--p2'),width:1}},
+    splitLine:{distance:-14,length:12,lineStyle:{color:V('--p2'),width:2}},
+    axisLabel:{distance:14,color:V('--sub'),fontSize:9,formatter:'{value}%'},
+    detail:{valueAnimation:true,formatter:'{value}%',color:turnover>=15?V('--bad'):(turnover>=12?V('--warn'):V('--ok')),fontSize:24,fontWeight:700,offsetCenter:[0,'58%']},
+    title:{offsetCenter:[0,'92%'],color:V('--sub'),fontSize:11},
     data:[{value:turnover,name:'年化离职率 · 警戒 15%（红区）'}]}]});
 }
 
@@ -173,10 +179,10 @@ function renderRose(){
   document.getElementById('gradeChip').textContent=`覆盖 ${total.toLocaleString()} 人 · B 等占比 ${(grades[2][1]/total*100).toFixed(0)}%`;
   roseC.setOption({tooltip:{formatter:f=>`${f.name} 等　<b>${f.value}</b> 人（${f.percent}%）`},
     series:[{type:'pie',roseType:'radius',radius:['16%','72%'],center:['50%','56%'],
-      itemStyle:{borderColor:'#0a0f1c',borderWidth:2,borderRadius:4},
-      label:{color:'#8494b8',fontSize:10,formatter:'{b} 等'},
-      labelLine:{lineStyle:{color:'#1c2740'}},
-      data:grades.map(g=>({name:g[0],value:g[1],itemStyle:{color:g[2]}}))}]});
+      itemStyle:{borderColor:V('--p2'),borderWidth:2,borderRadius:4},
+      label:{color:V('--sub'),fontSize:10,formatter:'{b} 等'},
+      labelLine:{lineStyle:{color:V('--line')}},
+      data:grades.map(g=>({name:g[0],value:g[1],itemStyle:{color:V(g[2])}}))}]});
 }
 
 // 考勤异常 Top 部门（异常率徽标：>5% 超标 / ≥3% 关注 / 其余正常）
@@ -192,6 +198,13 @@ function renderAtt(){
 
 // 时钟
 const tickClock=()=>{document.getElementById('clock').textContent=new Date().toLocaleString('zh-CN',{hour12:false})};
+
+// 主题切换：图表按当前 CSS 变量重建
+function retheme(){renderTrend();renderDept();renderFunnel();renderGauge();renderRose();}
+const themeBtn=document.getElementById('themeBtn');
+function applyTheme(t){document.documentElement.dataset.theme=t;try{localStorage.setItem('zwb-theme',t)}catch(e){}themeBtn.textContent=t==='light'?'🌙':'☀️';retheme();}
+themeBtn.addEventListener('click',()=>applyTheme(document.documentElement.dataset.theme==='light'?'dark':'light'));
+themeBtn.textContent=document.documentElement.dataset.theme==='light'?'🌙':'☀️';
 
 // 模拟实时
 function tick(){

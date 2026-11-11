@@ -5,11 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>营销投放台 · Ads Performance | ZCode Labs</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<script>try{document.documentElement.dataset.theme=localStorage.getItem('zwb-theme')||'dark'}catch(e){}</script>
 <style>
-:root{--bg:#070b14;--p1:#0d1322;--p2:#0a0f1c;--line:#1c2740;--txt:#dfe7ff;--sub:#8494b8;--acc:#4f8cff;--ok:#34d399;--warn:#fbbf24;--bad:#f87171}
+:root{--bg:#070b14;--p1:#0d1322;--p2:#0a0f1c;--line:#1c2740;--txt:#dfe7ff;--sub:#8494b8;--acc:#4f8cff;--ok:#34d399;--warn:#fbbf24;--bad:#f87171;--sky:#38bdf8;--cyan:#22d3ee;--purple:#a78bfa;--pink:#f472b6;--glow:#3a1230;--track:#182242;--split:#141d33;--acc-deep:#1d3a8f;--ok-soft:rgba(52,211,153,.1);--warn-soft:rgba(251,191,36,.1);--warn-line:rgba(251,191,36,.3);--bad-soft:rgba(248,113,113,.1)}
+[data-theme="light"]{--bg:#f5f7fa;--p1:#ffffff;--p2:#f7f9fc;--line:#e3e8ef;--txt:#1f2733;--sub:#5a6675;--acc:#2f6cff;--ok:#0e9f6e;--warn:#d97706;--bad:#dc2626;--sky:#0284c7;--cyan:#0891b2;--purple:#7c3aed;--pink:#db2777;--glow:#f2e2ee;--track:#e8edf5;--split:#e3e8ef;--acc-deep:#9db9f7;--ok-soft:rgba(14,159,110,.1);--warn-soft:rgba(217,119,6,.1);--warn-line:rgba(217,119,6,.35);--bad-soft:rgba(220,38,38,.08)}
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:radial-gradient(900px 500px at 85% -10%,#3a1230 0%,var(--bg) 60%);color:var(--txt);font-family:"PingFang SC","Microsoft YaHei",sans-serif;padding:22px;min-height:100vh}
-.top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px}
+body{background:radial-gradient(900px 500px at 85% -10%,var(--glow) 0%,var(--bg) 60%);color:var(--txt);font-family:"PingFang SC","Microsoft YaHei",sans-serif;padding:22px;min-height:100vh}
+.top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px;padding-right:56px}
 .top h1{font-size:20px;display:flex;align-items:center;gap:10px}
 .top h1 .dot{width:9px;height:9px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px var(--ok);animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
@@ -29,19 +31,22 @@ body{background:radial-gradient(900px 500px at 85% -10%,#3a1230 0%,var(--bg) 60%
 .tscroll{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:12px}
 th{color:var(--sub);font-weight:500;text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);letter-spacing:.05em;white-space:nowrap}
-td{padding:7px 8px;border-bottom:1px solid rgba(28,39,64,.5);font-variant-numeric:tabular-nums;white-space:nowrap}
+td{padding:7px 8px;border-bottom:1px solid var(--split);font-variant-numeric:tabular-nums;white-space:nowrap}
 .badge{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:99px;font-size:11px}
 .badge i{width:5px;height:5px;border-radius:50%}
-.st-ok{color:var(--ok);background:rgba(52,211,153,.1)}.st-ok i{background:var(--ok)}
-.st-warn{color:var(--warn);background:rgba(251,191,36,.1)}.st-warn i{background:var(--warn)}
-.st-bad{color:var(--bad);background:rgba(248,113,113,.1)}.st-bad i{background:var(--bad)}
+.st-ok{color:var(--ok);background:var(--ok-soft)}.st-ok i{background:var(--ok)}
+.st-warn{color:var(--warn);background:var(--warn-soft)}.st-warn i{background:var(--warn)}
+.st-bad{color:var(--bad);background:var(--bad-soft)}.st-bad i{background:var(--bad)}
 .trend{font-size:11px}.trend.up{color:var(--ok)}.trend.dn{color:var(--bad)}
-.mock{position:fixed;right:16px;bottom:14px;font-size:11px;color:var(--warn);background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.3);border-radius:99px;padding:3px 12px;letter-spacing:.1em}
+.theme-btn{position:fixed;right:16px;top:12px;z-index:9999;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--p1);color:var(--txt);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .2s,border-color .2s}
+.theme-btn:hover{transform:scale(1.1);border-color:var(--acc)}
+.mock{position:fixed;right:16px;bottom:14px;font-size:11px;color:var(--warn);background:var(--warn-soft);border:1px solid var(--warn-line);border-radius:99px;padding:3px 12px;letter-spacing:.1em}
 .back{position:fixed;left:16px;bottom:14px;font-size:12px}.back a{color:var(--acc);text-decoration:none}
 @media(max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
+<button class="theme-btn" id="themeBtn" title="切换亮 / 暗主题"></button>
 <div class="top">
   <h1><span class="dot"></span>营销投放台 <span>ADS PERFORMANCE · ads-suite v1 · 渠道 × 素材 × ROI</span></h1>
   <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
@@ -64,6 +69,7 @@ td{padding:7px 8px;border-bottom:1px solid rgba(28,39,64,.5);font-variant-numeri
 <div class="mock">MOCK DATA · 演示数据</div>
 
 <script>
+const V=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const rnd=(a,b)=>a+Math.random()*(b-a);
 const irnd=(a,b)=>Math.round(rnd(a,b));
 const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
@@ -75,15 +81,15 @@ const d14=Array.from({length:14},(_,i)=>{const d=new Date(Date.now()-(13-i)*864e
 // KPI 基础量（金额单位：元）
 let spend=48652,imps=3284000,clicks=96240,conv=1842;
 
-// 各渠道消耗占比（今日）：抖音 / 快手 / 微信 / 百度 / 小红书
-let chans=[['抖音',18600,'#4f8cff'],['微信',10400,'#34d399'],['快手',8200,'#22d3ee'],['百度',6900,'#fbbf24'],['小红书',4552,'#fb7185']];
+// 各渠道消耗占比（今日）· 颜色存 CSS 变量名
+let chans=[['抖音',18600,'--acc'],['微信',10400,'--ok'],['快手',8200,'--cyan'],['百度',6900,'--warn'],['小红书',4552,'--pink']];
 
 // 近 30 天 ROAS（目标 2.5）
 let roas=d30.map(()=>+rnd(2.2,3.1).toFixed(2));
 
-// 转化漏斗（今日）：曝光 → 点击 → 落地页 → 加购 → 支付
+// 转化漏斗（今日）· 颜色存 CSS 变量名
 let funnel=[['曝光',3284000],['点击',96240],['落地页',61300],['加购',12860],['支付',1842]];
-const FUNC=['#4f8cff','#38bdf8','#22d3ee','#a78bfa','#34d399'];
+const FUNC=['--acc','--sky','--cyan','--purple','--ok'];
 
 // 近 14 天 CPC / CPM（元）
 let cpc=d14.map(()=>+rnd(.42,.62).toFixed(2)),cpm=d14.map(()=>+rnd(13,18).toFixed(1));
@@ -122,14 +128,14 @@ function renderKpis(){
 // 近 30 天 ROAS 趋势（折线 + 目标线 2.5）
 const roasC=echarts.init(document.getElementById('c-roas'));
 function renderRoas(){
-  roasC.setOption({tooltip:{trigger:'axis'},legend:{data:['ROAS'],textStyle:{color:'#8494b8',fontSize:10},top:0,itemWidth:10,itemHeight:10},
+  roasC.setOption({tooltip:{trigger:'axis'},legend:{data:['ROAS'],textStyle:{color:V('--sub'),fontSize:10},top:0,itemWidth:10,itemHeight:10},
     grid:{left:36,right:14,top:30,bottom:24},
-    xAxis:{type:'category',data:d30,axisLabel:{color:'#8494b8',fontSize:9,interval:4}},
-    yAxis:{type:'value',min:1.5,max:3.5,nameTextStyle:{color:'#8494b8',fontSize:10},splitLine:{lineStyle:{color:'#141d33'}},axisLabel:{color:'#8494b8',fontSize:10}},
-    series:[{name:'ROAS',type:'line',data:roas,smooth:true,showSymbol:false,lineStyle:{width:2,color:'#4f8cff'},itemStyle:{color:'#4f8cff'},
-      areaStyle:{color:'rgba(79,140,255,.10)'},
-      markLine:{silent:true,symbol:'none',lineStyle:{type:'dashed',color:'rgba(52,211,153,.7)'},
-        data:[{yAxis:2.5,label:{formatter:'目标 ROAS 2.5',position:'insideEndTop',color:'#34d399',fontSize:9}}]}}]});
+    xAxis:{type:'category',data:d30,axisLabel:{color:V('--sub'),fontSize:9,interval:4}},
+    yAxis:{type:'value',min:1.5,max:3.5,nameTextStyle:{color:V('--sub'),fontSize:10},splitLine:{lineStyle:{color:V('--split')}},axisLabel:{color:V('--sub'),fontSize:10}},
+    series:[{name:'ROAS',type:'line',data:roas,smooth:true,showSymbol:false,lineStyle:{width:2,color:V('--acc')},itemStyle:{color:V('--acc')},
+      areaStyle:{color:V('--acc')+'1a'},
+      markLine:{silent:true,symbol:'none',lineStyle:{type:'dashed',color:V('--ok')+'b3'},
+        data:[{yAxis:2.5,label:{formatter:'目标 ROAS 2.5',position:'insideEndTop',color:V('--ok'),fontSize:9}}]}}]});
 }
 
 // 各渠道消耗占比（环形饼图）
@@ -139,12 +145,12 @@ function renderChan(){
   const total=chans.reduce((a,b)=>a+b[1],0),top=[...chans].sort((a,b)=>b[1]-a[1])[0];
   document.getElementById('chanChip').textContent=`今日消耗 ¥${total.toLocaleString()} · Top1 ${top[0]}`;
   chanC.setOption({tooltip:{formatter:f=>`${f.name}　<b>¥${f.value.toLocaleString()}</b>（${f.percent}%）`},
-    legend:{bottom:0,textStyle:{color:'#8494b8',fontSize:10},itemWidth:10,itemHeight:10},
+    legend:{bottom:0,textStyle:{color:V('--sub'),fontSize:10},itemWidth:10,itemHeight:10},
     series:[{type:'pie',radius:['40%','68%'],center:['50%','46%'],
-      itemStyle:{borderColor:'#0a0f1c',borderWidth:2,borderRadius:4},
-      label:{color:'#8494b8',fontSize:10,formatter:'{b}\n{d}%'},
-      labelLine:{lineStyle:{color:'#1c2740'}},
-      data:chans.map(x=>({name:x[0],value:x[1],itemStyle:{color:x[2]}}))}]});
+      itemStyle:{borderColor:V('--p2'),borderWidth:2,borderRadius:4},
+      label:{color:V('--sub'),fontSize:10,formatter:'{b}\n{d}%'},
+      labelLine:{lineStyle:{color:V('--line')}},
+      data:chans.map(x=>({name:x[0],value:x[1],itemStyle:{color:V(x[2])}}))}]});
 }
 
 // 转化漏斗（曝光 → 点击 → 落地页 → 加购 → 支付）
@@ -155,23 +161,23 @@ function renderFunnel(){
   document.getElementById('funChip').textContent=`曝光→支付 转化率 ${cvr}%`;
   funC.setOption({tooltip:{formatter:f=>`${f.name}　<b>${fmt(f.value)}</b> · 全程 ${(f.value/funnel[0][1]*100).toFixed(3)}%`},
     series:[{type:'funnel',left:'14%',right:'14%',top:16,bottom:4,minSize:'16%',sort:'descending',gap:4,
-      label:{show:true,position:'inside',fontSize:10,color:'#dfe7ff',formatter:p=>`${p.name} ${fmt(p.value)}`},
-      itemStyle:{borderColor:'#1c2740',borderWidth:1},
-      data:funnel.map((x,i)=>({name:x[0],value:x[1],itemStyle:{color:FUNC[i]}}))}]});
+      label:{show:true,position:'inside',fontSize:10,color:V('--txt'),formatter:p=>`${p.name} ${fmt(p.value)}`},
+      itemStyle:{borderColor:V('--line'),borderWidth:1},
+      data:funnel.map((x,i)=>({name:x[0],value:x[1],itemStyle:{color:V(FUNC[i])}}))}]});
 }
 
 // CPC / CPM 双轴趋势（近 14 天）
 const cpcC=echarts.init(document.getElementById('c-cpc'));
 function renderCpc(){
-  cpcC.setOption({tooltip:{trigger:'axis',valueFormatter:v=>`¥${v}`},legend:{data:['CPC','CPM'],textStyle:{color:'#8494b8',fontSize:10},top:0,itemWidth:10,itemHeight:10},
+  cpcC.setOption({tooltip:{trigger:'axis',valueFormatter:v=>`¥${v}`},legend:{data:['CPC','CPM'],textStyle:{color:V('--sub'),fontSize:10},top:0,itemWidth:10,itemHeight:10},
     grid:{left:36,right:36,top:30,bottom:24},
-    xAxis:{type:'category',data:d14,axisLabel:{color:'#8494b8',fontSize:9,interval:3}},
+    xAxis:{type:'category',data:d14,axisLabel:{color:V('--sub'),fontSize:9,interval:3}},
     yAxis:[
-      {name:'CPC 元',type:'value',min:0,max:.8,nameTextStyle:{color:'#8494b8',fontSize:10},splitLine:{lineStyle:{color:'#141d33'}},axisLabel:{color:'#8494b8',fontSize:10}},
-      {name:'CPM 元',type:'value',min:0,max:20,position:'right',nameTextStyle:{color:'#8494b8',fontSize:10},splitLine:{show:false},axisLabel:{color:'#8494b8',fontSize:10}}],
+      {name:'CPC 元',type:'value',min:0,max:.8,nameTextStyle:{color:V('--sub'),fontSize:10},splitLine:{lineStyle:{color:V('--split')}},axisLabel:{color:V('--sub'),fontSize:10}},
+      {name:'CPM 元',type:'value',min:0,max:20,position:'right',nameTextStyle:{color:V('--sub'),fontSize:10},splitLine:{show:false},axisLabel:{color:V('--sub'),fontSize:10}}],
     series:[
-      {name:'CPC',type:'line',data:cpc,smooth:true,showSymbol:false,lineStyle:{width:2,color:'#22d3ee'},itemStyle:{color:'#22d3ee'}},
-      {name:'CPM',type:'line',yAxisIndex:1,data:cpm,smooth:true,showSymbol:false,lineStyle:{width:2,color:'#a78bfa'},itemStyle:{color:'#a78bfa'}}]});
+      {name:'CPC',type:'line',data:cpc,smooth:true,showSymbol:false,lineStyle:{width:2,color:V('--cyan')},itemStyle:{color:V('--cyan')}},
+      {name:'CPM',type:'line',yAxisIndex:1,data:cpm,smooth:true,showSymbol:false,lineStyle:{width:2,color:V('--purple')},itemStyle:{color:V('--purple')}}]});
   cpc.shift();cpc.push(+rnd(.42,.62).toFixed(2));
   cpm.shift();cpm.push(+rnd(13,18).toFixed(1));
   document.getElementById('cpcChip').textContent=`CPC ¥${last(cpc)} · CPM ¥${last(cpm)}`;
@@ -187,9 +193,9 @@ function renderCtr(){
   ctrC.setOption({tooltip:{trigger:'axis',axisPointer:{type:'shadow'},formatter:ps=>`${ps[0].name}　<b>${ps[0].value}%</b>`},
     grid:{left:150,right:46,top:10,bottom:10},
     xAxis:{type:'value',show:false,max:v=>Math.round(v.max*1.15*10)/10},
-    yAxis:{type:'category',inverse:true,data:sorted.map(x=>x[0]),axisLabel:{color:'#8494b8',fontSize:10},axisLine:{show:false},axisTick:{show:false}},
-    series:[{type:'bar',barWidth:12,data:sorted.map((x,i)=>({value:x[1],itemStyle:{borderRadius:[0,3,3,0],color:i===0?'#fb7185':'#4f8cff'}})),
-      label:{show:true,position:'right',fontSize:10,color:'#8494b8',formatter:p=>`${p.value}%`}}]});
+    yAxis:{type:'category',inverse:true,data:sorted.map(x=>x[0]),axisLabel:{color:V('--sub'),fontSize:10},axisLine:{show:false},axisTick:{show:false}},
+    series:[{type:'bar',barWidth:12,data:sorted.map((x,i)=>({value:x[1],itemStyle:{borderRadius:[0,3,3,0],color:i===0?V('--pink'):V('--acc')}})),
+      label:{show:true,position:'right',fontSize:10,color:V('--sub'),formatter:p=>`${p.value}%`}}]});
 }
 
 // 亏损计划预警表（ROAS < 1 严重 / ≥ 1 亏损，目标 2.5）
@@ -204,6 +210,13 @@ function renderLoss(){
 
 // 时钟
 const tickClock=()=>{document.getElementById('clock').textContent=new Date().toLocaleString('zh-CN',{hour12:false})};
+
+// 主题切换：图表按当前 CSS 变量重建
+function retheme(){renderRoas();renderChan();renderFunnel();renderCpc();renderCtr();}
+const themeBtn=document.getElementById('themeBtn');
+function applyTheme(t){document.documentElement.dataset.theme=t;try{localStorage.setItem('zwb-theme',t)}catch(e){}themeBtn.textContent=t==='light'?'🌙':'☀️';retheme();}
+themeBtn.addEventListener('click',()=>applyTheme(document.documentElement.dataset.theme==='light'?'dark':'light'));
+themeBtn.textContent=document.documentElement.dataset.theme==='light'?'🌙':'☀️';
 
 // 模拟实时
 function tick(){

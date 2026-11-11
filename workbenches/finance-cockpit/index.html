@@ -111,7 +111,7 @@ function renderCash(){
     grid:{left:44,right:14,top:26,bottom:26},
     xAxis:{type:'category',data:weeks,axisLabel:{color:V('--sub'),fontSize:10}},
     yAxis:{name:'万元',type:'value',nameTextStyle:{color:V('--sub'),fontSize:10},splitLine:{lineStyle:{color:V('--split')}},axisLabel:{color:V('--sub'),fontSize:10}},
-    series:[{name:'现金余额',type:'bar',barWidth:16,data:cash.map(v=>({value:v,itemStyle:{borderRadius:[3,3,0,0],color:v<SAFE?'var(--bad)':{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:V('--acc')},{offset:1,color:V('--acc-deep')}]}}})),
+    series:[{name:'现金余额',type:'bar',barWidth:16,data:cash.map(v=>({value:v,itemStyle:{borderRadius:[3,3,0,0],color:v<SAFE?V('--bad'):{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:V('--acc')},{offset:1,color:V('--acc-deep')}]}}})),
       markLine:{silent:true,symbol:'none',data:[{yAxis:SAFE}],lineStyle:{color:V('--warn'),type:'dashed',width:1.5},label:{formatter:'安全水位 ¥2,500 万',color:V('--warn'),fontSize:10,position:'insideEndTop'}}}]});
   const chip=document.getElementById('cashChip');
   chip.textContent='当前现金 ¥'+cash[0].toLocaleString()+' 万';
