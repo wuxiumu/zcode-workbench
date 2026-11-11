@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HR 人力效能台 · People Analytics | ZCode Labs</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<style>
+:root{--bg:#070b14;--p1:#0d1322;--p2:#0a0f1c;--line:#1c2740;--txt:#dfe7ff;--sub:#8494b8;--acc:#4f8cff;--ok:#34d399;--warn:#fbbf24;--bad:#f87171}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:radial-gradient(900px 500px at 85% -10%,#12333a 0%,var(--bg) 60%);color:var(--txt);font-family:"PingFang SC","Microsoft YaHei",sans-serif;padding:22px;min-height:100vh}
+.top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px}
+.top h1{font-size:20px;display:flex;align-items:center;gap:10px}
+.top h1 .dot{width:9px;height:9px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px var(--ok);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.top h1 span{color:var(--sub);font-size:13px;font-weight:400}
+.clock{font-variant-numeric:tabular-nums;color:var(--sub);font-size:13px}
+.pill{font-size:12px;color:var(--sub);background:var(--p1);border:1px solid var(--line);border-radius:99px;padding:6px 14px}
+.pill b{color:var(--ok)}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px}
+.kpi{background:linear-gradient(160deg,var(--p1),var(--p2));border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.kpi .l{font-size:12px;color:var(--sub)}.kpi .v{font-size:24px;font-weight:800;margin-top:6px;font-variant-numeric:tabular-nums}
+.kpi .v small{font-size:12px;color:var(--sub);font-weight:400}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.panel{background:linear-gradient(160deg,var(--p1),var(--p2));border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.panel h3{font-size:13px;color:var(--sub);font-weight:600;margin-bottom:8px;letter-spacing:.06em}
+.panel h3 .chip{float:right;font-size:11px;letter-spacing:0;color:var(--sub)}
+.chart{height:220px}.chart-lg{height:300px}.wide{grid-column:1/-1}
+.tscroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{color:var(--sub);font-weight:500;text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);letter-spacing:.05em;white-space:nowrap}
+td{padding:7px 8px;border-bottom:1px solid rgba(28,39,64,.5);font-variant-numeric:tabular-nums;white-space:nowrap}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:99px;font-size:11px}
+.badge i{width:5px;height:5px;border-radius:50%}
+.st-ok{color:var(--ok);background:rgba(52,211,153,.1)}.st-ok i{background:var(--ok)}
+.st-warn{color:var(--warn);background:rgba(251,191,36,.1)}.st-warn i{background:var(--warn)}
+.st-bad{color:var(--bad);background:rgba(248,113,113,.1)}.st-bad i{background:var(--bad)}
+.trend{font-size:11px}.trend.up{color:var(--ok)}.trend.dn{color:var(--bad)}
+.mock{position:fixed;right:16px;bottom:14px;font-size:11px;color:var(--warn);background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.3);border-radius:99px;padding:3px 12px;letter-spacing:.1em}
+.back{position:fixed;left:16px;bottom:14px;font-size:12px}.back a{color:var(--acc);text-decoration:none}
+@media(max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="top">
+  <h1><span class="dot"></span>HR 人力效能台 <span>PEOPLE ANALYTICS · hr-suite v1 · 组织 × 招聘 × 考勤</span></h1>
+  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+    <span class="clock" id="clock"></span>
+    <span class="pill">数据更新：<b>实时模拟</b> · 每 3.5 秒刷新</span>
+  </div>
+</div>
+
+<div class="kpis" id="kpis"></div>
+<div class="grid">
+  <div class="panel wide"><h3>近 12 个月入离职趋势（入职 / 离职折线 + 期末在职柱）</h3><div class="chart" id="c-trend"></div></div>
+  <div class="panel"><h3>各部门人员分布<span class="chip" id="deptChip"></span></h3><div class="chart-lg" id="c-dept"></div></div>
+  <div class="panel"><h3>本季招聘漏斗 · 简历 → 入职<span class="chip" id="funChip"></span></h3><div class="chart-lg" id="c-funnel"></div></div>
+  <div class="panel"><h3>离职率仪表 · 警戒线 15%</h3><div class="chart-lg" id="c-gauge"></div></div>
+  <div class="panel"><h3>绩效等级分布 · S/A/B/C/D<span class="chip" id="gradeChip"></span></h3><div class="chart-lg" id="c-rose"></div></div>
+  <div class="panel wide"><h3>考勤异常 Top 部门 · 本月<span class="chip" id="attChip"></span></h3><div class="tscroll"><table id="att"></table></div></div>
+</div>
+
+<div class="back"><a href="../../">← 返回工作台矩阵</a></div>
+<div class="mock">MOCK DATA · 演示数据</div>
+
+<script>
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const irnd=(a,b)=>Math.round(rnd(a,b));
+const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
+const last=a=>a[a.length-1];
+const d12=Array.from({length:12},(_,i)=>{const d=new Date();d.setMonth(d.getMonth()-(11-i));return (d.getMonth()+1)+'月'});
+
+// 近 12 个月入离职流水与期末在职（期末在职与当月入离职勾稽）
+let in12=[32,38,35,41,44,39,47,52,43,38,45,46];
+let out12=[14,18,12,16,22,15,19,24,17,14,18,17];
+let hc12=in12.reduce((arr,v,i)=>{arr.push((i?last(arr):1148)+v-out12[i]);return arr},[]);
+
+// KPI 基础量
+let hires=46,leavers=17,revPP=86.4,turnover=14.2;
+
+// 各部门在职人数（横向柱状图 + 考勤异常率分母）
+let DEPTS=[['研发中心',486],['销售部',312],['客户成功部',148],['产品部',142],['职能支撑',128],['市场部',96],['设计部',88],['人力行政',42]];
+const sizeOf=n=>{const f=DEPTS.find(x=>x[0]===n);return f?f[1]:100};
+
+// 招聘漏斗（本季）
+let funnel=[['简历投递',3268],['初筛通过',1845],['面试',923],['Offer 发放',214],['实际入职',146]];
+const FUNNELC=['#4f8cff','#38bdf8','#22d3ee','#a78bfa','#34d399'];
+
+// 绩效等级 S/A/B/C/D（玫瑰图）
+let grades=[['S',101,'#4f8cff'],['A',302,'#34d399'],['B',664,'#fbbf24'],['C',318,'#a78bfa'],['D',57,'#f87171']];
+
+// 考勤异常流水（本月）：[部门, 迟到, 早退, 缺卡]
+let att=[['销售部',10,3,7],['研发中心',12,2,6],['市场部',3,1,1],['客户成功部',3,1,2],['产品部',2,1,1],['设计部',1,0,1],['职能支撑',2,0,1]];
+
+// KPI · 人力总览
+function renderKpis(){
+  const hc=last(hc12);
+  revPP=+clamp(revPP+rnd(-.3,.35),82,92).toFixed(1);
+  hires=clamp(hires+irnd(-2,3),36,58);
+  leavers=clamp(leavers+irnd(-2,2),10,26);
+  const net=hires-leavers;
+  const k=[
+    ['在职人数',hc.toLocaleString(),' 人','up',`较上月 ${hc12[10]&&(hc-hc12[10]>=0?'+':'')}${hc-hc12[10]} 人`],
+    ['本月入职',hires,' 人','up',`月度目标 50 · 完成率 ${(hires/50*100).toFixed(0)}%`],
+    ['本月离职',leavers,' 人',turnover>=15?'dn':'up',`年化离职率 ${turnover}% · 警戒 15%`],
+    ['人均营收',revPP,' 万元','up','同比 +12.6% · 环比稳中有升']];
+  document.getElementById('kpis').innerHTML=k.map(x=>`<div class="kpi"><div class="l">${x[0]}</div><div class="v">${x[1]}<small>${x[2]}</small></div><div class="trend ${x[3]}">${x[4]}</div></div>`).join('');
+}
+
+// 近 12 个月入离职趋势（双折线 + 期末在职柱）
+const t12C=echarts.init(document.getElementById('c-trend'));
+function renderTrend(){
+  t12C.setOption({tooltip:{trigger:'axis'},legend:{data:['期末在职','入职','离职'],textStyle:{color:'#8494b8',fontSize:10},top:0,itemWidth:10,itemHeight:10},
+    grid:{left:38,right:44,top:30,bottom:24},
+    xAxis:{type:'category',data:d12,axisLabel:{color:'#8494b8',fontSize:9}},
+    yAxis:[
+      {name:'入离职',type:'value',min:0,nameTextStyle:{color:'#8494b8',fontSize:10},splitLine:{lineStyle:{color:'#141d33'}},axisLabel:{color:'#8494b8',fontSize:10}},
+      {name:'在职',type:'value',min:v=>Math.round(v.min*.98),max:v=>Math.round(v.max*1.02),position:'right',nameTextStyle:{color:'#8494b8',fontSize:10},splitLine:{show:false},axisLabel:{color:'#8494b8',fontSize:10}}],
+    series:[
+      {name:'期末在职',type:'bar',yAxisIndex:1,data:hc12,barWidth:14,itemStyle:{borderRadius:[3,3,0,0],color:'rgba(34,211,238,.30)'}},
+      {name:'入职',type:'line',data:in12,smooth:true,showSymbol:false,lineStyle:{width:2,color:'#34d399'},itemStyle:{color:'#34d399'},areaStyle:{color:'rgba(52,211,153,.10)'}},
+      {name:'离职',type:'line',data:out12,smooth:true,showSymbol:false,lineStyle:{width:2,color:'#f87171'},itemStyle:{color:'#f87171'}}]});
+}
+
+// 各部门人员分布（横向柱状图）
+const deptC=echarts.init(document.getElementById('c-dept'));
+function renderDept(){
+  DEPTS=DEPTS.map(([n,v])=>[n,clamp(v+irnd(-3,4),Math.round(v*.95),Math.round(v*1.08))]);
+  const sorted=[...DEPTS].sort((a,b)=>b[1]-a[1]);
+  const total=sorted.reduce((a,b)=>a+b[1],0);
+  document.getElementById('deptChip').textContent=`在职共 ${total.toLocaleString()} 人 · 8 个部门`;
+  deptC.setOption({tooltip:{trigger:'axis',axisPointer:{type:'shadow'},formatter:ps=>`${ps[0].name}　<b>${ps[0].value}</b> 人（${(ps[0].value/total*100).toFixed(1)}%）`},
+    grid:{left:78,right:56,top:10,bottom:10},
+    xAxis:{type:'value',show:false,max:v=>Math.round(v.max*1.15)},
+    yAxis:{type:'category',inverse:true,data:sorted.map(x=>x[0]),axisLabel:{color:'#8494b8',fontSize:10},axisLine:{show:false},axisTick:{show:false}},
+    series:[{type:'bar',barWidth:12,data:sorted.map((x,i)=>({value:x[1],itemStyle:{borderRadius:[0,3,3,0],color:i===0?'#22d3ee':'#4f8cff'}})),
+      label:{show:true,position:'right',fontSize:10,color:'#8494b8',formatter:p=>`${p.value} 人`}}]});
+}
+
+// 招聘漏斗（简历 → 初筛 → 面试 → Offer → 入职）
+const funC=echarts.init(document.getElementById('c-funnel'));
+function renderFunnel(){
+  funnel=funnel.map(([n,v],i)=>[n,Math.max(10,v+irnd(-4,5))]);
+  const cvr=(funnel[4][1]/funnel[0][1]*100).toFixed(1);
+  document.getElementById('funChip').textContent=`简历→入职 转化率 ${cvr}%`;
+  funC.setOption({tooltip:{formatter:f=>`${f.name}　<b>${f.value.toLocaleString()}</b> 人 · 全程转化 ${(f.value/funnel[0][1]*100).toFixed(1)}%`},
+    series:[{type:'funnel',left:'14%',right:'14%',top:16,bottom:4,minSize:'24%',sort:'descending',gap:4,
+      label:{show:true,position:'inside',fontSize:10,color:'#dfe7ff',formatter:p=>`${p.name} ${p.value}`},
+      itemStyle:{borderColor:'#1c2740',borderWidth:1},
+      data:funnel.map((x,i)=>({name:x[0],value:x[1],itemStyle:{color:FUNNELC[i]}}))}]});
+}
+
+// 离职率 gauge（警戒线 15%，黄区 12~15%，红区 ≥15%）
+const gaugeC=echarts.init(document.getElementById('c-gauge'));
+function renderGauge(){
+  turnover=+clamp(turnover+rnd(-.25,.25),11,17).toFixed(1);
+  gaugeC.setOption({series:[{type:'gauge',startAngle:210,endAngle:-30,min:0,max:20,splitNumber:4,center:['50%','56%'],radius:'95%',
+    axisLine:{lineStyle:{width:12,color:[[.6,'#34d399'],[.75,'#fbbf24'],[1,'#f87171']]}},
+    pointer:{length:'58%',width:4,itemStyle:{color:'#dfe7ff'}},
+    axisTick:{distance:-12,length:4,lineStyle:{color:'#0a0f1c',width:1}},
+    splitLine:{distance:-14,length:12,lineStyle:{color:'#0a0f1c',width:2}},
+    axisLabel:{distance:14,color:'#8494b8',fontSize:9,formatter:'{value}%'},
+    detail:{valueAnimation:true,formatter:'{value}%',color:turnover>=15?'#f87171':(turnover>=12?'#fbbf24':'#34d399'),fontSize:24,fontWeight:700,offsetCenter:[0,'58%']},
+    title:{offsetCenter:[0,'92%'],color:'#8494b8',fontSize:11},
+    data:[{value:turnover,name:'年化离职率 · 警戒 15%（红区）'}]}]});
+}
+
+// 绩效等级分布（玫瑰图 S/A/B/C/D）
+const roseC=echarts.init(document.getElementById('c-rose'));
+function renderRose(){
+  grades=grades.map(([n,v,c])=>[n,clamp(v+irnd(-3,4),5,800),c]);
+  const total=grades.reduce((a,b)=>a+b[1],0);
+  document.getElementById('gradeChip').textContent=`覆盖 ${total.toLocaleString()} 人 · B 等占比 ${(grades[2][1]/total*100).toFixed(0)}%`;
+  roseC.setOption({tooltip:{formatter:f=>`${f.name} 等　<b>${f.value}</b> 人（${f.percent}%）`},
+    series:[{type:'pie',roseType:'radius',radius:['16%','72%'],center:['50%','56%'],
+      itemStyle:{borderColor:'#0a0f1c',borderWidth:2,borderRadius:4},
+      label:{color:'#8494b8',fontSize:10,formatter:'{b} 等'},
+      labelLine:{lineStyle:{color:'#1c2740'}},
+      data:grades.map(g=>({name:g[0],value:g[1],itemStyle:{color:g[2]}}))}]});
+}
+
+// 考勤异常 Top 部门（异常率徽标：>5% 超标 / ≥3% 关注 / 其余正常）
+const RATELV=r=>r>5?['st-bad','超标']:r>=3?['st-warn','关注']:['st-ok','正常'];
+function renderAtt(){
+  att=att.map(([d,l,e,m])=>[d,clamp(l+irnd(-2,3),0,60),clamp(e+irnd(-1,2),0,20),clamp(m+irnd(-2,3),0,40)]);
+  const rows=att.map(([d,l,e,m])=>({d,l,e,m,n:l+e+m,r:+((l+e+m)/sizeOf(d)*100).toFixed(1)})).sort((a,b)=>b.n-a.n);
+  const bad=rows.filter(x=>x.r>5).length;
+  document.getElementById('attChip').textContent=`异常人次 ${rows.reduce((a,b)=>a+b.n,0)} · 超标部门 ${bad} 个`;
+  document.getElementById('att').innerHTML='<tr><th>部门</th><th>在职</th><th>迟到</th><th>早退</th><th>缺卡</th><th>异常人次</th><th>异常率</th></tr>'+
+    rows.map(x=>{const lv=RATELV(x.r);return `<tr><td>${x.d}</td><td>${sizeOf(x.d)}</td><td>${x.l}</td><td>${x.e}</td><td>${x.m}</td><td>${x.n}</td><td><span class="badge ${lv[0]}"><i></i>${x.r}% ${lv[1]}</span></td></tr>`}).join('');
+}
+
+// 时钟
+const tickClock=()=>{document.getElementById('clock').textContent=new Date().toLocaleString('zh-CN',{hour12:false})};
+
+// 模拟实时
+function tick(){
+  in12.shift();in12.push(hires);
+  out12.shift();out12.push(leavers);
+  hc12.push(last(hc12)+hires-leavers);hc12.shift();
+  renderKpis();renderTrend();renderDept();renderFunnel();renderGauge();renderRose();renderAtt();
+}
+renderKpis();renderTrend();renderDept();renderFunnel();renderGauge();renderRose();renderAtt();
+tickClock();setInterval(tickClock,1000);
+setInterval(tick,3500);
+window.addEventListener('resize',()=>[t12C,deptC,funC,gaugeC,roseC].forEach(c=>c.resize()));
+</script>
+</body>
+</html>
