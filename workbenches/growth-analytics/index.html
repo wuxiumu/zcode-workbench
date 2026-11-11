@@ -5,11 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>增长分析台 · Growth Analytics | ZCode Labs</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<script>try{document.documentElement.dataset.theme=localStorage.getItem('zwb-theme')||'dark'}catch(e){}</script>
 <style>
-:root{--bg:#070b14;--p1:#0d1322;--p2:#0a0f1c;--line:#1c2740;--txt:#dfe7ff;--sub:#8494b8;--acc:#4f8cff;--ok:#34d399;--warn:#fbbf24;--bad:#f87171}
+:root{--bg:#070b14;--p1:#0d1322;--p2:#0a0f1c;--line:#1c2740;--txt:#dfe7ff;--sub:#8494b8;--acc:#4f8cff;--ok:#34d399;--warn:#fbbf24;--bad:#f87171;--sky:#38bdf8;--cyan:#22d3ee;--lime:#a3e635;--purple:#a78bfa;--pink:#f472b6;--glow:#1a1436;--track:#182242;--split:#141d33;--acc-deep:#1d3a8f;--warn-soft:rgba(251,191,36,.08);--warn-line:rgba(251,191,36,.3)}
+[data-theme="light"]{--bg:#f5f7fa;--p1:#ffffff;--p2:#f7f9fc;--line:#e3e8ef;--txt:#1f2733;--sub:#5a6675;--acc:#2f6cff;--ok:#0e9f6e;--warn:#d97706;--bad:#dc2626;--sky:#0284c7;--cyan:#0891b2;--lime:#65a30d;--purple:#7c3aed;--pink:#db2777;--glow:#e9e4f8;--track:#e8edf5;--split:#e3e8ef;--acc-deep:#9db9f7;--warn-soft:rgba(217,119,6,.1);--warn-line:rgba(217,119,6,.35)}
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:radial-gradient(900px 500px at 15% -10%,#1a1436 0%,var(--bg) 60%);color:var(--txt);font-family:"PingFang SC","Microsoft YaHei",sans-serif;padding:22px;min-height:100vh}
-.top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:18px}
+body{background:radial-gradient(900px 500px at 15% -10%,var(--glow) 0%,var(--bg) 60%);color:var(--txt);font-family:"PingFang SC","Microsoft YaHei",sans-serif;padding:22px;min-height:100vh}
+.top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:18px;padding-right:56px}
 .top h1{font-size:20px}.top h1 span{color:var(--sub);font-size:13px;font-weight:400}
 .pill{font-size:12px;color:var(--sub);background:var(--p1);border:1px solid var(--line);border-radius:99px;padding:6px 14px}
 .pill b{color:var(--ok)}
@@ -23,18 +25,21 @@ body{background:radial-gradient(900px 500px at 15% -10%,#1a1436 0%,var(--bg) 60%
 .chart{height:220px}.wide{grid-column:1/-1}
 table{width:100%;border-collapse:collapse;font-size:12px}
 th{color:var(--sub);font-weight:500;text-align:left;padding:8px;border-bottom:1px solid var(--line)}
-td{padding:8px;border-bottom:1px solid rgba(28,39,64,.5);font-variant-numeric:tabular-nums}
-.rank{display:inline-flex;width:20px;height:20px;border-radius:6px;align-items:center;justify-content:center;font-size:11px;background:#182242;color:var(--sub)}
+td{padding:8px;border-bottom:1px solid var(--split);font-variant-numeric:tabular-nums}
+.rank{display:inline-flex;width:20px;height:20px;border-radius:6px;align-items:center;justify-content:center;font-size:11px;background:var(--track);color:var(--sub)}
 .r1{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#1a1206;font-weight:700}
 .r2{background:linear-gradient(135deg,#e2e8f0,#94a3b8);color:#1a1206;font-weight:700}
 .r3{background:linear-gradient(135deg,#f59e0b99,#b4530999);color:#fff;font-weight:700}
 .trend{font-size:11px}.trend.up{color:var(--ok)}.trend.dn{color:var(--bad)}
-.mock{position:fixed;right:16px;bottom:14px;font-size:11px;color:var(--warn);background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.3);border-radius:99px;padding:3px 12px}
+.theme-btn{position:fixed;right:16px;top:12px;z-index:9999;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--p1);color:var(--txt);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .2s,border-color .2s}
+.theme-btn:hover{transform:scale(1.1);border-color:var(--acc)}
+.mock{position:fixed;right:16px;bottom:14px;font-size:11px;color:var(--warn);background:var(--warn-soft);border:1px solid var(--warn-line);border-radius:99px;padding:3px 12px}
 .back{position:fixed;left:16px;bottom:14px;font-size:12px}.back a{color:var(--acc);text-decoration:none}
 @media(max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
+<button class="theme-btn" id="themeBtn" title="切换亮 / 暗主题"></button>
 <div class="top">
   <h1>增长分析台 <span>GROWTH ANALYTICS · 近 30 天</span></h1>
   <div class="pill">数据更新：<b>实时模拟</b> · 每 4 秒刷新</div>
@@ -53,6 +58,7 @@ td{padding:8px;border-bottom:1px solid rgba(28,39,64,.5);font-variant-numeric:ta
 <div class="mock">MOCK DATA · 演示数据</div>
 
 <script>
+const V=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const rnd=(a,b)=>a+Math.random()*(b-a);
 const fmt=n=>n>=10000?(n/10000).toFixed(1)+'w':n.toLocaleString();
 
@@ -68,19 +74,20 @@ renderKpis();
 // 漏斗
 const funnel=echarts.init(document.getElementById('c-funnel'));
 let fdata=[{value:86320,name:'访客 UV'},{value:42150,name:'浏览商品'},{value:15800,name:'加入购物车'},{value:9420,name:'提交订单'},{value:7420,name:'支付成功'}];
-function renderFunnel(){funnel.setOption({tooltip:{trigger:'item',formatter:'{b}: {c}'},series:[{type:'funnel',left:'8%',right:'8%',top:8,bottom:8,sort:'descending',gap:3,label:{color:'#dfe7ff',fontSize:11,formatter:'{b}  {c}'},itemStyle:{borderWidth:0},data:fdata.map((d,i)=>({...d,itemStyle:{color:['#4f8cff','#38bdf8','#22d3ee','#34d399','#a3e635'][i]}}))}]})}
+function renderFunnel(){funnel.setOption({tooltip:{trigger:'item',formatter:'{b}: {c}'},series:[{type:'funnel',left:'8%',right:'8%',top:8,bottom:8,sort:'descending',gap:3,label:{color:V('--txt'),fontSize:11,formatter:'{b}  {c}'},itemStyle:{borderWidth:0},data:fdata.map((d,i)=>({...d,itemStyle:{color:[V('--acc'),V('--sky'),V('--cyan'),V('--ok'),V('--lime')][i]}}))}]})}
 renderFunnel();
 
 // 渠道
 const channel=echarts.init(document.getElementById('c-channel'));
 const chans=[{name:'抖音直播',value:38},{name:'小红书种草',value:22},{name:'视频号',value:16},{name:'自然搜索',value:12},{name:'老客复购',value:8},{name:'其他',value:4}];
-channel.setOption({tooltip:{trigger:'item'},legend:{bottom:0,textStyle:{color:'#8494b8',fontSize:10},itemWidth:10,itemHeight:10},series:[{type:'pie',radius:['42%','68%'],center:['50%','42%'],itemStyle:{borderColor:'#0a0f1c',borderWidth:2},label:{show:false},data:chans.map((c,i)=>({...c,itemStyle:{color:['#4f8cff','#f472b6','#22d3ee','#34d399','#fbbf24','#a78bfa'][i]}}))}]});
+function renderChannel(){channel.setOption({tooltip:{trigger:'item'},legend:{bottom:0,textStyle:{color:V('--sub'),fontSize:10},itemWidth:10,itemHeight:10},series:[{type:'pie',radius:['42%','68%'],center:['50%','42%'],itemStyle:{borderColor:V('--p2'),borderWidth:2},label:{show:false},data:chans.map((c,i)=>({...c,itemStyle:{color:[V('--acc'),V('--pink'),V('--cyan'),V('--ok'),V('--warn'),V('--purple')][i]}}))}]})}
+renderChannel();
 
 // 趋势
 const trend=echarts.init(document.getElementById('c-trend'));
 const days=Array.from({length:30},(_,i)=>{const d=new Date(Date.now()-(29-i)*864e5);return (d.getMonth()+1)+'/'+d.getDate()});
 let vDau=days.map(()=>Math.round(rnd(60000,95000))),vNew=days.map(()=>Math.round(rnd(4000,12000))),vRet=days.map(()=>+rnd(28,46).toFixed(1));
-function renderTrend(){trend.setOption({tooltip:{trigger:'axis'},legend:{textStyle:{color:'#8494b8',fontSize:11},top:0},grid:{left:52,right:44,top:34,bottom:26},xAxis:{type:'category',data:days,axisLabel:{color:'#8494b8',fontSize:10}},yAxis:[{type:'value',splitLine:{lineStyle:{color:'#141d33'}},axisLabel:{color:'#8494b8',fontSize:10}},{type:'value',max:60,axisLabel:{color:'#8494b8',fontSize:10,formatter:'{value}%'},splitLine:{show:false}}],series:[{name:'DAU',type:'line',data:vDau,smooth:true,showSymbol:false,lineStyle:{width:2,color:'#4f8cff'},areaStyle:{color:'#4f8cff22'}},{name:'新增',type:'line',data:vNew,smooth:true,showSymbol:false,lineStyle:{width:2,color:'#22d3ee'}},{name:'次留 %',type:'line',yAxisIndex:1,data:vRet,smooth:true,showSymbol:false,lineStyle:{width:2,color:'#34d399',type:'dashed'}}]})}
+function renderTrend(){trend.setOption({tooltip:{trigger:'axis'},legend:{textStyle:{color:V('--sub'),fontSize:11},top:0},grid:{left:52,right:44,top:34,bottom:26},xAxis:{type:'category',data:days,axisLabel:{color:V('--sub'),fontSize:10}},yAxis:[{type:'value',splitLine:{lineStyle:{color:V('--split')}},axisLabel:{color:V('--sub'),fontSize:10}},{type:'value',max:60,axisLabel:{color:V('--sub'),fontSize:10,formatter:'{value}%'},splitLine:{show:false}}],series:[{name:'DAU',type:'line',data:vDau,smooth:true,showSymbol:false,lineStyle:{width:2,color:V('--acc')},areaStyle:{color:V('--acc')+'22'}},{name:'新增',type:'line',data:vNew,smooth:true,showSymbol:false,lineStyle:{width:2,color:V('--cyan')}},{name:'次留 %',type:'line',yAxisIndex:1,data:vRet,smooth:true,showSymbol:false,lineStyle:{width:2,color:V('--ok'),type:'dashed'}}]})}
 renderTrend();
 
 // 爆品榜
@@ -95,7 +102,20 @@ renderGoods();
 
 // 热力
 const heat=echarts.init(document.getElementById('c-heat'));
-heat.setOption({tooltip:{position:'top'},grid:{left:50,right:10,top:10,bottom:44},xAxis:{type:'category',data:Array.from({length:24},(_,i)=>i+'时'),axisLabel:{color:'#8494b8',fontSize:9,interval:1},splitArea:{show:false}},yAxis:{type:'category',data:['周一','周二','周三','周四','周五','周六','周日'],axisLabel:{color:'#8494b8',fontSize:10}},visualMap:{min:0,max:100,orient:'horizontal',left:'center',bottom:2,inRange:{color:['#0e1424','#1d3a8f','#4f8cff','#22d3ee','#a3e635']},textStyle:{color:'#8494b8',fontSize:10}},series:[{type:'heatmap',data:Array.from({length:168},(_,i)=>{const h=i%24,d=Math.floor(i/24);const peak=(h>=19&&h<=23)||(d>=5&&h>=10&&h<=15);return [h,d,Math.round(peak?rnd(55,100):rnd(5,50))]}),itemStyle:{borderColor:'#0a0f1c',borderWidth:1}}]});
+function renderHeat(){
+  const inRange=document.documentElement.dataset.theme==='light'
+    ?['#f1f5f9','#93c5fd','#3b82f6','#06b6d4','#84cc16']
+    :['#0e1424','#1d3a8f','#4f8cff','#22d3ee','#a3e635'];
+  heat.setOption({tooltip:{position:'top'},grid:{left:50,right:10,top:10,bottom:44},xAxis:{type:'category',data:Array.from({length:24},(_,i)=>i+'时'),axisLabel:{color:V('--sub'),fontSize:9,interval:1},splitArea:{show:false}},yAxis:{type:'category',data:['周一','周二','周三','周四','周五','周六','周日'],axisLabel:{color:V('--sub'),fontSize:10}},visualMap:{min:0,max:100,orient:'horizontal',left:'center',bottom:2,inRange:{color:inRange},textStyle:{color:V('--sub'),fontSize:10}},series:[{type:'heatmap',data:Array.from({length:168},(_,i)=>{const h=i%24,d=Math.floor(i/24);const peak=(h>=19&&h<=23)||(d>=5&&h>=10&&h<=15);return [h,d,Math.round(peak?rnd(55,100):rnd(5,50))]}),itemStyle:{borderColor:V('--p2'),borderWidth:1}}]});
+}
+renderHeat();
+
+// 主题切换：图表按当前 CSS 变量重建
+function retheme(){renderFunnel();renderChannel();renderTrend();renderHeat();}
+const themeBtn=document.getElementById('themeBtn');
+function applyTheme(t){document.documentElement.dataset.theme=t;try{localStorage.setItem('zwb-theme',t)}catch(e){}themeBtn.textContent=t==='light'?'🌙':'☀️';retheme();}
+themeBtn.addEventListener('click',()=>applyTheme(document.documentElement.dataset.theme==='light'?'dark':'light'));
+themeBtn.textContent=document.documentElement.dataset.theme==='light'?'🌙':'☀️';
 
 // 模拟实时
 setInterval(()=>{

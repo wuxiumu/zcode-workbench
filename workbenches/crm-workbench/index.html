@@ -5,11 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>客户成功台 · CRM Workbench | ZCode Labs</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<script>try{document.documentElement.dataset.theme=localStorage.getItem('zwb-theme')||'dark'}catch(e){}</script>
 <style>
-:root{--bg:#070b14;--p1:#0d1322;--p2:#0a0f1c;--line:#1c2740;--txt:#dfe7ff;--sub:#8494b8;--acc:#4f8cff;--ok:#34d399;--warn:#fbbf24;--bad:#f87171}
+:root{--bg:#070b14;--p1:#0d1322;--p2:#0a0f1c;--line:#1c2740;--txt:#dfe7ff;--sub:#8494b8;--acc:#4f8cff;--ok:#34d399;--warn:#fbbf24;--bad:#f87171;--sky:#38bdf8;--cyan:#22d3ee;--lime:#a3e635;--purple:#a78bfa;--glow:#0c2331;--track:#182242;--split:#141d33;--acc-deep:#1d3a8f;--ok-soft:rgba(52,211,153,.1);--warn-soft:rgba(251,191,36,.1);--warn-line:rgba(251,191,36,.3);--bad-soft:rgba(248,113,113,.1)}
+[data-theme="light"]{--bg:#f5f7fa;--p1:#ffffff;--p2:#f7f9fc;--line:#e3e8ef;--txt:#1f2733;--sub:#5a6675;--acc:#2f6cff;--ok:#0e9f6e;--warn:#d97706;--bad:#dc2626;--sky:#0284c7;--cyan:#0891b2;--lime:#65a30d;--purple:#7c3aed;--glow:#ddeef5;--track:#e8edf5;--split:#e3e8ef;--acc-deep:#9db9f7;--ok-soft:rgba(14,159,110,.1);--warn-soft:rgba(217,119,6,.1);--warn-line:rgba(217,119,6,.35);--bad-soft:rgba(220,38,38,.08)}
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:radial-gradient(900px 500px at 85% -10%,#0c2331 0%,var(--bg) 60%);color:var(--txt);font-family:"PingFang SC","Microsoft YaHei",sans-serif;padding:22px;min-height:100vh}
-.top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:18px}
+body{background:radial-gradient(900px 500px at 85% -10%,var(--glow) 0%,var(--bg) 60%);color:var(--txt);font-family:"PingFang SC","Microsoft YaHei",sans-serif;padding:22px;min-height:100vh}
+.top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:18px;padding-right:56px}
 .top h1{font-size:20px}.top h1 span{color:var(--sub);font-size:13px;font-weight:400}
 .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px}
 .kpi{background:linear-gradient(160deg,var(--p1),var(--p2));border:1px solid var(--line);border-radius:12px;padding:14px 16px}
@@ -21,19 +23,22 @@ body{background:radial-gradient(900px 500px at 85% -10%,#0c2331 0%,var(--bg) 60%
 .chart{height:210px}.wide{grid-column:1/-1}
 table{width:100%;border-collapse:collapse;font-size:12px}
 th{color:var(--sub);font-weight:500;text-align:left;padding:8px;border-bottom:1px solid var(--line)}
-td{padding:8px;border-bottom:1px solid rgba(28,39,64,.5);font-variant-numeric:tabular-nums}
+td{padding:8px;border-bottom:1px solid var(--split);font-variant-numeric:tabular-nums}
 .badge{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:99px;font-size:11px}
 .badge i{width:5px;height:5px;border-radius:50%}
-.h-good{color:var(--ok);background:rgba(52,211,153,.1)}.h-good i{background:var(--ok)}
-.h-mid{color:var(--warn);background:rgba(251,191,36,.1)}.h-mid i{background:var(--warn)}
-.h-bad{color:var(--bad);background:rgba(248,113,113,.1)}.h-bad i{background:var(--bad)}
+.h-good{color:var(--ok);background:var(--ok-soft)}.h-good i{background:var(--ok)}
+.h-mid{color:var(--warn);background:var(--warn-soft)}.h-mid i{background:var(--warn)}
+.h-bad{color:var(--bad);background:var(--bad-soft)}.h-bad i{background:var(--bad)}
 .risk{max-height:210px;overflow-y:auto}
-.mock{position:fixed;right:16px;bottom:14px;font-size:11px;color:var(--warn);background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.3);border-radius:99px;padding:3px 12px}
+.theme-btn{position:fixed;right:16px;top:12px;z-index:9999;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--p1);color:var(--txt);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .2s,border-color .2s}
+.theme-btn:hover{transform:scale(1.1);border-color:var(--acc)}
+.mock{position:fixed;right:16px;bottom:14px;font-size:11px;color:var(--warn);background:var(--warn-soft);border:1px solid var(--warn-line);border-radius:99px;padding:3px 12px}
 .back{position:fixed;left:16px;bottom:14px;font-size:12px}.back a{color:var(--acc);text-decoration:none}
 @media(max-width:1000px){.kpis{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
+<button class="theme-btn" id="themeBtn" title="切换亮 / 暗主题"></button>
 <div class="top">
   <h1>客户成功台 <span>CRM WORKBENCH · SaaS · 企业版客户视图</span></h1>
 </div>
@@ -53,30 +58,36 @@ td{padding:8px;border-bottom:1px solid rgba(28,39,64,.5);font-variant-numeric:ta
 <div class="mock">MOCK DATA · 演示数据</div>
 
 <script>
+const V=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const rnd=(a,b)=>a+Math.random()*(b-a);
 const M=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
 // MRR
 const mrr=echarts.init(document.getElementById('c-mrr'));
 let mrrV=M.map((_,i)=>Math.round(380000*Math.pow(1.085,i)+rnd(-8000,8000)));
-function renderMrr(){mrr.setOption({tooltip:{trigger:'axis'},grid:{left:60,right:16,top:20,bottom:26},xAxis:{type:'category',data:M,axisLabel:{color:'#8494b8',fontSize:10}},yAxis:{type:'value',splitLine:{lineStyle:{color:'#141d33'}},axisLabel:{color:'#8494b8',fontSize:10,formatter:v=>(v/10000)+'w'}},series:[{type:'bar',data:mrrV,barWidth:14,itemStyle:{borderRadius:[4,4,0,0],color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'#4f8cff'},{offset:1,color:'#1d3a8f'}]}}},{type:'line',data:mrrV,smooth:true,symbol:'circle',symbolSize:5,lineStyle:{width:2,color:'#22d3ee'}}]})}
+function renderMrr(){mrr.setOption({tooltip:{trigger:'axis'},grid:{left:60,right:16,top:20,bottom:26},xAxis:{type:'category',data:M,axisLabel:{color:V('--sub'),fontSize:10}},yAxis:{type:'value',splitLine:{lineStyle:{color:V('--split')}},axisLabel:{color:V('--sub'),fontSize:10,formatter:v=>(v/10000)+'w'}},series:[{type:'bar',data:mrrV,barWidth:14,itemStyle:{borderRadius:[4,4,0,0],color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:V('--acc')},{offset:1,color:V('--acc-deep')}]}},},{type:'line',data:mrrV,smooth:true,symbol:'circle',symbolSize:5,lineStyle:{width:2,color:V('--cyan')}}]})}
 renderMrr();
 // 管道漏斗
 const pipe=echarts.init(document.getElementById('c-pipe'));
-pipe.setOption({tooltip:{trigger:'item'},series:[{type:'funnel',left:'6%',right:'6%',top:6,bottom:6,sort:'descending',gap:3,label:{color:'#dfe7ff',fontSize:11,formatter:'{b}  {c}'},data:[{value:286,name:'线索 Leads',itemStyle:{color:'#4f8cff'}},{value:172,name:'初步沟通',itemStyle:{color:'#38bdf8'}},{value:98,name:'方案演示',itemStyle:{color:'#22d3ee'}},{value:52,name:'商务谈判',itemStyle:{color:'#34d399'}},{value:31,name:'赢单 Won',itemStyle:{color:'#a3e635'}}]}]});
+function renderPipe(){pipe.setOption({tooltip:{trigger:'item'},series:[{type:'funnel',left:'6%',right:'6%',top:6,bottom:6,sort:'descending',gap:3,label:{color:V('--txt'),fontSize:11,formatter:'{b}  {c}'},data:[{value:286,name:'线索 Leads',itemStyle:{color:V('--acc')}},{value:172,name:'初步沟通',itemStyle:{color:V('--sky')}},{value:98,name:'方案演示',itemStyle:{color:V('--cyan')}},{value:52,name:'商务谈判',itemStyle:{color:V('--ok')}},{value:31,name:'赢单 Won',itemStyle:{color:V('--lime')}}]}]})}
+renderPipe();
 // 健康度
 const health=echarts.init(document.getElementById('c-health'));
-health.setOption({tooltip:{trigger:'item'},legend:{bottom:0,textStyle:{color:'#8494b8',fontSize:10},itemWidth:10,itemHeight:10},series:[{type:'pie',radius:['45%','70%'],center:['50%','42%'],label:{show:false},itemStyle:{borderColor:'#0a0f1c',borderWidth:2},data:[{value:58,name:'健康',itemStyle:{color:'#34d399'}},{value:27,name:'关注',itemStyle:{color:'#fbbf24'}},{value:15,name:'危险',itemStyle:{color:'#f87171'}}]}]});
+function renderHealth(){health.setOption({tooltip:{trigger:'item'},legend:{bottom:0,textStyle:{color:V('--sub'),fontSize:10},itemWidth:10,itemHeight:10},series:[{type:'pie',radius:['45%','70%'],center:['50%','42%'],label:{show:false},itemStyle:{borderColor:V('--p2'),borderWidth:2},data:[{value:58,name:'健康',itemStyle:{color:V('--ok')}},{value:27,name:'关注',itemStyle:{color:V('--warn')}},{value:15,name:'危险',itemStyle:{color:V('--bad')}}]}]})}
+renderHealth();
 // 行业
 const ind=echarts.init(document.getElementById('c-ind'));
-ind.setOption({tooltip:{trigger:'item'},legend:{bottom:0,textStyle:{color:'#8494b8',fontSize:10},itemWidth:10,itemHeight:10},series:[{type:'pie',radius:['0%','68%'],roseType:'radius',center:['50%','42%'],label:{color:'#8494b8',fontSize:10},data:[{value:32,name:'零售电商',itemStyle:{color:'#4f8cff'}},{value:24,name:'制造',itemStyle:{color:'#22d3ee'}},{value:18,name:'教育',itemStyle:{color:'#a78bfa'}},{value:14,name:'金融',itemStyle:{color:'#34d399'}},{value:12,name:'其他',itemStyle:{color:'#fbbf24'}}]}]});
+function renderInd(){ind.setOption({tooltip:{trigger:'item'},legend:{bottom:0,textStyle:{color:V('--sub'),fontSize:10},itemWidth:10,itemHeight:10},series:[{type:'pie',radius:['0%','68%'],roseType:'radius',center:['50%','42%'],label:{color:V('--sub'),fontSize:10},data:[{value:32,name:'零售电商',itemStyle:{color:V('--acc')}},{value:24,name:'制造',itemStyle:{color:V('--cyan')}},{value:18,name:'教育',itemStyle:{color:V('--purple')}},{value:14,name:'金融',itemStyle:{color:V('--ok')}},{value:12,name:'其他',itemStyle:{color:V('--warn')}}]}]})}
+renderInd();
 // NPS
 const nps=echarts.init(document.getElementById('c-nps'));
 let npsV=M.map(()=>Math.round(rnd(30,62))),tkV=M.map(()=>Math.round(rnd(80,320)));
-nps.setOption({tooltip:{trigger:'axis'},legend:{textStyle:{color:'#8494b8',fontSize:10},top:0},grid:{left:40,right:40,top:30,bottom:26},xAxis:{type:'category',data:M,axisLabel:{color:'#8494b8',fontSize:10}},yAxis:[{type:'value',axisLabel:{color:'#8494b8',fontSize:10}},{type:'value',splitLine:{show:false},axisLabel:{color:'#8494b8',fontSize:10}}],series:[{name:'NPS',type:'line',data:npsV,smooth:true,lineStyle:{width:2,color:'#34d399'},areaStyle:{color:'#34d39922'}},{name:'工单量',type:'bar',yAxisIndex:1,data:tkV,barWidth:10,itemStyle:{color:'#4f8cff66',borderRadius:[3,3,0,0]}}]});
+function renderNps(){nps.setOption({tooltip:{trigger:'axis'},legend:{textStyle:{color:V('--sub'),fontSize:10},top:0},grid:{left:40,right:40,top:30,bottom:26},xAxis:{type:'category',data:M,axisLabel:{color:V('--sub'),fontSize:10}},yAxis:[{type:'value',splitLine:{lineStyle:{color:V('--split')}},axisLabel:{color:V('--sub'),fontSize:10}},{type:'value',splitLine:{show:false},axisLabel:{color:V('--sub'),fontSize:10}}],series:[{name:'NPS',type:'line',data:npsV,smooth:true,lineStyle:{width:2,color:V('--ok')},areaStyle:{color:V('--ok')+'22'}},{name:'工单量',type:'bar',yAxisIndex:1,data:tkV,barWidth:10,itemStyle:{color:V('--acc')+'66',borderRadius:[3,3,0,0]}}]})}
+renderNps();
 // 续约
 const renew=echarts.init(document.getElementById('c-renew'));
 const days=Array.from({length:30},(_,i)=>i+1);
-renew.setOption({tooltip:{trigger:'axis'},grid:{left:36,right:12,top:16,bottom:24},xAxis:{type:'category',data:days.map(d=>d+'日'),axisLabel:{color:'#8494b8',fontSize:9,interval:2}},yAxis:{type:'value',splitLine:{lineStyle:{color:'#141d33'}},axisLabel:{color:'#8494b8',fontSize:10}},series:[{type:'bar',data:days.map(d=>{const w=(d%7);return (w===2||w===4)?Math.round(rnd(4,14)):Math.round(rnd(0,4))}),barWidth:8,itemStyle:{borderRadius:[3,3,0,0],color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'#fbbf24'},{offset:1,color:'#b4530966'}]}}}]});
+function renderRenew(){renew.setOption({tooltip:{trigger:'axis'},grid:{left:36,right:12,top:16,bottom:24},xAxis:{type:'category',data:days.map(d=>d+'日'),axisLabel:{color:V('--sub'),fontSize:9,interval:2}},yAxis:{type:'value',splitLine:{lineStyle:{color:V('--split')}},axisLabel:{color:V('--sub'),fontSize:10}},series:[{type:'bar',data:days.map(d=>{const w=(d%7);return (w===2||w===4)?Math.round(rnd(4,14)):Math.round(rnd(0,4))}),barWidth:8,itemStyle:{borderRadius:[3,3,0,0],color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:V('--warn')},{offset:1,color:V('--warn')+'33'}]}}}]})}
+renderRenew();
 // 流失预警
 const riskData=[
   ['星洲连锁','零售电商',86,'14 天后到期','危险'],
@@ -101,6 +112,12 @@ function renderKpis(){
   ].map(x=>`<div class="kpi"><div class="l">${x[0]}</div><div class="v">${x[1]}<small>${x[2]}</small></div><div class="d ${x[3]}">${x[4]}</div></div>`).join('');
 }
 renderKpis();
+// 主题切换：图表按当前 CSS 变量重建
+function retheme(){renderMrr();renderPipe();renderHealth();renderInd();renderNps();renderRenew();}
+const themeBtn=document.getElementById('themeBtn');
+function applyTheme(t){document.documentElement.dataset.theme=t;try{localStorage.setItem('zwb-theme',t)}catch(e){}themeBtn.textContent=t==='light'?'🌙':'☀️';retheme();}
+themeBtn.addEventListener('click',()=>applyTheme(document.documentElement.dataset.theme==='light'?'dark':'light'));
+themeBtn.textContent=document.documentElement.dataset.theme==='light'?'🌙':'☀️';
 window.addEventListener('resize',()=>[mrr,pipe,health,ind,nps,renew].forEach(c=>c.resize()));
 </script>
 </body>
