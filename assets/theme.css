@@ -54,14 +54,19 @@
 
 /* ===== 移动端基线（≤768px）=====
    各工作台已有 900/1000px 断点（KPI 双列、网格单列）；
-   这里补共享布局类的窄屏问题：.top/.kpis/.grid/.panel 全站同名 */
+   这里补共享布局类的窄屏问题：.top/.kpis/.grid/.panel 全站同名。
+   注意：页面级 <style> 在 theme.css 之后加载，同优先级会覆盖这里——
+   因此关键布局项用 !important 钉住（仅窄屏生效，不伤桌面端）。 */
 @media (max-width:768px){
   /* 头部：标题与右侧状态控件允许换行，不再互相挤压 */
-  .top{flex-wrap:wrap;row-gap:8px}
-  .top h1{font-size:17px;line-height:1.45}
+  .top{flex-wrap:wrap!important;row-gap:8px}
+  /* display:flex 会把 h1 文字节点挤成 1 字宽竖排——窄屏改回常规流式排版 */
+  .top h1{display:block!important;font-size:17px;line-height:1.45}
   /* 一句话价值副标题独占一行，长句不挤压主标题 */
-  .top h1 span{display:block;margin-top:4px;font-size:12px}
+  .top h1 span{display:block!important;margin-top:4px;font-size:12px}
   /* 防长内容把网格列撑破（min-width:0 允许收缩，标准修法） */
   .grid>*{min-width:0}
   .panel{min-width:0;overflow:hidden}
+  /* 底部固定元素（返回链接 / MOCK 徽标 / AI fab）不再压住内容 */
+  body{padding-bottom:64px!important}
 }
