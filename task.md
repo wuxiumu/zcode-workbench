@@ -33,12 +33,14 @@
 - [x] AI 解读零改动即可联动（它读的 svcs 已被剧本驱动）（✅ 幕3 AI 助手自动弹出「pay-svc 错误率 0.6% 超过 0.4% 阈值」告警 toast，四层联动达成）
 - [x] 顺带修复真实度：其余 9 服务初始错误率 0.01–0.6% → 0.01–0.12%（原开机近半服务"异常"，与"幕1 平稳"自相矛盾且稀释剧情）；QPS 基线 ≥80 保幕1 全绿
 
-## T2 · 友好提示：`assets/term-tips.js` 全站术语大白话 ⏳
+## T2 · 友好提示：`assets/term-tips.js` 全站术语大白话 ✅
 
-- [ ] 术语表集中管理（P99/QPS/IOPS/MRR/ROAS/SLA/NPS/DAU/GMV/Uplift/MTTR/CAC/LTV/CTR/PV…），每条 = 老板语言的一句话（"这是…对你意味着…"）
-- [ ] 扫描 `.kpi .l` / `.panel h3` / `th` 纯文本标签，命中术语加虚线下划线，hover/focus 弹 tooltip（键盘可达：tabindex+aria-label）
-- [ ] fail-silent：无匹配 / DOM 不符时静默退出；tooltip 亮暗主题用 theme.css 变量
-- [ ] 16 页接入（15 工作台 + 门户；boss-one-pager 本就零术语、self-check 是工具页，均跳过）
+- [x] 术语表集中管理，词条以真实页面 grep 取证（ROAS×16/P99×12/Uplift×9/CPC/CTR/CPM/SLA/NPS/GMV/MRR/DAU/QPS/IOPS/SKU/SEV/PV/UV/CSAT/ARPU/Churn/ROI/CPA/MoM 共 24 条），每条 = 老板语言的一句话（✅ 一处补全站生效）
+- [x] 扫描 `.kpi .l` / `.panel h3` / `.stat .l` / `th` 纯文本标签（children.length=0 防破坏结构），命中加虚线下划线，hover/focus 弹 tooltip（键盘可达：tabindex=0 + aria-label）（✅ dump-dom 验证 ops-center 动态重绘表格也能补挂）
+- [x] 动态重绘适配：MutationObserver 防抖 200ms 自动补挂（每 2.6s 重绘 KPI/表格的页面不遗漏）
+- [x] 视口自适应：贴顶（top<170px）自动下翻 + 左右边缘 --zx 夹紧，箭头随动（✅ 两轮视觉验收：首版上弹被视口裁掉、左缘裁切均已修复）
+- [x] fail-silent：无匹配 / DOM 异常一律静默退出；亮暗主题走 theme.css 变量 + 兜底色
+- [x] 16 页接入（15 工作台 + 门户，逐页断言；boss-one-pager 本就零术语、self-check 是工具页，均跳过）
 
 ## T3 · 友好提示：门户首访引导条 ⏳
 
