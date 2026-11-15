@@ -53,6 +53,28 @@
 ### 验证
 - `tools/a11y_audit.py` 17 页 0 问题；15 台全量截图全绿；390 / 1280 / 1920 三档目检
 
+## [0.8.0] · 2026-11-16 · 去 Mock 化 + 虚拟员工团队 + 小助手重设计
+
+按 `task-p.md` P0~P7 执行：
+
+### 修复 · tech-fx 层级方案重做（P1）
+- v1 的 `body>*` 提层规则特异性 1,0,3 压过组件 `position:fixed`（0,1,0），把 AI 小助手 / 主题按钮 / 徽标拉进文档流——"小助手样式乱"的根因
+- v2 改 `body{isolation:isolate}` + canvas `z-index:-1`：画在 body 背景之上、内容之下，业务元素零侵入，主题切换的 CSS 变量背景依然生效
+
+### 去 Mock 化 · 清引用（P2）
+- 15 页删除「MOCK DATA · 演示数据」徽标（grep 断言 0 命中）
+- zcode-tast-cms 全部引用清除：门户页脚与卡片描述、content-ops 页头与页内链接、README 工作台清单与姊妹项目行
+
+### 新增 · 虚拟员工团队（P3/P4）
+- `assets/va-team.js`：15 位与 15 张作战地图一一对应的虚拟员工——参数化 SVG 卡通头像（发型/配饰/工装全参数化，耳麦、单边镜、护目镜、安全帽、天线各具标志物）+ 一句话人设 + 技能标签 + **专家级提示词**（含职责边界/方法论/输出格式，复制即可投喂任意大模型）
+- `employees.html` 团队主页：头像 + 描述 + 提示词一键复制（Clipboard API + execCommand 兜底），部门筛选（技术/增长/客户/运营/职能），亮暗主题，OG meta 齐全
+- 门户 Hero 加「👥 虚拟员工团队」入口；README 技术形态补说明
+
+### 重设计 · AI 解读助手（P5）
+- fab 从通用 🤖 换成**本页对应虚拟员工的迷你卡通头像**（按路径自动映射，业务页面零配置）
+- 面板头部显示员工身份（阿稳 · SRE 值班工程师 / 虚拟员工 · OPS CENTER · 在线），开屏问候改用人设文案
+- 底部新增「👥 认识全团队」入口；insights/advice/alerts 逻辑零改动（只换壳不换脑）
+
 ## [0.5.0] · 2026-11-12 · 展示物料与工程加固（持续优化轮）
 
 自动化定时任务按 `OPTIMIZATION_ROADMAP.md` 队列逐条执行，本轮完成 14 条：
@@ -125,7 +147,8 @@
 
 ---
 
-[0.7.0]: https://github.com/wuxiumu/zcode-workbench/compare/aacd6fb...HEAD
+[0.8.0]: https://github.com/wuxiumu/zcode-workbench/compare/a9c5408...HEAD
+[0.7.0]: https://github.com/wuxiumu/zcode-workbench/compare/aacd6fb...a9c5408
 [0.6.0]: https://github.com/wuxiumu/zcode-workbench/compare/2376227...aacd6fb
 [0.5.0]: https://github.com/wuxiumu/zcode-workbench/compare/99f9201...2376227
 [0.4.0]: https://github.com/wuxiumu/zcode-workbench/compare/2fa4ddf...99f9201
