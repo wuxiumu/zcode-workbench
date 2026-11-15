@@ -31,6 +31,14 @@
   window.__ZAI_LOADED__ = true;
 
   var cfg = function () { return window.AI_ASSISTANT || {}; };
+
+  /* 虚拟员工身份：按页面路径自动对号（va-team.js 提供数据；未加载则回退小智 🤖） */
+  var EMP = (function () {
+    try {
+      var m = location.pathname.match(/workbenches\/([a-z0-9-]+)/);
+      return (window.vaEmployee && window.vaEmployee(m ? m[1] : '')) || null;
+    } catch (e) { return null; }
+  })();
   var FALLBACK = { p1: '#0d1322', p2: '#0a0f1c', line: '#1c2740', txt: '#dfe7ff', sub: '#8494b8', acc: '#4f8cff', ok: '#34d399', warn: '#fbbf24', bad: '#f87171', cyan: '#22d3ee' };
   var v = function (n, f) {
     try { var x = getComputedStyle(document.documentElement).getPropertyValue(n).trim(); return x || FALLBACK[f]; } catch (e) { return FALLBACK[f]; }
@@ -67,7 +75,9 @@
     '.zai-chips{display:flex;gap:6px;flex-wrap:wrap;padding:8px 12px 2px}' +
     '.zai-chip{font-size:11px;color:var(--sub,' + FALLBACK.sub + ');background:var(--p2,' + FALLBACK.p2 + ');border:1px solid var(--line,' + FALLBACK.line + ');border-radius:99px;padding:4px 11px;cursor:pointer;transition:color .2s,border-color .2s;font-family:inherit}' +
     '.zai-chip:hover{color:var(--acc,' + FALLBACK.acc + ');border-color:var(--acc,' + FALLBACK.acc + ')}' +
-    '.zai-foot{padding:10px 12px 12px}' +
+    '.zai-foot{padding:10px 12px 12px;display:flex;gap:8px;align-items:stretch}' +
+    '.zai-team{display:flex;align-items:center;padding:0 13px;font-size:12px;color:var(--sub,' + FALLBACK.sub + ');text-decoration:none;border:1px solid var(--line,' + FALLBACK.line + ');border-radius:10px;white-space:nowrap;transition:color .2s,border-color .2s}' +
+    '.zai-team:hover{color:var(--acc,' + FALLBACK.acc + ');border-color:var(--acc,' + FALLBACK.acc + ')}' +
     '.zai-btn{width:100%;border:none;cursor:pointer;font-size:13px;font-weight:600;color:#fff;background:linear-gradient(92deg,var(--acc,' + FALLBACK.acc + '),var(--cyan,' + FALLBACK.cyan + '));border-radius:10px;padding:9px;font-family:inherit;transition:opacity .2s}' +
     '.zai-btn:disabled{opacity:.55;cursor:wait}' +
     '.zai-typing{display:inline-flex;gap:4px;padding:4px 2px}' +
@@ -109,16 +119,18 @@
 
   /* ---------------- 机器人面板 ---------------- */
   var fab = document.createElement('button');
-  fab.className = 'zai-fab'; fab.title = 'AI 解读助手'; fab.textContent = '🤖';
+  fab.className = 'zai-fab';
+  fab.title = EMP ? (EMP.name + ' · ' + EMP.role + ' · AI 解读助手') : 'AI 解读助手';
+  fab.innerHTML = (EMP && window.vaAvatar) ? window.vaAvatar(EMP.id, 40) : '🤖';
   document.body.appendChild(fab);
 
   var panel = document.createElement('div');
   panel.className = 'zai-panel';
   panel.innerHTML =
-    '<div class="zai-head"><span class="zai-ava">🤖</span><div class="t"><b id="zaiTitle">AI 解读助手</b><span id="zaiSub">等待工作台接入…</span></div><span class="zai-dot" title="在线"></span><button class="zai-x" title="收起">✕</button></div>' +
+    '<div class="zai-head"><span class="zai-ava">' + ((EMP && window.vaAvatar) ? window.vaAvatar(EMP.id, 40) : '🤖') + '</span><div class="t"><b id="zaiTitle">AI 解读助手</b><span id="zaiSub">等待工作台接入…</span></div><span class="zai-dot" title="在线"></span><button class="zai-x" title="收起">✕</button></div>' +
     '<div class="zai-msgs" id="zaiMsgs"></div>' +
     '<div class="zai-chips" id="zaiChips"></div>' +
-    '<div class="zai-foot"><button class="zai-btn" id="zaiBtn">🔄 生成实时解读</button></div>';
+    '<div class="zai-foot"><a class="zai-team" href="employees.html">👥 认识全团队</a><button class="zai-btn" id="zaiBtn">🔄 生成实时解读</button></div>';
   document.body.appendChild(panel);
 
   var msgs = panel.querySelector('#zaiMsgs');
@@ -200,9 +212,15 @@
     if (firstOpen) {
       firstOpen = false;
       var c = cfg();
-      panel.querySelector('#zaiTitle').textContent = (c.title || 'AI 解读助手');
-      panel.querySelector('#zaiSub').textContent = '小智 · ' + (c.subtitle || 'DATA COPILOT') + ' · 在线';
-      botSay('ok', '就绪', '你好，我是小智 🤖 已接入「' + (c.title || '本工作台') + '」的实时数据，点击下方按钮或提问标签获取解读。');
+      if (EMP) {
+        panel.querySelector('#zaiTitle').textContent = EMP.name + ' · ' + EMP.role;
+        panel.querySelector('#zaiSub').textContent = '虚拟员工 · ' + (c.subtitle || EMP.en) + ' · 在线';
+        botSay('ok', '就绪', '你好，我是 ' + EMP.name + '。' + EMP.desc + '（想认识全团队 → 左下角入口）');
+      } else {
+        panel.querySelector('#zaiTitle').textContent = (c.title || 'AI 解读助手');
+        panel.querySelector('#zaiSub').textContent = '小智 · ' + (c.subtitle || 'DATA COPILOT') + ' · 在线';
+        botSay('ok', '就绪', '你好，我是小智 🤖 已接入「' + (c.title || '本工作台') + '」的实时数据，点击下方按钮或提问标签获取解读。');
+      }
     }
     chipsBox.innerHTML = '';
     ['📊 整体解读', '⚠️ 风险提示', '💡 优化建议'].forEach(function (label) {
@@ -223,7 +241,7 @@
   /* ---------------- 欢迎提示 + 周期性业务事件提醒 ---------------- */
   setTimeout(function () {
     var c = cfg();
-    window.ZToast.show((c.title ? '「' + c.title + '」' : '') + '🤖 AI 解读助手已就绪 — 点击右下角小智获取数据解读', 'info', 5200);
+    window.ZToast.show((EMP ? EMP.name : '🤖 AI 解读助手') + ' 已就绪 — 点击右下角' + (EMP ? EMP.name : '小智') + '获取数据解读', 'info', 5200);
   }, 900);
   setInterval(function () {
     var c = cfg();

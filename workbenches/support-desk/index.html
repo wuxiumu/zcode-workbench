@@ -250,6 +250,7 @@ window.AI_ASSISTANT={
   alerts(){return pending>110?{lv:'warn',text:'⚠️ 待处理工单 '+pending+' 单，积压率 '+(pending/(pending+resolved)*100).toFixed(1)+'%'}:Math.random()<.4?{lv:'ok',text:'✅ 今日 SLA 达标率 '+sla+'%'}:null;}
 };
 </script>
+<script src="../../assets/va-team.js" defer></script>
 <script src="../../assets/ai-assistant/ai-assistant.js" defer></script>
 <script src="../../assets/export-tools.js" defer></script>
 <script src="../../assets/term-tips.js" defer></script>
