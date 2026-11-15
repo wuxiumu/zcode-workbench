@@ -1,83 +1,83 @@
-# 优化执行计划 · task.md（本轮 60 分钟）
+# 优化执行计划 · task.md（本轮：上线同步 + 大屏/手机适配 + 数据真实化 + 科技动画）
 
-> **第一原理**：本项目本质是 FDE 能力橱窗，唯一北极星 = **访客 10 秒内被说服**。
-> A/B/C 三线已收官（见 `OPTIMIZATION_ROADMAP.md`），本轮用第一原理重审：还挡在北极星前面的只有两件事 ——
-> 1. **数据"随机无故事"**：告警流和图表互不相关（mq-broker 报警时曲线纹丝不动），看 10 秒留不下记忆点 → **添加真实内容**：注入有因果的故障剧本，让 曲线 ↔ 告警 ↔ KPI ↔ AI 解读 互为证据链；
-> 2. **术语是黑话**：P99 / QPS / MRR / ROAS 对老板是天书，新访客不知道有 ⌘K / 导览 / AI 助手 → **友好提示**：全站大白话术语解释 + 首访引导。
->
-> 模式沿用 roadmap 轮转机制：**做完一项勾一项，每项小而聚焦，不顺手大重构。**
+> **第一原理**：线上站点 https://wuxiumu.github.io/zcode-workbench/ 是这个橱窗的门面。
+> 访客只分两种设备（大屏 / 手机）和一种判断（数据像不像真的、页面有没有"科技感"）。
+> 本轮四件事：**① 先把已完成的 0.6.0 推上 git 让线上更新 → ② 全站响应式双档适配 → ③ 15 台数据逐台真实化 → ④ 全站科技动画（克制、可降级）**。
+> 模式不变：做完一项勾一项，每项小步提交，验收不过就回滚。
 
 ## 时间盒总览
 
-| 时段 | 任务 | 交付物 | 验收标准 |
+| 阶段 | 任务 | 交付物 | 验收标准 |
 |------|------|--------|----------|
-| T0 5min | 基线验证 | 3 台基线截图 | hero 三台截图生成成功 ✓ |
-| T1 20min | 真实内容 · ops-center 故障剧本 | `workbenches/ops-center/index.html` | pay-svc 故障时：错误率曲线爬升 → 告警流按剧情推进 → 错误率 KPI 变红 → AI 解读点名 pay-svc，四者同源联动 |
-| T2 15min | 友好提示 · 全站术语大白话 | `assets/term-tips.js` + 16 页接入 | KPI 标签/图表标题/表头中的术语带虚线下划线，hover/focus 弹大白话解释；无术语页面静默退出 |
-| T3 8min | 友好提示 · 门户首访引导条 | `index.html` | 首次访问显示「两条路」引导（导览 / ⌘K），localStorage 记忆后不再打扰 |
-| T4 7min | 回归验证 | 截图 + 审计报告 | ops-center 新截图目检联动效果；a11y_audit.py 复跑 0 问题 |
-| T5 5min | 收尾归档 | CHANGELOG + ROADMAP | CHANGELOG 追加条目；剧本模式登记进扩展候选供下轮推广 |
+| R0 5min | 推送 git，触发 Pages 部署 | origin/main 同步 | push 成功 + 部署工作流触发 |
+| R1 25min | 响应式双档审计与修复（390px 手机 / 1920px 大屏） | theme.css + 逐页修正 | 代表页 390/1920 截图目检：无横向溢出、无元素重叠、大屏不松散 |
+| R2 35min | 15 台数据真实化逐台扫过 | 各台 index.html 数据段 | 实体有名字、量纲成体系、口径互洽（KPI 由图表数据推导）、无自相矛盾状态 |
+| R3 15min | 科技动画 `assets/tech-fx.js` | 共享组件 + 16 页接入 | 粒子网格背景门户+工作台统一；prefers-reduced-motion / 移动端自动降级；不挡交互 |
+| R4 10min | 回归验证 | 三档宽度截图 + a11y | 390/1280/1920 三档截图、a11y 0 问题、15 台全绿 |
+| R5 5min | 收尾推送 | CHANGELOG 0.7.0 + push | commit + push origin main |
 
 ---
 
-## T0 · 基线验证 ✅
+## R0 · 推送 git，线上同步 ✅
 
-- [x] `bash tools/screenshot.sh ops-center growth-analytics crm-workbench` 三台全绿（✅ 开工前完成，防带病改动）
+- [x] `git push origin main`：2376227..aacd6fb 已推送，GitHub Actions 自动部署 Pages（✅ 2026-11-15 执行，线上几分钟后生效）
+- [x] 确认部署链路：.github/workflows/pages.yml 已配置（0.1.0 奠基，历轮验证可用）
 
-## T1 · 真实内容：ops-center 注入「5 幕故障剧本」✅
+## R1 · 响应式双档审计与修复 ✅
 
-- [x] 剧本引擎（~30 行，最小侵入）：一个 tick 驱动的幕数组，每幕声明 —— 目标服务的错误率/延迟目标值、CPU 偏移、剧情告警文案；每 tick 向目标插值逼近（曲线是"爬升"不是跳变）（✅ 幕3 CPU 曲线尾端可见爬升，幕5 留下完整"故障鼓包"历史）
-- [x] 剧情线：平稳运行 → **pay-svc 错误率爬升（P1 告警）** → P99/错误率曲线同步飙升 → 自动扩容介入 → 恢复正常，约 65s 循环（✅ 三阶段截图验证 6000/36000/58000ms 虚拟时间）
-- [x] 告警流从"随机抽取"改为"剧本推进 + 少量日常消息"，事件带时间戳有前因后果（✅ 换幕时推送剧情消息，30% 概率穿插日常消息）
-- [x] KPI 错误率副文案呼应剧情（"pay-svc 异常处理中" / "回落中" / "+0.01 较昨日"）（✅ 由最差服务错误率数据驱动，幕5 恢复后「最慢」自动换成 search-svc）
-- [x] AI 解读零改动即可联动（它读的 svcs 已被剧本驱动）（✅ 幕3 AI 助手自动弹出「pay-svc 错误率 0.6% 超过 0.4% 阈值」告警 toast，四层联动达成）
-- [x] 顺带修复真实度：其余 9 服务初始错误率 0.01–0.6% → 0.01–0.12%（原开机近半服务"异常"，与"幕1 平稳"自相矛盾且稀释剧情）；QPS 基线 ≥80 保幕1 全绿
+- [x] **审计**：门户 + ops-center / growth-analytics / finance-cockpit 在 390×844 与 1920×1200 双档截图（✅ 手机档揪出 H1 竖排 + 徽标压内容；大屏档门户已有 max-width 无需改动）
+- [x] **手机档修复**（theme.css ≤768 基线，15 台结构已验证同名故一处生效）：`.top h1 display:block!important` 修复 flex 挤压竖排；body padding-bottom 64px 让位底部固定元素（✅ 关键项 !important 钉住——页面级 style 后加载会覆盖同优先级规则，这是上轮基线失效的根因）
+- [x] **复检**：390px 截图标题横排、KPI 双列、无溢出
 
-## T2 · 友好提示：`assets/term-tips.js` 全站术语大白话 ✅
+## R2 · 15 台数据真实化逐台扫过 ✅
 
-- [x] 术语表集中管理，词条以真实页面 grep 取证（ROAS×16/P99×12/Uplift×9/CPC/CTR/CPM/SLA/NPS/GMV/MRR/DAU/QPS/IOPS/SKU/SEV/PV/UV/CSAT/ARPU/Churn/ROI/CPA/MoM 共 24 条），每条 = 老板语言的一句话（✅ 一处补全站生效）
-- [x] 扫描 `.kpi .l` / `.panel h3` / `.stat .l` / `th` 纯文本标签（children.length=0 防破坏结构），命中加虚线下划线，hover/focus 弹 tooltip（键盘可达：tabindex=0 + aria-label）（✅ dump-dom 验证 ops-center 动态重绘表格也能补挂）
-- [x] 动态重绘适配：MutationObserver 防抖 200ms 自动补挂（每 2.6s 重绘 KPI/表格的页面不遗漏）
-- [x] 视口自适应：贴顶（top<170px）自动下翻 + 左右边缘 --zx 夹紧，箭头随动（✅ 两轮视觉验收：首版上弹被视口裁掉、左缘裁切均已修复）
-- [x] fail-silent：无匹配 / DOM 异常一律静默退出；亮暗主题走 theme.css 变量 + 兜底色
-- [x] 16 页接入（15 工作台 + 门户，逐页断言；boss-one-pager 本就零术语、self-check 是工具页，均跳过）
+- [x] 批量摸底：grep 15 台生成器参数 + KPI 口径（✅ 短板集中在 4 台：growth / ads / agent-obs / crm，其余 9 台实体命名与勾稽子文案已达标）
+- [x] growth-analytics：KPI 与漏斗单源互洽（GMV = 支付×客单价、转化率 = 支付/访客），爆品固定单价，趋势今日值 = KPI DAU（✅ dump-dom 实测 ¥434,816 = 87,104×3.90%×¥128 精确勾稽）
+- [x] ads-performance：渠道饼按权重切分 KPI spend（消除 ¥48,939 vs ¥49,390 双源）；漏斗从 imps/clicks/conv 推导
+- [x] agent-observatory：调用/Token/P95 从模型占比表推导；7d 成本 = 今日×7×占比；Token 单价 $2.3/M 勾稽
+- [x] crm-workbench：NPS KPI 与曲线末位同源
+- [x] **顺带揪出线上预存 bug**：agent-obs ×1、crm ×2 行 4 元素数组配 5 元素模板 → 线上直出 "undefined" 文本（已修 + 精确检测脚本复检 15 台全过）
 
-## T3 · 友好提示：门户首访引导条 ✅
+## R3 · 科技动画 `assets/tech-fx.js` ✅
 
-- [x] 首访显示：「👋 第一次来？两条路：想 30 秒看懂价值 → 点自动导览；想直达某个台 → 按 ⌘K / Ctrl+K 搜索」，顺带预告「P99、ROAS 这类黑话鼠标放上去有解释」（✅ 截图目检，kbd 键帽样式与站点设计语言一致）
-- [x] localStorage 记忆（`zwb-hello`），显示即标记，二访不再打扰；可关闭；无动画、prefers-reduced-motion 天然兼容
+- [x] 共享组件：粒子网格画布（缓慢漂移 + 邻近连线），低透明度不喧宾夺主；亮暗双配色逐帧读 data-theme
+- [x] 降级三闸：prefers-reduced-motion 静态一帧；<768px 粒子减半；document.hidden 停帧
+- [x] 层级约定：canvas z-index:0 + body>* 提 z-index:1，主题按钮/AI fab 不受影响；pointer-events:none
+- [x] 16 页接入逐页断言；亮暗两套截图目检通过
 
-## T4 · 回归验证 ✅
+## R4 · 回归验证 ✅
 
-- [x] ops-center / ads-performance 新截图目检（剧本三幕联动 + tooltip 均在真实页面验证；ads 的 h3「近 30 天 ROAS 趋势」虚线提示可见，canvas legend 不受影响）
-- [x] `python3 tools/a11y_audit.py` 全页复跑：17 页 0 问题 0 建议（term-tips 的 tabindex+aria-label 通过审计）
-- [x] 全部 15 台截图复跑无 ✗
+- [x] 390 / 1280 / 1920 三档目检（growth 手机档：H1 横排 + KPI 漏斗勾稽 + 粒子入镜）
+- [x] `tools/a11y_audit.py`：17 页 0 问题 0 建议
+- [x] 15 台全量截图无 ✗
 
-## T5 · 收尾归档 ✅
+## R5 · 收尾推送 ✅
 
-- [x] `CHANGELOG.md` 追加 [0.6.0] 条目（真实内容与友好提示 · 第一原理轮），compare 链接更新为 2376227...HEAD
-- [x] `OPTIMIZATION_ROADMAP.md` 扩展候选登记：「故障剧本模式推广到其余 14 台（每轮 1~2 台）」+「term-tips 术语表按台扩充（每轮 3~5 条）」
-- [x] `git add -A && git commit`（不 push），提交信息沿用 `feat(opt):` / `feat(portal):` 风格
+- [x] `CHANGELOG.md` 追加 0.7.0（compare 链接 aacd6fb...HEAD）
+- [x] `task.md` 勾选结果
+- [x] commit + `git push origin main`
 
 ---
 
-## 本轮结果（2026-11-15 · 实际用时 ≈ 60 分钟）
+## 本轮结果（2026-11-15 · R0~R5 全部完成）
 
 | 提交 | 内容 |
 |------|------|
-| 54f80a9 | T1 ops-center 5 幕故障剧本（四层因果联动）+ task.md |
-| 0dcd820 | T2 term-tips.js 全站术语大白话（16 页，两轮视觉迭代） |
-| ae9dfc3 | T3 门户首访引导条 |
-| 本条 | T4/T5 回归验证 + CHANGELOG 0.6.0 + ROADMAP 登记 |
+| （R0）| 0.6.0 五个提交推上 origin/main，Pages 部署触发 |
+| fix(opt) R1 | 手机档 H1 竖排修复 + 底部元素让位 |
+| fix(opt) R2 | 四台单源改造 + 两台线上 undefined 预存 bug 修复 |
+| feat(opt) R3 | tech-fx.js 粒子网格（16 页接入） |
+| docs R5 | CHANGELOG 0.7.0 + push |
 
-**下轮起点**：`OPTIMIZATION_ROADMAP.md` 扩展候选前两条（剧本推广 / 术语表扩充），样板与模式已在 task.md T1 留档。
+**线上**：https://wuxiumu.github.io/zcode-workbench/ （push 后 GitHub Actions 自动部署）
 
----
+## 持续跟进规则（沿用）
 
-## 持续跟进规则
+1. 执行顺序即优先级：R1 适配 > R2 数据 > R3 动画（时间不够砍 R3 不砍 R1/R2）；
+2. 每完成一项：勾选 → commit；R5 统一 push；
+3. 验收不通过：回滚该项改动，不带病勾选；
+4. 每轮开工前先跑基线（本轮基线 = R0 推送后线上可达）。
 
-1. **执行顺序即优先级**：T1 真实内容 > T2/T3 友好提示 > 收尾；时间不够时砍 T3 不砍 T1；
-2. **每完成一项**：勾选 `[ ]` → 立即 commit（小步提交，出问题可回退单点）；
-3. **未完成项**：不删除，滚入 `OPTIMIZATION_ROADMAP.md` 扩展候选，下轮定时任务继续；
-4. **验收不通过**：回滚该项改动而非带病勾选 —— 自检页与截图是这个仓库的回归底线；
-5. **每轮开工前**：先跑 T0 基线，确认 15 台全绿再动手（本轮教训沉淀：真实截图曾揪出 ops-center 图表从未渲染的 P0）。
+## 上一轮结果（0.6.0 · 2026-11-15，详见 CHANGELOG）
+
+ops-center 5 幕故障剧本（四层联动）+ term-tips 术语大白话（16 页）+ 门户首访引导，4 commits，a11y 0 问题、15 台截图全绿。已随 R0 推上线上。

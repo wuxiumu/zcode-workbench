@@ -24,6 +24,35 @@
 ### 验证
 - `tools/a11y_audit.py` 17 页 0 问题 0 建议；15 台全量截图回归全绿；剧本三幕（平稳/P1/恢复）虚拟时间截图逐幕验收
 
+## [0.7.0] · 2026-11-15 · 上线同步 + 双端适配 + 数据真实化 + 科技动画
+
+按 `task.md` R0~R5 执行，四件事一条线：
+
+### 上线同步
+- 0.6.0 全部 5 commits 推上 origin/main（2376227..aacd6fb），GitHub Actions 自动部署 Pages
+
+### 双端适配（大屏 / 手机）
+- 修复手机档 H1 被 flex 挤成 1 字宽竖排（15 台全站生效；关键项 !important 钉住，页面级 style 后加载覆盖问题一并解决）
+- 底部固定元素（返回 / MOCK 徽标 / AI fab）让位：移动端 body padding-bottom 64px
+- 大屏档（1920）审计通过，门户已有 max-width 无需改动
+- 390px 截图复检：标题横排、KPI 双列、网格单列、无横向溢出
+
+### 数据真实化（15 台逐台扫过）
+- growth-analytics：KPI 与漏斗单源互洽（GMV = 支付 × 客单价、转化率 = 支付/访客，弃硬编码与恒等式凑数）；爆品榜单价固定
+- ads-performance：渠道饼图按权重切分 KPI 消耗（原双源对不上）；漏斗从 imps/clicks/conv 推导
+- agent-observatory：调用 / Token / P95 从模型占比表推导；7d 成本 = 今日 × 7 × 占比（消除 7d $220 vs 单日 $180 矛盾）
+- crm-workbench：NPS KPI 与曲线末位同源
+- **预存 bug**：agent-obs ×1、crm ×2 行 4 元素数组配 5 元素模板 → 线上直出 "undefined"，修复并加精确检测（15 台复检全过）
+- 其余 9 台审计达标（IoT 设备编号 / 供应商中文名 / 数据表 Owner 等实体命名已就绪）
+
+### 科技动画
+- `assets/tech-fx.js`：粒子网格背景（缓慢漂移 + 邻近连线），亮暗双配色，低透明度不喧宾夺主
+- 降级三闸：prefers-reduced-motion 静态一帧；<768px 粒子减半；document.hidden 停帧
+- 16 页接入逐页断言
+
+### 验证
+- `tools/a11y_audit.py` 17 页 0 问题；15 台全量截图全绿；390 / 1280 / 1920 三档目检
+
 ## [0.5.0] · 2026-11-12 · 展示物料与工程加固（持续优化轮）
 
 自动化定时任务按 `OPTIMIZATION_ROADMAP.md` 队列逐条执行，本轮完成 14 条：
@@ -96,7 +125,8 @@
 
 ---
 
-[0.6.0]: https://github.com/wuxiumu/zcode-workbench/compare/2376227...HEAD
+[0.7.0]: https://github.com/wuxiumu/zcode-workbench/compare/aacd6fb...HEAD
+[0.6.0]: https://github.com/wuxiumu/zcode-workbench/compare/2376227...aacd6fb
 [0.5.0]: https://github.com/wuxiumu/zcode-workbench/compare/99f9201...2376227
 [0.4.0]: https://github.com/wuxiumu/zcode-workbench/compare/2fa4ddf...99f9201
 [0.3.0]: https://github.com/wuxiumu/zcode-workbench/compare/739480a...2fa4ddf
