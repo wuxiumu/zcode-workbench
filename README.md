@@ -53,6 +53,7 @@ FDE 的价值不在于写代码，而在于**把客户的业务问题翻译成�
 - 零后端：Mock 数据由内置生成器产生，支持定时刷新模拟实时流；
 - 零配置：Fork 本仓库即自动获得同款 Pages 站点；
 - 🤖 **AI 解读助手**：`assets/ai-assistant/` 独立组件，一个 `<script>` 引入任意工作台，解读内容由各工作台实时数据驱动（详见 [组件 README](assets/ai-assistant/README.md)）。
+- 👥 **虚拟员工团队**：[employees.html](employees.html) — 15 位与工作台一一对应的 AI 员工，卡通形象 + 人设 + 可直接投喂大模型的专家级提示词。
 
 ## 持续迭代
 

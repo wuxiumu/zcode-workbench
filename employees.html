@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta property="og:title" content="虚拟员工团队 · ZCode Labs FDE 工作台矩阵">
+<meta property="og:description" content="15 位即插即用的 AI 虚拟员工：卡通形象 + 人设 + 可直接投喂大模型的专家级提示词">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://wuxiumu.github.io/zcode-workbench/employees.html">
+<title>虚拟员工团队 · AI Staff | ZCode Labs</title>
+<script>try{document.documentElement.dataset.theme=localStorage.getItem('zwb-theme')||'dark'}catch(e){}</script>
+<link rel="stylesheet" href="assets/theme.css">
+<style>
+:root{--acc:#7c5cff;--acc2:#22d3ee}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:radial-gradient(900px 500px at 85% -10%,var(--glow) 0%,var(--bg) 60%);color:var(--txt);font-family:"PingFang SC","Microsoft YaHei",sans-serif;padding:26px;min-height:100vh;max-width:1240px;margin:0 auto}
+.top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+.badge{display:inline-flex;align-items:center;gap:7px;font-size:11px;letter-spacing:.14em;color:var(--acc);border:1px solid var(--acc);border-radius:99px;padding:4px 12px;margin-bottom:14px}
+.badge i{width:6px;height:6px;border-radius:50%;background:var(--acc);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+h1{font-size:30px;letter-spacing:.02em}
+h1 em{font-style:normal;color:var(--acc)}
+.sub{color:var(--sub);font-size:14px;line-height:1.8;margin-top:10px;max-width:720px}
+.sub b{color:var(--txt)}
+.theme-btn{position:fixed;right:16px;top:12px;z-index:9999;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--p1);color:var(--txt);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .2s,border-color .2s}
+.theme-btn:hover{transform:scale(1.1);border-color:var(--acc)}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:22px 0 16px}
+.chip{font-size:12px;color:var(--sub);background:var(--p1);border:1px solid var(--line);border-radius:99px;padding:6px 14px;cursor:pointer;font-family:inherit;transition:color .2s,border-color .2s}
+.chip:hover{color:var(--txt)}
+.chip.on{color:var(--acc);border-color:var(--acc)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.card{background:linear-gradient(160deg,var(--p1),var(--p2));border:1px solid var(--line);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:10px;transition:border-color .2s,transform .2s}
+.card:hover{border-color:var(--acc);transform:translateY(-2px)}
+.id{display:flex;align-items:center;gap:12px}
+.id .av{flex-shrink:0}
+.id .nm{font-size:17px;font-weight:800}
+.id .rl{font-size:11px;color:var(--acc);letter-spacing:.08em;margin-top:3px}
+.id .no{margin-left:auto;font-size:22px;font-weight:800;color:var(--faint);font-variant-numeric:tabular-nums}
+.desc{font-size:12.5px;line-height:1.8;color:var(--sub)}
+.sk{display:flex;gap:6px;flex-wrap:wrap}
+.sk i{font-style:normal;font-size:10.5px;color:var(--acc2);background:var(--acc-soft,rgba(34,211,238,.08));border:1px solid var(--line);border-radius:99px;padding:2px 9px}
+.card details{border-top:1px dashed var(--line);padding-top:10px}
+.card summary{font-size:12px;color:var(--acc);cursor:pointer;list-style:none;display:flex;align-items:center;gap:6px;user-select:none}
+.card summary::-webkit-details-marker{display:none}
+.card summary::before{content:"▸";transition:transform .2s}
+.card details[open] summary::before{transform:rotate(90deg)}
+.prompt{position:relative;margin-top:10px;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 12px 34px;font-size:11.5px;line-height:1.9;color:var(--sub);white-space:pre-wrap;max-height:230px;overflow-y:auto}
+.copy{position:absolute;right:8px;bottom:8px;font-size:11px;color:var(--acc);background:var(--p1);border:1px solid var(--line);border-radius:8px;padding:4px 12px;cursor:pointer;font-family:inherit;transition:border-color .2s,color .2s}
+.copy:hover{border-color:var(--acc)}
+.copy.ok{color:var(--ok);border-color:var(--ok)}
+.wb{font-size:12px;color:var(--acc);text-decoration:none;display:inline-flex;align-items:center;gap:5px}
+.wb:hover{text-decoration:underline}
+.empty{padding:40px;text-align:center;color:var(--sub);border:1px dashed var(--line);border-radius:14px}
+.foot{margin-top:26px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--sub)}
+.foot a{color:var(--acc);text-decoration:none}
+@media(max-width:980px){.grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:680px){body{padding:18px}.grid{grid-template-columns:1fr}h1{font-size:24px}}
+@media(prefers-reduced-motion:reduce){.badge i{animation:none}.card{transition:none}}
+</style>
+</head>
+<body>
+<button class="theme-btn" id="themeBtn" title="切换亮 / 暗主题" aria-label="切换亮 / 暗主题"></button>
+<div class="top">
+  <div>
+    <div class="badge"><i></i>ZCODE LABS · AI STAFF</div>
+    <h1>虚拟员工<em>团队</em></h1>
+    <p class="sub">一支与 15 张作战地图一一对应的 <b>AI 虚拟员工</b>：每人一个卡通形象、一句人设，以及一份<b>可直接投喂任意大模型的专家级提示词</b>——复制走，即刻上岗。</p>
+  </div>
+</div>
+<div class="chips" id="chips"></div>
+<div class="grid" id="grid"></div>
+<div class="foot">
+  <a href="/">← 返回工作台矩阵</a>
+  <a href="self-check.html">🔧 系统自检</a>
+</div>
+<script src="assets/va-team.js"></script>
+<script src="assets/term-tips.js" defer></script>
+<script src="assets/tech-fx.js" defer></script>
+<script>
+// 主题切换（与全站同款）
+var themeBtn=document.getElementById('themeBtn');
+function applyTheme(t){document.documentElement.dataset.theme=t;try{localStorage.setItem('zwb-theme',t)}catch(e){}themeBtn.textContent=t==='light'?'🌙':'☀️'}
+themeBtn.addEventListener('click',function(){applyTheme(document.documentElement.dataset.theme==='light'?'dark':'light')});
+applyTheme(document.documentElement.dataset.theme==='light'?'light':'dark');
+
+// 部门筛选 chips（由数据派生）
+var TEAMS=window.VA_TEAM||[],deptBox=document.getElementById('chips'),grid=document.getElementById('grid');
+var depts=[].concat.apply([],TEAMS.map(function(p){return p.dept})).filter(function(v,i,a){return a.indexOf(v)===i});
+var cur='全部';
+var chipEls=[['全部','全部']].concat(depts.map(function(d){return [d,d]})).map(function(kv){
+  var b=document.createElement('button');b.type='button';b.className='chip'+(kv[0]==='全部'?' on':'');b.textContent=kv[1];b.dataset.d=kv[0];
+  b.addEventListener('click',function(){cur=kv[0];chipEls.forEach(function(x){x.classList.toggle('on',x===b)});render()});
+  deptBox.appendChild(b);return b;
+});
+
+function esc(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function render(){
+  var list=TEAMS.filter(function(p){return cur==='全部'||p.dept===cur});
+  grid.innerHTML=list.length?list.map(function(p,i){
+    return '<article class="card">'
+      +'<div class="id"><span class="av">'+(window.vaAvatar(p.id,72)||'🤖')+'</span>'
+      +'<div><div class="nm">'+esc(p.name)+'</div><div class="rl">'+esc(p.en)+' · '+esc(p.role)+'</div></div>'
+      +'<span class="no">'+String(('0'+(TEAMS.indexOf(p)+1)).slice(-2))+'</span></div>'
+      +'<p class="desc">'+esc(p.desc)+'</p>'
+      +'<div class="sk">'+p.skills.map(function(s){return '<i>'+esc(s)+'</i>'}).join('')+'</div>'
+      +'<details><summary>专家级提示词 · 复制即用</summary>'
+      +'<div class="prompt" id="pr-'+p.id+'">'+esc(p.prompt)+'<button class="copy" data-id="'+p.id+'" aria-label="复制 '+esc(p.name)+' 的专家提示词">复制</button></div></details>'
+      +'<a class="wb" href="'+p.wb+'">看 '+esc(p.name)+' 的作战地图 →</a>'
+      +'</article>';
+  }).join(''):'<div class="empty">该部门暂无虚拟员工</div>';
+}
+render();
+
+// 复制（Clipboard API + execCommand 兜底），按钮反馈 2s
+grid.addEventListener('click',function(e){
+  var btn=e.target.closest('.copy');if(!btn)return;
+  var p=window.vaEmployee(btn.dataset.id),text=p?p.prompt:'';
+  function done(){btn.textContent='已复制 ✓';btn.classList.add('ok');setTimeout(function(){btn.textContent='复制';btn.classList.remove('ok')},2000)}
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(done,function(){fallback()})}else fallback();
+  function fallback(){var ta=document.createElement('textarea');ta.value=text;ta.style.cssText='position:fixed;opacity:0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done()}catch(err){btn.textContent='请手动复制'}ta.remove()}
+});
+</script>
+</body>
+</html>
