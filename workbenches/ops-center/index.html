@@ -50,7 +50,7 @@ td{padding:7px 8px;border-bottom:1px solid var(--split);font-variant-numeric:tab
 .feed .row{display:flex;gap:10px;padding:8px 4px;border-bottom:1px solid var(--split);font-size:12px;align-items:baseline}
 .feed .t{color:var(--sub);font-variant-numeric:tabular-nums;flex-shrink:0}
 .feed .lv{flex-shrink:0;font-size:10px;padding:1px 7px;border-radius:4px}
-.lv-warn{color:var(--warn);background:var(--warn-soft)}.lv-info{color:var(--acc);background:var(--acc-soft)}.lv-bad{color:var(--bad);background:var(--bad-soft)}
+.lv-warn{color:var(--warn);background:var(--warn-soft)}.lv-info{color:var(--acc);background:var(--acc-soft)}.lv-bad{color:var(--bad);background:var(--bad-soft)}.lv-ok{color:var(--ok);background:var(--ok-soft)}
 .bar{height:6px;border-radius:3px;background:var(--track);overflow:hidden;margin-top:5px}
 .bar i{display:block;height:100%;border-radius:3px;transition:width .8s}
 .theme-btn{position:fixed;right:16px;top:12px;z-index:9999;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--p1);color:var(--txt);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .2s,border-color .2s}
@@ -65,7 +65,7 @@ td{padding:7px 8px;border-bottom:1px solid var(--split);font-variant-numeric:tab
 <button class="theme-btn" id="themeBtn" title="切换亮 / 暗主题" aria-label="切换亮 / 暗主题"></button>
 <div class="top">
   <h1><span class="dot"></span>运维监控台 <span style="color:var(--sub);font-size:13px;font-weight:400">OPS CENTER · prod-cluster-bj ｜ 机器出事 3 秒就知道，不用等客户来骂</span></h1>
-  <div class="clock" id="clock"></div>
+  <div class="clock"><span id="actName" style="color:var(--acc);margin-right:12px;font-weight:600"></span><span id="clock"></span></div>
 </div>
 
 <div class="kpis" id="kpis"></div>
@@ -105,7 +105,25 @@ const netC=mk('c-net',netOpt());
 const ioC=mk('c-io',baseLine(ioD,V('--purple'),'iops'));
 
 const svcNames=['gateway-api','user-svc','order-svc','pay-svc','search-svc','cms-api','scheduler','cache-proxy','mq-broker','log-collector'];
-const svcs=svcNames.map(n=>({name:n,qps:Math.round(rnd(50,900)),lat:+rnd(8,120).toFixed(1),err:+(rnd(0.01,0.6)).toFixed(2),up:Math.random()>0.12}));
+const svcs=svcNames.map(n=>({name:n,qps:Math.round(rnd(80,900)),lat:+rnd(8,120).toFixed(1),err:+(rnd(0.01,0.12)).toFixed(2),up:Math.random()>0.12}));
+// ===== 故障剧本引擎：一次真实 P1 故障的 5 幕剧情（约 65s 循环） =====
+// 让 曲线 ↔ 告警流 ↔ KPI ↔ AI 解读 互为因果：pay-svc 错误率/延迟按幕插值逼近，CPU 曲线同步抬升，
+// 告警流按剧情推进（不再随机抽），KPI 与 AI 解读直接读 svcs 因此自动呼应。
+const STEPS=5;let tickIdx=-1,lastAct=null;const cpuOff={v:0};
+const SCRIPT=[
+  {n:'幕1/5 · 平稳运行',svc:null,cpuOff:0,feed:['info','巡检完成：prod-cluster-bj 5 节点全部就绪，缓存命中率 98.4%']},
+  {n:'幕2/5 · pay-svc 开始抖动',svc:{name:'pay-svc',err:.42,lat:160},cpuOff:9,feed:['warn','pay-svc 错误率爬升至 0.4%+，疑似支付渠道回调变慢，值班开始盯盘']},
+  {n:'幕3/5 · 故障扩散 · P1 告警',svc:{name:'pay-svc',err:.68,lat:238},cpuOff:22,feed:['bad','pay-svc 错误率突破 0.5% 触发 P1 告警，值班群已通知；下游 order-svc 排队上升']},
+  {n:'幕4/5 · 扩容介入',svc:{name:'pay-svc',err:.34,lat:118},cpuOff:11,feed:['info','自动扩容：pay-svc +3 副本完成，限流阈值下调 20%，错误率开始回落']},
+  {n:'幕5/5 · 恢复正常',svc:{name:'pay-svc',err:.06,lat:36},cpuOff:0,feed:['ok','pay-svc 错误率回落至 0.06%，P1 解除 · 本次故障历时 4m32s，受影响订单 217 笔已自动补偿']}
+];
+function runScript(){
+  tickIdx++;
+  const act=SCRIPT[Math.floor(tickIdx/STEPS)%SCRIPT.length];
+  if(act!==lastAct){lastAct=act;const el=document.getElementById('actName');if(el)el.textContent='🎞 '+act.n;pushFeed(act.feed);}
+  cpuOff.v+=(act.cpuOff-cpuOff.v)*0.35;
+  if(act.svc){const s=svcs.find(x=>x.name===act.svc.name);if(s){s.err+= (act.svc.err-s.err)*0.45;s.lat+=(act.svc.lat-s.lat)*0.45;s.err=+s.err.toFixed(2);s.lat=+s.lat.toFixed(1);}}
+}
 function renderSvc(){
   document.getElementById('svc').innerHTML='<tr><th>服务</th><th>QPS</th><th>P99 延迟 ms</th><th>错误率 %</th><th>状态</th></tr>'+svcs.map(s=>{
     const st=s.err>0.4?['st-bad','异常']:s.err>0.15?['st-warn','抖动']:(s.qps>50?['st-ok','健康']:['st-warn','低流量']);
@@ -118,24 +136,29 @@ function renderNodes(){
 }
 const feedEl=document.getElementById('feed');
 const msgs=[['info','节点 sh-node-01 磁盘使用率超过 75%'],['warn','order-svc 错误率连续 5 分钟 > 0.3%'],['info','自动扩容：cms-api +2 副本完成'],['bad','mq-broker 消费堆积 > 5000，已触发告警'],['info','每日备份任务完成，耗时 4m12s'],['warn','gateway-api P99 延迟突增至 210ms'],['info','证书 ssl-prod 将于 42 天后到期'],['info','log-collector 日志摄入速率恢复正常']];
-function pushFeed(){
+function pushFeed(scripted){
   const now=new Date(),t=now.toTimeString().slice(0,8);
-  const m=msgs[Math.floor(Math.random()*msgs.length)];
-  const lv=m[0]==='bad'?'lv-bad':m[0]==='warn'?'lv-warn':'lv-info';
+  const m=scripted||msgs[Math.floor(Math.random()*msgs.length)];
+  const lv='lv-'+(m[0]==='bad'?'bad':m[0]==='warn'?'warn':m[0]==='ok'?'ok':'info');
   feedEl.insertAdjacentHTML('afterbegin',`<div class="row"><span class="t">${t}</span><span class="lv ${lv}">${m[0].toUpperCase()}</span><span>${m[1]}</span></div>`);
   while(feedEl.children.length>12)feedEl.lastChild.remove();
 }
 function shift(chart,data,next){data.shift();data.push(next());chart.setOption({series:[{data}]})}
 function tick(){
-  shift(cpuC,cpuD,series.cpu);shift(memC,memD,series.mem);shift(ioC,ioD,series.io);
+  runScript();
+  shift(cpuC,cpuD,()=>series.cpu()+cpuOff.v);shift(memC,memD,series.mem);shift(ioC,ioD,series.io);
   netInD.shift();netInD.push(series.netIn());netOutD.shift();netOutD.push(series.netOut());
   netC.setOption({series:[{data:netInD},{data:netOutD}]});
-  svcs.forEach(s=>{s.qps=Math.max(10,Math.round(s.qps+rnd(-30,30)));s.lat=+Math.max(5,s.lat+rnd(-6,6)).toFixed(1)});
-  renderSvc();renderNodes();pushFeed();renderKpis();
+  svcs.forEach(s=>{s.qps=Math.max(10,Math.round(s.qps+rnd(-30,30)));if(s.name!=='pay-svc'||!lastAct.svc)s.lat=+Math.max(5,s.lat+rnd(-6,6)).toFixed(1)});
+  renderSvc();renderNodes();if(Math.random()<.3)pushFeed();renderKpis();
 }
 function renderKpis(){
   const qps=svcs.reduce((a,s)=>a+s.qps,0);
-  const k=[['总 QPS',qps,'','+3.2% 较昨日','up'],['P99 延迟',Math.max(...svcs.map(s=>s.lat)).toFixed(0),' ms','-8ms 较昨日','up'],['错误率',(svcs.reduce((a,s)=>a+s.err,0)/svcs.length).toFixed(2),' %','+0.04 需关注','dn'],['在线节点',nodes.length+' / 5','','全部就绪','up']];
+  const worstS=svcs.slice().sort((a,b)=>b.lat-a.lat)[0];
+  const errAvg=svcs.reduce((a,s)=>a+s.err,0)/svcs.length;
+  const worstErrS=svcs.slice().sort((a,b)=>b.err-a.err)[0];
+  const errNote=worstErrS.err>0.4?worstErrS.name+' 异常处理中':worstErrS.err>0.15?worstErrS.name+' 回落中':'+0.01 较昨日';
+  const k=[['总 QPS',qps,'','+3.2% 较昨日','up'],['P99 延迟',worstS.lat.toFixed(0),' ms','最慢：'+worstS.name,worstS.lat>150?'dn':'up'],['错误率',errAvg.toFixed(2),' %',errNote,errAvg>0.09?'dn':'up'],['在线节点',nodes.length+' / 5','','全部就绪','up']];
   document.getElementById('kpis').innerHTML=k.map(x=>`<div class="kpi"><div class="l">${x[0]}</div><div class="v">${x[1]}<small>${x[2]}</small></div><div class="d ${x[4]}">${x[3]}</div></div>`).join('');
 }
 // 主题切换：图表按当前 CSS 变量重建
