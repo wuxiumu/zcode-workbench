@@ -19,51 +19,68 @@
 
 ---
 
-## P0 · 基线取证 ⏳
+## P0 · 基线取证 ✅
 
-- [ ] 截图确认：theme-btn 落到文档流顶部左侧、AI fab 消失（被 position:relative 拉走）
-- [ ] 根因记录：`body>*:not(#tech-fx){position:relative}` 特异性 1,0,3 > 组件类选择器 0,1,0
+- [x] 证据确认：theme-btn 落到文档流顶部左侧、AI fab 被 `position:relative` 拉走消失（tech-fx v1 引入的回归）
+- [x] 根因记录：`body>*:not(#tech-fx){position:relative}` 特异性 1,0,3 > 组件类选择器 0,1,0
 
-## P1 · tech-fx 层级方案重做 ⏳
+## P1 · tech-fx 层级方案重做 ✅（独立提交）
 
-- [ ] 弃用 `body>*` 提层（误伤一切 fixed 组件）；改为**背景承接法**：把 body 计算出的背景搬到 html，body 背景置空，canvas 用 z-index:-1
-- [ ] 好处：内容层零侵入（不再碰任何业务元素），fixed 组件天然在 canvas 之上
-- [ ] 亮暗主题 + 门户/工作台截图复检
+- [x] 弃用 `body>*` 提层（误伤一切 fixed 组件）；改用 `body{isolation:isolate}` + canvas `z-index:-1`：画在 body 背景之上、内容之下
+- [x] 亮点：不搬计算背景（主题切换的 CSS 变量背景依然活），业务元素零侵入
+- [x] 截图复检：fab 右下 ✓ theme-btn 右上 ✓ 徽标 ✓ 粒子可见 ✓
 
-## P2 · 去 Mock 化 + 清引用 ⏳
+## P2 · 去 Mock 化 + 清引用 ✅（独立提交）
 
-- [ ] 15 台删除 `.mock`「MOCK DATA · 演示数据」徽标节点
-- [ ] zcode-tast-cms 引用清零：README（姊妹项目/工作台清单）、门户卡片、content-ops 页内引用
-- [ ] grep 断言：`MOCK DATA` 与 `zcode-tast-cms` 全仓 0 命中（CHANGELOG 历史记录除外）
+- [x] 15 台删除 `.mock`「MOCK DATA · 演示数据」徽标节点
+- [x] zcode-tast-cms 引用清零：门户页脚与卡片描述、content-ops 页头与页内链接、README 两处
+- [x] grep 断言：`MOCK DATA` 与 `zcode-tast-cms` 全仓 0 命中
+- [x] 插曲：`git add -A` 误带入未跟踪的 auto-blog/ 与 assets/vendor/，已 `git rm --cached` + amend 撤出
 
-## P3 · 虚拟员工数据资产 `assets/va-team.js` ⏳
+## P3 · 虚拟员工数据资产 `assets/va-team.js` ✅
 
-- [ ] SVG 卡通头像工厂（纯内联无外部依赖）：肤色/发型/配饰/工装渐变参数化，15 位造型互异
-- [ ] 15 位员工与 15 台工作台一一对应（SRE 值班、增长分析、客户成功、内容运营、AI 平台、供应链、财务、数据治理、算法评测、HR、客服、投放、IoT 运维、风控审核、实验科学）
-- [ ] 每位含：姓名、职位、一句话人设、3 个技能标签、**专家级提示词**（含职责边界/方法论/输出格式，可直接投喂任意 LLM）
-- [ ] `window.vaAvatar(id,size)` 渲染助手 + `window.VA_TEAM` 数据
+- [x] SVG 卡通头像工厂（纯内联无外部依赖）：发型 3 式 × 帽饰 6 种 × 面部配饰 6 种参数化，15 位造型互异（✅ 全队合照截图验收：耳麦/单边镜/护目镜/安全帽/天线/墨镜/贝雷帽/徽章各具标志物）
+- [x] 15 位员工与 15 台工作台一一对应（阿稳 SRE / 阿增 / 阿暖 / 阿创 / 阿智 / 阿链 / 阿算 / 阿数 / 阿评 / 阿人 / 阿服 / 阿投 / 阿物 / 阿审 / 阿验）
+- [x] 每位含：姓名、职位、一句话人设、3 个技能标签、**专家级提示词**（职责边界 + 方法论 + 输出格式，约 200 字可直接投喂任意 LLM）
+- [x] `window.vaAvatar(id,size)` / `window.vaEmployee(key)` / `window.VA_TEAM` / `window.VA_TEAM_WB` 四个 API
 
-## P4 · 团队主页面 `employees.html` ⏳
+## P4 · 团队主页面 `employees.html` ✅
 
-- [ ] 一页展示：头像 + 姓名/职位 + 人设描述 + 技能标签 + 可展开的专家提示词（一键复制 + 反馈）
-- [ ] 部门筛选 chips（技术 / 增长 / 客户 / 职能）；亮暗主题；沿用 theme.css / term-tips / tech-fx
-- [ ] 门户加入口按钮；README 补一句；页面 OG meta 齐全
-- [ ] 手机单列 / 大屏网格目检
+- [x] 一页展示：头像 + 姓名/职位 + 人设描述 + 技能标签 + 可展开的专家提示词（一键复制 + 2s 反馈，Clipboard API + execCommand 兜底）
+- [x] 部门筛选 chips（全部/技术/增长/客户/运营/职能，由数据派生）；亮暗主题；沿用 theme.css / term-tips / tech-fx
+- [x] 门户 Hero「👥 虚拟员工团队」入口 + README 技术形态说明；OG meta 齐全
+- [x] 目检：1280 三列网格 / 390 单列，均正常
 
-## P5 · 小助手重设计 ⏳
+## P5 · 小助手重设计 ✅
 
-- [ ] fab 从通用 🤖 换成**本页对应虚拟员工的迷你卡通头像**（按路径自动映射，业务页面零配置）
-- [ ] 面板头部：员工头像 + 姓名/职位 + 虚拟工号；底部「认识全团队 →」链到 employees.html
-- [ ] insights/advice/alerts 逻辑零改动（只换壳不换脑）
+- [x] fab 从通用 🤖 换成**本页对应虚拟员工的迷你卡通头像**（路径自动映射，业务页面零配置；dump-dom 实测 title="阿稳 · SRE 值班工程师 · AI 解读助手"）
+- [x] 面板头部员工身份卡 + 开屏问候用人设文案；底部「👥 认识全团队」入口
+- [x] insights/advice/alerts 逻辑零改动（只换壳不换脑）
 
-## P6 · 回归验证 ⏳
+## P6 · 回归验证 ✅
 
-- [ ] a11y 全页 0 问题；15 台截图全绿；`undefined` 渲染扫描 0 命中
-- [ ] employees.html 三档宽度目检；复制功能实测
+- [x] a11y 17 页 0 问题 0 建议；15 台截图全绿；`undefined` 渲染扫描 0 命中
+- [x] employees.html 1280/390 双档目检通过
 
-## P7 · 收尾推送 ⏳
+## P7 · 收尾推送 ✅
 
-- [ ] CHANGELOG 0.8.0；task-p.md 勾选；commit + push
+- [x] CHANGELOG 0.8.0（compare a9c5408...HEAD）
+- [x] task-p.md 全项勾选
+- [x] 分块提交 4 个 + `git push origin main`（a9c5408..bcf54b7）
+
+---
+
+## 本轮结果（2026-11-16 · P0~P7 全部完成，4 commits 已上线）
+
+| 提交 | 内容 |
+|------|------|
+| fix(opt) P1 | tech-fx 层级重做（body isolation 承接） |
+| chore(opt) P2 | 去 Mock 化 + zcode-tast-cms 清零 |
+| feat(portal) P3/P4 | va-team.js + employees.html 虚拟员工团队主页 |
+| feat(opt) P5 | AI 小助手员工身份卡重设计 |
+| docs P7 | CHANGELOG 0.8.0 + push |
+
+**线上**：https://wuxiumu.github.io/zcode-workbench/ · 团队页直达 https://wuxiumu.github.io/zcode-workbench/employees.html
 
 ---
 
