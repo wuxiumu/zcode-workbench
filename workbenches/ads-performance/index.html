@@ -91,13 +91,14 @@ const d14=Array.from({length:14},(_,i)=>{const d=new Date(Date.now()-(13-i)*864e
 // KPI 基础量（金额单位：元）
 let spend=48652,imps=3284000,clicks=96240,conv=1842;
 
-// 各渠道消耗占比（今日）· 颜色存 CSS 变量名
+// 各渠道消耗占比（今日）· 颜色存 CSS 变量名；单源：按固定权重切分 KPI spend，合计恒等于今日消耗
 let chans=[['抖音',18600,'--acc'],['微信',10400,'--ok'],['快手',8200,'--cyan'],['百度',6900,'--warn'],['小红书',4552,'--pink']];
+const CHANW=[.382,.214,.169,.142,null]; // 末位 = spend − 前四项（消除舍入误差）
 
 // 近 30 天 ROAS（目标 2.5）
 let roas=d30.map(()=>+rnd(2.2,3.1).toFixed(2));
 
-// 转化漏斗（今日）· 颜色存 CSS 变量名
+// 转化漏斗（今日）· 颜色存 CSS 变量名；单源：从 KPI imps/clicks/conv 推导中间层（转化率恒定）
 let funnel=[['曝光',3284000],['点击',96240],['落地页',61300],['加购',12860],['支付',1842]];
 const FUNC=['--acc','--sky','--cyan','--purple','--ok'];
 
@@ -151,7 +152,9 @@ function renderRoas(){
 // 各渠道消耗占比（环形饼图）
 const chanC=echarts.init(document.getElementById('c-chan'));
 function renderChan(){
-  chans=chans.map(([n,v,c])=>[n,Math.max(500,v+irnd(-150,180)),c]);
+  const vals=CHANW.slice(0,4).map(w=>Math.round(spend*w));
+  vals.push(spend-vals.reduce((a,b)=>a+b,0));
+  chans=chans.map(([n,v,c],i)=>[n,vals[i],c]);
   const total=chans.reduce((a,b)=>a+b[1],0),top=[...chans].sort((a,b)=>b[1]-a[1])[0];
   document.getElementById('chanChip').textContent=`今日消耗 ¥${total.toLocaleString()} · Top1 ${top[0]}`;
   chanC.setOption({tooltip:{formatter:f=>`${f.name}　<b>¥${f.value.toLocaleString()}</b>（${f.percent}%）`},
@@ -166,7 +169,7 @@ function renderChan(){
 // 转化漏斗（曝光 → 点击 → 落地页 → 加购 → 支付）
 const funC=echarts.init(document.getElementById('c-funnel'));
 function renderFunnel(){
-  funnel=funnel.map(([n,v],i)=>[n,Math.max(500,Math.round(v*(1+rnd(-.006,.006))))]);
+  funnel=[['曝光',imps],['点击',clicks],['落地页',Math.round(clicks*.64)],['加购',Math.round(clicks*.64*.21)],['支付',conv]];
   const cvr=(funnel[4][1]/funnel[0][1]*100).toFixed(3);
   document.getElementById('funChip').textContent=`曝光→支付 转化率 ${cvr}%`;
   funC.setOption({tooltip:{formatter:f=>`${f.name}　<b>${fmt(f.value)}</b> · 全程 ${(f.value/funnel[0][1]*100).toFixed(3)}%`},

@@ -92,14 +92,18 @@ const D7=['11-05','11-06','11-07','11-08','11-09','11-10','11-11'];
 let costV=D7.map(()=>+rnd(120,260).toFixed(1));
 function renderCost(){cost.setOption({tooltip:{trigger:'axis'},grid:{left:44,right:12,top:16,bottom:24},xAxis:{type:'category',data:D7,axisLabel:{color:V('--sub'),fontSize:10}},yAxis:{type:'value',splitLine:{lineStyle:{color:V('--split')}},axisLabel:{color:V('--sub'),fontSize:10}},series:[{type:'line',data:costV,smooth:true,symbol:'circle',symbolSize:6,lineStyle:{width:2,color:V('--warn')},areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:V('--warn')+'55'},{offset:1,color:V('--warn')+'00'}]}},label:{show:true,color:V('--warn'),fontSize:10,formatter:'${c}'}}]})}
 renderCost();
-// 模型表
+// 模型表 · 成本(7d) 单源：= 今日成本(costV 末位) × 7 × 调用占比，与成本曲线勾稽
 const modelData=[
-  ['kimi-k2','m1','38.2%','$96.4'],
-  ['deepseek-v3','m2','27.5%','$41.2'],
-  ['qwen-max','m3','21.8%','$38.7'],
-  ['gpt-4o','m4','12.5%','$43.9'],
+  ['kimi-k2','m1','38.2%'],
+  ['deepseek-v3','m2','27.5%'],
+  ['qwen-max','m3','21.8%'],
+  ['gpt-4o','m4','12.5%'],
 ];
-document.getElementById('models').innerHTML='<tr><th>模型</th><th>调用占比</th><th>成本(7d)</th></tr>'+modelData.map(m=>`<tr><td><span class="model ${m[1]}">${m[0]}</span></td><td>${m[2]}</td><td>${m[3]}</td></tr>`).join('');
+function renderModels(){
+  const today=costV[costV.length-1];
+  document.getElementById('models').innerHTML='<tr><th>模型</th><th>调用占比</th><th>成本(7d)</th></tr>'+modelData.map(m=>`<tr><td><span class="model ${m[1]}">${m[0]}</span></td><td>${m[2]}</td><td>$${(today*7*parseFloat(m[2])/100).toFixed(1)}</td></tr>`).join('');
+}
+renderModels();
 // Trace 瀑布（inline 色值用 CSS 变量，主题切换自动生效）
 const traces=[
   ['customer-support #8841','意图识别',0,120,'var(--acc)'],['customer-support #8841','检索知识库',120,540,'var(--cy)'],['customer-support #8841','kimi-k2 生成',540,2100,'var(--ok)'],['customer-support #8841','敏感词校验',2100,120,'var(--purple)'],
@@ -109,13 +113,20 @@ const traces=[
 ];
 const tmax=Math.max(...traces.map(t=>t[2]+t[3]));
 document.getElementById('traces').innerHTML=traces.map(t=>`<div class="trace-row"><span class="name">${t[0]} · ${t[1]}</span><div class="bar-wrap"><div class="bar" style="left:${t[2]/tmax*100}%;width:${t[3]/tmax*100}%;background:${t[4]}"></div></div><span class="dur">${t[3]}ms</span></div>`).join('');
-// KPI
+// KPI · 单源推导：调用漂移，Token = 调用 × 3.9k/次（与成本 $2.5/M 勾稽），P95 = 各模型延迟按占比加权
+let callsToday=18462;
+const TOK_PER_CALL=3900,P95MS=latData.P95;
 function renderKpis(){
+  callsToday=Math.max(12000,callsToday+Math.round(rnd(-140,190)));
+  const share=modelData.map(m=>parseFloat(m[2])/100);
+  const tokens=(callsToday*TOK_PER_CALL/1e6).toFixed(1);
+  const p95=Math.round(P95MS.reduce((a,v,i)=>a+v*share[i],0)+rnd(-40,40));
+  const today=costV[costV.length-1];
   document.getElementById('kpis').innerHTML=[
-    ['今日调用次数','18,462','up','+14.2% 较昨日'],
-    ['Token 消耗','2.41','M','up','+9.8%'],
-    ['平均延迟 P95','1,842',' ms','dn','-126ms 优化生效'],
-    ['今日成本','$'+(costV[costV.length-1]).toFixed(1),'','up','预算内 62%'],
+    ['今日调用次数',callsToday.toLocaleString(),'','up','+14.2% 较昨日'],
+    ['Token 消耗',tokens,'M','up','约 3.9k/次 · $'+(today/(callsToday*TOK_PER_CALL/1e6)).toFixed(2)+'/M tokens'],
+    ['平均延迟 P95',p95.toLocaleString(),' ms','dn','-126ms 优化生效'],
+    ['今日成本','$'+today.toFixed(1),'','up','预算内 · 7d 合计 $'+Math.round(today*7).toLocaleString()],
   ].map(x=>`<div class="kpi"><div class="l">${x[0]}</div><div class="v">${x[1]}<small>${x[2]}</small></div><div class="d ${x[3]}">${x[4]}</div></div>`).join('');
 }
 renderKpis();
@@ -132,7 +143,7 @@ setInterval(()=>{
   Object.keys(latData).forEach(k=>{latData[k]=latData[k].map(v=>Math.max(400,v+Math.round(rnd(-60,60))))});
   renderLat();
   costV[costV.length-1]=+(costV[costV.length-1]+rnd(0.5,3)).toFixed(1);cost.setOption({series:[{data:costV}]});
-  renderKpis();
+  renderKpis();renderModels();
 },3000);
 window.addEventListener('resize',()=>[tok,lat,cost].forEach(c=>c.resize()));
 </script>

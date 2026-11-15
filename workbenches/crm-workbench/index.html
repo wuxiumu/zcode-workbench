@@ -100,7 +100,7 @@ function renderInd(){ind.setOption({tooltip:{trigger:'item'},legend:{bottom:0,te
 renderInd();
 // NPS
 const nps=echarts.init(document.getElementById('c-nps'));
-let npsV=M.map(()=>Math.round(rnd(30,62))),tkV=M.map(()=>Math.round(rnd(80,320)));
+let npsV=M.map(()=>Math.round(rnd(44,52))),tkV=M.map(()=>Math.round(rnd(80,320)));
 function renderNps(){nps.setOption({tooltip:{trigger:'axis'},legend:{textStyle:{color:V('--sub'),fontSize:10},top:0},grid:{left:40,right:40,top:30,bottom:26},xAxis:{type:'category',data:M,axisLabel:{color:V('--sub'),fontSize:10}},yAxis:[{type:'value',splitLine:{lineStyle:{color:V('--split')}},axisLabel:{color:V('--sub'),fontSize:10}},{type:'value',splitLine:{show:false},axisLabel:{color:V('--sub'),fontSize:10}}],series:[{name:'NPS',type:'line',data:npsV,smooth:true,lineStyle:{width:2,color:V('--ok')},areaStyle:{color:V('--ok')+'22'}},{name:'工单量',type:'bar',yAxisIndex:1,data:tkV,barWidth:10,itemStyle:{color:V('--acc')+'66',borderRadius:[3,3,0,0]}}]})}
 renderNps();
 // 续约
@@ -122,12 +122,12 @@ const riskData=[
 const hCls={'危险':'h-bad','关注':'h-mid','健康':'h-good'};
 document.getElementById('risk').innerHTML='<tr><th>客户</th><th>行业</th><th>风险分</th><th>信号</th><th>等级</th></tr>'+riskData.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td style="color:var(--sub)">${r[3]}</td><td><span class="badge ${hCls[r[4]]}"><i></i>${r[4]}</span></td></tr>`).join('');
 // KPI
-let renewRate=91.2,npsVal=47;
+let renewRate=91.2,npsVal=npsV[npsV.length-1]; // 与 NPS 曲线同源
 function renderKpis(){
   const mrrNow=mrrV[mrrV.length-1];
   document.getElementById('kpis').innerHTML=[
-    ['MRR','¥'+(mrrNow/10000).toFixed(1)+'w','up','+8.5% MoM'],
-    ['企业客户','1,286','up','本月 +23'],
+    ['MRR','¥'+(mrrNow/10000).toFixed(1)+'w','','up','+8.5% MoM'],
+    ['企业客户','1,286','','up','本月 +23'],
     ['续约率',renewRate.toFixed(1),' %',renewRate>=90?'up':'dn',renewRate>=90?'高于 90% 基线 +1.8pt':'跌破 90% 基线需关注'],
     ['NPS 净推荐值',String(npsVal),'',npsVal>=45?'up':'dn',npsVal>=45?'健康 · 行业均值 36':'低于行业均值 36'],
   ].map(x=>`<div class="kpi"><div class="l">${x[0]}</div><div class="v">${x[1]}<small>${x[2]}</small></div><div class="d ${x[3]}">${x[4]}</div></div>`).join('');
@@ -141,7 +141,8 @@ setInterval(()=>{
   healthData.forEach((v,i)=>healthData[i]=clamp(v+irnd(-2,3),8,70));
   indData.forEach((v,i)=>indData[i]=Math.max(5,v+irnd(-1,2)));
   renewRate=+clamp(renewRate+rnd(-.2,.2),88,95).toFixed(1);
-  npsVal=clamp(npsVal+irnd(-1,1),40,55);
+  npsV[npsV.length-1]=clamp(npsV[npsV.length-1]+irnd(-1,1),42,55); // NPS KPI 与曲线末位同源
+  npsVal=npsV[npsV.length-1];
   renderMrr();renderPipe();renderHealth();renderInd();renderNps();renderRenew();renderKpis();
 },4000);
 // 主题切换：图表按当前 CSS 变量重建
