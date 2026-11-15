@@ -6,8 +6,10 @@
  *   1. prefers-reduced-motion → 只画一帧静态网格，不做动画；
  *   2. <768px 粒子减半（省电省帧）；
  *   3. document.hidden → 停帧（与 perf-guard 同思路）。
- * 层级约定：canvas z-index:0 + 内容 body>* 提到 z-index:1，
- * 主题按钮 / AI fab 等自带更高 z-index 不受影响。
+ * 层级约定（v2 背景承接法）：body{isolation:isolate} 让 body 自建堆叠上下文，
+ * canvas z-index:-1 恰好画在「body 背景」之上、「内容」之下——业务元素零侵入，
+ * 主题按钮 / MOCK 徽标 / AI fab 等 fixed 组件的定位与层级完全不受影响。
+ * （v1 曾用 body>* 提层，特异性 1,0,3 压过组件的 position:fixed，已废弃）
  * fail-silent：任何异常静默退出，绝不影响数据面板。
  * 接入：<script src="../../assets/tech-fx.js" defer></script>
  * ============================================================ */
@@ -19,9 +21,9 @@
     var cv = document.createElement('canvas');
     cv.id = 'tech-fx';
     cv.setAttribute('aria-hidden', 'true');
-    cv.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0';
+    cv.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:-1';
     var style = document.createElement('style');
-    style.textContent = 'body>*:not(#tech-fx):not(script):not(style){position:relative;z-index:1}';
+    style.textContent = 'body{isolation:isolate}';
     document.head.appendChild(style);
     document.body.insertBefore(cv, document.body.firstChild);
     var ctx = cv.getContext('2d');
