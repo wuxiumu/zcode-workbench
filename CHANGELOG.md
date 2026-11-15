@@ -3,6 +3,27 @@
 > 本文件由持续优化流程维护：每轮优化追加一条。格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)。
 > 在线站点：https://wuxiumu.github.io/zcode-workbench/
 
+## [0.6.0] · 2026-11-15 · 真实内容与友好提示（第一原理轮）
+
+按 `task.md` 60 分钟时间盒执行，北极星 = 访客 10 秒被说服。第一原理重审后选定两个最短木板：
+
+### 新增（真实内容 · 因果叙事）
+- ops-center 注入「5 幕故障剧本」（约 65s 循环）：pay-svc 抖动 → P1 告警 → 扩容介入 → 恢复，**曲线 ↔ 告警流 ↔ KPI ↔ AI 解读四层联动**（服务错误率/延迟按幕插值逼近，CPU 曲线同步抬升，顶部剧本条同步幕进度）
+- AI 解读零改动自动呼应剧本（读 svcs），实测幕 3 自动弹出「pay-svc 错误率超阈值」告警 toast
+- 顺带修真实度：基线错误率 0.01–0.6% → 0.01–0.12%（原开机近半服务"异常"，与"平稳运行"自相矛盾）、QPS 基线 ≥80 保幕 1 全绿
+
+### 新增（友好提示 · 零门槛读懂）
+- `assets/term-tips.js` 全站术语大白话：24 个词条以真实页面 grep 取证（ROAS/P99/Uplift/CPC/CTR/CPM/SLA/NPS/GMV/MRR/DAU/QPS/IOPS…），KPI 标签/面板标题/表头命中加虚线下划线，hover / 键盘 focus 弹「老板语言」解释
+- MutationObserver 防抖补挂（每 2.6s 重绘的动态表格不遗漏）；贴顶自动下翻 + 左右边缘夹紧（两轮视觉验收修复）；fail-silent 绝不影响数据面板
+- 16 页接入逐页断言（15 工作台 + 门户；boss 一页纸零术语设计、self-check 工具页跳过）
+- 门户首访引导条：「自动导览 / ⌘K 搜索」两条路任选 + 预告术语即译，localStorage 一次性不打扰回头客
+
+### 新增（流程）
+- `task.md`：时间盒执行计划 + 持续跟进规则（做完一项勾一项，未完成滚入 roadmap 扩展候选）
+
+### 验证
+- `tools/a11y_audit.py` 17 页 0 问题 0 建议；15 台全量截图回归全绿；剧本三幕（平稳/P1/恢复）虚拟时间截图逐幕验收
+
 ## [0.5.0] · 2026-11-12 · 展示物料与工程加固（持续优化轮）
 
 自动化定时任务按 `OPTIMIZATION_ROADMAP.md` 队列逐条执行，本轮完成 14 条：
@@ -75,7 +96,8 @@
 
 ---
 
-[0.5.0]: https://github.com/wuxiumu/zcode-workbench/compare/99f9201...HEAD
+[0.6.0]: https://github.com/wuxiumu/zcode-workbench/compare/2376227...HEAD
+[0.5.0]: https://github.com/wuxiumu/zcode-workbench/compare/99f9201...2376227
 [0.4.0]: https://github.com/wuxiumu/zcode-workbench/compare/2fa4ddf...99f9201
 [0.3.0]: https://github.com/wuxiumu/zcode-workbench/compare/739480a...2fa4ddf
 [0.2.0]: https://github.com/wuxiumu/zcode-workbench/compare/9ae3d16...739480a

@@ -47,17 +47,30 @@
 - [x] 首访显示：「👋 第一次来？两条路：想 30 秒看懂价值 → 点自动导览；想直达某个台 → 按 ⌘K / Ctrl+K 搜索」，顺带预告「P99、ROAS 这类黑话鼠标放上去有解释」（✅ 截图目检，kbd 键帽样式与站点设计语言一致）
 - [x] localStorage 记忆（`zwb-hello`），显示即标记，二访不再打扰；可关闭；无动画、prefers-reduced-motion 天然兼容
 
-## T4 · 回归验证 ⏳
+## T4 · 回归验证 ✅
 
-- [ ] ops-center / growth-analytics 新截图目检（剧本联动 + tooltip 均在真实页面验证）
-- [ ] `python3 tools/a11y_audit.py` 全页复跑 0 问题
-- [ ] 全部 15 台截图复跑无 ✗
+- [x] ops-center / ads-performance 新截图目检（剧本三幕联动 + tooltip 均在真实页面验证；ads 的 h3「近 30 天 ROAS 趋势」虚线提示可见，canvas legend 不受影响）
+- [x] `python3 tools/a11y_audit.py` 全页复跑：17 页 0 问题 0 建议（term-tips 的 tabindex+aria-label 通过审计）
+- [x] 全部 15 台截图复跑无 ✗
 
-## T5 · 收尾归档 ⏳
+## T5 · 收尾归档 ✅
 
-- [ ] `CHANGELOG.md` 追加本轮条目（沿用 Keep a Changelog 风格）
-- [ ] `OPTIMIZATION_ROADMAP.md` 扩展候选登记：「故障剧本模式推广到其余 14 台（每轮 1~2 台）」+「术语表覆盖各台专属黑话」
-- [ ] `git add -A && git commit`（不 push），提交信息沿用 `feat(opt):` 风格
+- [x] `CHANGELOG.md` 追加 [0.6.0] 条目（真实内容与友好提示 · 第一原理轮），compare 链接更新为 2376227...HEAD
+- [x] `OPTIMIZATION_ROADMAP.md` 扩展候选登记：「故障剧本模式推广到其余 14 台（每轮 1~2 台）」+「term-tips 术语表按台扩充（每轮 3~5 条）」
+- [x] `git add -A && git commit`（不 push），提交信息沿用 `feat(opt):` / `feat(portal):` 风格
+
+---
+
+## 本轮结果（2026-11-15 · 实际用时 ≈ 60 分钟）
+
+| 提交 | 内容 |
+|------|------|
+| 54f80a9 | T1 ops-center 5 幕故障剧本（四层因果联动）+ task.md |
+| 0dcd820 | T2 term-tips.js 全站术语大白话（16 页，两轮视觉迭代） |
+| ae9dfc3 | T3 门户首访引导条 |
+| 本条 | T4/T5 回归验证 + CHANGELOG 0.6.0 + ROADMAP 登记 |
+
+**下轮起点**：`OPTIMIZATION_ROADMAP.md` 扩展候选前两条（剧本推广 / 术语表扩充），样板与模式已在 task.md T1 留档。
 
 ---
 
