@@ -24,7 +24,7 @@
 | 01 | 运维监控台 Ops Center | 服务器指标 · 服务状态 · 告警流 | [打开](https://wuxiumu.github.io/zcode-workbench/workbenches/ops-center/) |
 | 02 | 增长分析台 Growth Analytics | GMV 漏斗 · DAU · 渠道归因 · 爆品榜 | [打开](https://wuxiumu.github.io/zcode-workbench/workbenches/growth-analytics/) |
 | 03 | 客户成功台 CRM Workbench | 管道漏斗 · MRR · 健康度 · 流失预警 | [打开](https://wuxiumu.github.io/zcode-workbench/workbenches/crm-workbench/) |
-| 04 | 内容运营台 Content Ops | 素材任务 · 渠道标签 · 审核队列（联动 zcode-tast-cms） | [打开](https://wuxiumu.github.io/zcode-workbench/workbenches/content-ops/) |
+| 04 | 内容运营台 Content Ops | 素材任务 · 渠道标签 · 审核队列 | [打开](https://wuxiumu.github.io/zcode-workbench/workbenches/content-ops/) |
 | 05 | AI Agent 观测台 Agent Observatory | Token 吞吐 · 模型延迟 · Trace · 成本燃烧 | [打开](https://wuxiumu.github.io/zcode-workbench/workbenches/agent-observatory/) |
 | 06 | 供应链协同台 Supply Chain Hub | 库存水位 · 履约漏斗 · 供应商绩效 · 缺料预警 | [打开](https://wuxiumu.github.io/zcode-workbench/workbenches/supply-chain-hub/) |
 | 07 | 财务经营驾驶舱 Finance Cockpit | 三表趋势 · 现金流预测 · 预算执行 · 账龄分布 | [打开](https://wuxiumu.github.io/zcode-workbench/workbenches/finance-cockpit/) |
@@ -69,4 +69,3 @@ python3 -m http.server 8080
 ---
 
 **作者**：[五朽木](https://github.com/wuxiumu) · FDE / 全栈工程师  
-**姊妹项目**：[zcode-tast-cms](https://github.com/wuxiumu/zcode-tast-cms)（素材库·图文代发任务系统，PHP+React 全栈）
